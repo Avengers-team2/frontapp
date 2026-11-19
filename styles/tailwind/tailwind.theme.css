@@ -1,16 +1,22 @@
 @import "tailwindcss";
 
 @theme {
-  /* StartFit 브랜드 색상 */
-  --color-brand-primary: #1F3A5F;
-  --color-brand-secondary: #2BB3A3;
-  --color-brand-mint: #5EF0DC;
+    /* StartFit 브랜드 색상 */
+    --color-brand-primary: #1F3A5F;
+    --color-brand-secondary: #2BB3A3;
+    --color-brand-mint: #5EF0DC;
 
-  /* 배경 색상 */
-  --color-brand-dark: #07101F;
-  --color-brand-navy: #0E1A2E;
+    /* 배경 색상 */
+    --color-brand-dark: #07101F;
+    --color-brand-navy: #0E1A2E;
 
-  /* 텍스트 색상 */
-  --color-brand-text: #3D4A5C;
-  --color-brand-muted: #ACBBD0;
+    /* 텍스트 색상 */
+    --color-brand-text: #3D4A5C;
+    --color-brand-muted: #ACBBD0;
+
+    /* 폰트 */
+    --font-ibm: var(--font-IBMPlexSansKR);
+    --font-outfit: var(--font-outfit-local);
 }
+
+/* 2BB3A3, 1A3B71, 1F8F82
