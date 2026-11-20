@@ -1,23 +1,22 @@
-import { Metadata } from "next";
-import "./globals.css";
-import "@/styles/tailwind/tailwind.theme.css"
 
-import { pretendard } from "@/styles/font/font";
-import { Geist } from "next/font/google";
-import { cn } from "@/lib/utils";
+import type { Metadata } from "next";
+import "./globals.css";
+
+import { IBMPlexSansKR, outfit, notoSansKR } from "@/styles/font/font";
 import ReactQueryProvider from "@/providers/ReactQueryProvider";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
-
 export const metadata: Metadata = {
-  title: "Next Project",
-  description: "재밌게 공부하는 Next 16!",
-}
+  title: "StartFit",
+  description: "데이터 기반 창업 분석 및 지원사업 매칭 서비스",
+};
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={cn(pretendard.variable, "font-sans", geist.variable)}>
-      <body className="font-pretendard">
+    <html
+      lang="ko"
+      className={`${IBMPlexSansKR.variable} ${outfit.variable} ${notoSansKR.variable}`}
+    >
+      <body className="font-ibm">
         <ReactQueryProvider>
           {children}
         </ReactQueryProvider>
