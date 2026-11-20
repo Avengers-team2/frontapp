@@ -1,22 +1,99 @@
-@import "tailwindcss";
-
 @theme {
-    /* StartFit 브랜드 색상 */
+    /* ═════════ 핵심 3색 (팀 확정) ═════════ */
+    --color-main: #1F3A5F;
+    --color-sub: #2BB3A3;
+    --color-bg: #F7F9FC;
+
+    /* 메인 단계 (hover·연한 배경용, Figma에 있는 색) */
+    --color-main-dark: #13284A;
+    --color-main-50: #E6EBF1;
+
+    /* 서브 단계 */
+    --color-sub-700: #0B7468;
+    --color-sub-600: #248B7F;
+    --color-sub-300: #6FD2BF;
+    --color-sub-100: #BFEDE5;
+    --color-sub-50: #EAF8F6;
+
+    /* 다크 화면 포인트 */
+    --color-mint: #5EF0DC;
+    --color-mint-light: #7FE9DA;
+
+    /* ───────── 네이비 (다크 배경 · 히어로 · 푸터) ───────── */
+    --color-navy-950: #050B17;
+    --color-navy-900: #07101F;
+    --color-navy-850: #0B1B33;
+    --color-navy-800: #0B1E38;
+    --color-navy-700: #14213D;
+    --color-navy-600: #13284A;
+    --color-navy-400: #1A3B71;
+
+    /* ───────── 텍스트 (밝은 배경 위) ───────── */
+    --color-ink-900: #111111;
+    --color-ink-800: #2B2B2B;
+    --color-ink-700: #3A4456;
+    --color-ink-600: #3D4A5C;
+    --color-ink-500: #5B6577;
+    --color-ink-400: #6B6B6B;
+    --color-ink-300: #8A94A6;
+    --color-ink-200: #9A9A9A;
+
+    /* ───────── 텍스트 (다크 배경 위) ───────── */
+    --color-mist-100: #E8EEF6;
+    --color-mist-300: #ACBBD0;
+    --color-mist-400: #9FB1C8;
+    --color-mist-500: #8DA0B8;
+    --color-mist-600: #5A6B80;
+
+    /* ───────── 선 · 배경 ───────── */
+    --color-line: #E3E8EF;
+    --color-line-gray: #E3E3E3;
+    --color-line-light: #E6EBF1;
+    --color-line-strong: #CFCFCF;
+    --color-surface: #F1F3F5;
+    --color-surface-light: #F7F9FC;
+
+    /* ───────── 상태 ───────── */
+    --color-danger: #E5484D;
+    --color-danger-strong: #C4312B;
+    --color-danger-bg: #FBE3E4;
+    --color-warning: #F5A524;
+    --color-warning-text: #9A5B00;
+    --color-amber: #FFB547;
+    --color-coral: #FF8A6B;
+    --color-info: #268AFF;
+
+    /* ───────── 기존 토큰 (이미 쓰는 사람 있을 수 있어서 유지) ───────── */
     --color-brand-primary: #1F3A5F;
     --color-brand-secondary: #2BB3A3;
     --color-brand-mint: #5EF0DC;
-
-    /* 배경 색상 */
     --color-brand-dark: #07101F;
     --color-brand-navy: #0E1A2E;
-
-    /* 텍스트 색상 */
     --color-brand-text: #3D4A5C;
     --color-brand-muted: #ACBBD0;
+    --color-bg-deep: #050B17;
+    --color-bg-hero: #070D1A;
+    --color-bg-input: #0A1424;
+    --color-bg-card: #0B1E38;
+    --color-accent-mint: #5EF0DC;
+    --color-accent-mint-light: #7FE9DA;
+    --color-accent-amber: #FFB547;
+    --color-accent-amber-light: #F7C46C;
+    --color-accent-coral: #FF8A6B;
+    --color-accent-coral-light: #FF9A85;
+    --color-text-white: #FFFFFF;
+    --color-text-primary: #E8EEF6;
+    --color-text-secondary: #C9D3E1;
+    --color-text-description: #C6D3E3;
+    --color-text-soft: #AFC0D6;
+    --color-text-muted: #9FB1C8;
+    --color-text-placeholder: #8FA3BC;
+    --color-text-subtle: #7F92AA;
+    --color-text-button-dark: #050B17;
+    --color-text-button-amber: #1A1206;
 
-    /* 폰트 */
+   
     --font-ibm: var(--font-IBMPlexSansKR);
     --font-outfit: var(--font-outfit-local);
+    --font-noto: var(--font-noto-sans-kr);
 }
-
-/* 2BB3A3, 1A3B71, 1F8F82

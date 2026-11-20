@@ -1,4 +1,5 @@
 import localFont from "next/font/local";
+import { Noto_Sans_KR } from "next/font/google";
 
 const IBMPlexSansKR = localFont({
     src: [
@@ -28,9 +29,8 @@ const IBMPlexSansKR = localFont({
         },
     ],
     display: "swap",
-    variable: "--font-IBMPlexSansKR"
-})
-
+    variable: "--font-IBMPlexSansKR",
+});
 
 const outfit = localFont({
     src: [
@@ -72,9 +72,14 @@ const outfit = localFont({
         },
     ],
     display: "swap",
-    variable: "--font-outfit-local"
-})
+    variable: "--font-outfit-local",
+});
 
+const notoSansKR = Noto_Sans_KR({
+    subsets: ["latin"],
+    weight: ["400", "500", "600", "700"],
+    display: "swap",
+    variable: "--font-noto-sans-kr",
+});
 
-
-export { IBMPlexSansKR, outfit };
+export { IBMPlexSansKR, outfit, notoSansKR };

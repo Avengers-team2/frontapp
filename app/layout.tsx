@@ -1,9 +1,8 @@
 
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import "./globals.css";
-import "@/styles/tailwind/tailwind.theme.css";
 
-import { IBMPlexSansKR, outfit } from "@/styles/font/font";
+import { IBMPlexSansKR, outfit, notoSansKR } from "@/styles/font/font";
 import ReactQueryProvider from "@/providers/ReactQueryProvider";
 
 export const metadata: Metadata = {
@@ -15,7 +14,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="ko"
-      className={`${IBMPlexSansKR.variable} ${outfit.variable}`}
+      className={`${IBMPlexSansKR.variable} ${outfit.variable} ${notoSansKR.variable}`}
     >
       <body className="font-ibm">
         <ReactQueryProvider>
