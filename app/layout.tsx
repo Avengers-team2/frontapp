@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import "./globals.css";
-import "@/styles/tailwind/tailwind.theme.css"
 
 import { IBMPlexSansKR, outfit, notoSansKR } from "@/styles/font/font";
 import { cn } from "@/lib/utils";
