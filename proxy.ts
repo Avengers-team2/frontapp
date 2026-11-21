@@ -14,6 +14,11 @@ export function proxy(request: NextRequest) {
     const refreshToken = request.cookies.get("refresh_token");
     const { pathname } = request.nextUrl;
 
+    // TODO(임시·개발용): 로그인 없이 작업 페이지를 보기 위한 우회. 사용자가 제거하라고 하면 이 블록 삭제.
+    if (process.env.NODE_ENV === "development" && isProtected(pathname)) {
+        return NextResponse.next();
+    }
+
     if (!refreshToken && isProtected(pathname)) {
         return NextResponse.redirect(new URL("/login", request.url));
     }
