@@ -1,9 +1,11 @@
 
-import type { Metadata } from "next";
+import { Metadata } from "next";
 import "./globals.css";
 
-import { IBMPlexSansKR, outfit, notoSansKR } from "@/styles/font/font";
+import { IBMPlexSansKR, outfit } from "@/styles/font/font";
 import ReactQueryProvider from "@/providers/ReactQueryProvider";
+import Header from "@/components/header/Header";
+import Footer from "@/components/footer/Footer";
 
 export const metadata: Metadata = {
   title: "StartFit",
@@ -14,11 +16,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="ko"
-      className={`${IBMPlexSansKR.variable} ${outfit.variable} ${notoSansKR.variable}`}
+      className={`${IBMPlexSansKR.variable} ${outfit.variable}`}
     >
       <body className="font-ibm">
         <ReactQueryProvider>
-          {children}
+          <Header />
+          <main>{children}</main>
+          <Footer />
         </ReactQueryProvider>
       </body>
     </html>
