@@ -1,4 +1,4 @@
-import { MemberDTO } from "@/types/member/member.type";
+import { User } from "@/types/user";
 import { create } from "zustand";
 import { combine, persist } from "zustand/middleware";
 
@@ -6,19 +6,19 @@ const useAuthStore = create(
     persist(
         combine(
             {
-                member: null as MemberDTO | null,
+                user: null as User | null,
                 isAuthenticated: false as boolean
             },
             (set) => ({
                 setIsAuthenticated: (status: boolean) => set({isAuthenticated: status}),
-                setMember: (member: MemberDTO | null) => set({member: member})
+                setUser: (user: User | null) => set({user: user})
             })
         ),
         {
             name: "auth-store",
             partialize: (state) => ({
                 isAuthenticated: state.isAuthenticated,
-                member: state.member
+                user: state.user
             })
         }
     )
