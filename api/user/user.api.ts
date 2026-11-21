@@ -1,10 +1,10 @@
 import { ApiResponseDTO } from "@/types/common/common.type"
 import { FileFolder } from "@/enums/file.enum"
-import { JoinAdditionalRequestDTO, ProfileUpdateRequestDTO } from "@/types/member/member.type"
+import { JoinAdditionalRequestDTO, ProfileUpdateRequestDTO } from "@/types/user"
 
 export const joinAdditionalApi = async (joinDto: JoinAdditionalRequestDTO): Promise<ApiResponseDTO> => {
     console.log("joinAdditionalApi joinDto", joinDto)
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/members/join`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/join`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -23,7 +23,7 @@ export const updateProfileApi = async (fileDto: ProfileUpdateRequestDTO): Promis
     formData.append("file", fileDto.file)
     formData.append("folder", FileFolder.PROFILE)
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/members/${fileDto.id}/profile`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${fileDto.id}/profile`, {
         method: "PUT",
         body: formData
     })
