@@ -1,5 +1,9 @@
 import AnalysisFormContainer from "./_component/AnalysisFormContainer";
 
 export default function AnalysisPage() {
-    return <AnalysisFormContainer />;
+    return (
+        <div className="pt-[104px]">
+            <AnalysisFormContainer />
+        </div>
+    );
 }
