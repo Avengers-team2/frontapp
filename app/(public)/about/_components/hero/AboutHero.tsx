@@ -2,13 +2,15 @@ import Image from "next/image";
 import HeroSearch from "./HeroSearch";
 import HeroScoreCard from "./HeroScoreCard";
 import HeroStats from "./HeroStats";
+import HeroTitle from "./HeroTitle";
+import { HeroSpotProvider } from "./HeroSpotContext";
 
 export default function AboutHero() {
     return (
         <section className="relative w-full h-[901px] mt-[96px] overflow-hidden bg-[#070d1a]">
             {/* 배경 이미지 */}
             <Image
-                src="/assets/images/about-hero/hero-street.jpg"
+                src="/assets/images/about/hero-street.jpg"
                 alt=""
                 fill
                 priority
@@ -30,10 +32,7 @@ export default function AboutHero() {
                     BEFORE YOU SIGN · 계약 전 5분
                 </p>
 
-                <h1 className="mt-[28px] font-bold text-[72px] leading-[1.12] tracking-[-0.04em] text-black">
-                    이 자리<br />
-                    <span className="text-[#023684]">계약해도 될까요?</span>
-                </h1>
+                <HeroTitle />
 
                 <p className="mt-[28px] text-[18px] leading-[1.65] text-[#333333]">
                     주소 하나면 상권 · 폐업 위험 · 임대료 · 지원사업까지<br />
@@ -45,15 +44,17 @@ export default function AboutHero() {
                 </div>
             </div>
 
-            {/* 오른쪽 점수 카드 */}
-            <div className="absolute top-[72px] right-[max(24px,calc(50%_-_721px))]">
-                <HeroScoreCard />
-            </div>
+            <HeroSpotProvider>
+             {/* 오른쪽 점수 카드 */}
+             <div className="absolute top-[72px] right-[max(24px,calc(50%_-_721px))]">
+                 <HeroScoreCard />
+             </div>
 
-            {/* 하단 수치 바 */}
-            <div className="absolute bottom-[53px] left-[max(24px,calc(50%_-_772px))]">
-                <HeroStats />
-            </div>
+             {/* 하단 수치 바 */}
+             <div className="absolute bottom-[53px] left-[max(24px,calc(50%_-_772px))]">
+                 <HeroStats />
+             </div>
+            </HeroSpotProvider>
         </section>
     );
 }

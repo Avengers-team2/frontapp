@@ -1,0 +1,40 @@
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- 매출이 떨어져 고민인 사장님: 하락 그래프 + 원인 찾기 돋보기 -->
+<path d="M64 24H28C18.0589 24 10 32.0589 10 42V69C10 78.9411 18.0589 87 28 87H64C73.9411 87 82 78.9411 82 69V42C82 32.0589 73.9411 24 64 24Z" fill="#08172C"/>
+<path d="M64 20.5H28C18.335 20.5 10.5 28.335 10.5 38V66C10.5 75.665 18.335 83.5 28 83.5H64C73.665 83.5 81.5 75.665 81.5 66V38C81.5 28.335 73.665 20.5 64 20.5Z" fill="url(#i3_card)" stroke="url(#i3_cardStroke)"/>
+<path opacity="0.3" d="M18 37C18 31 22 28 28 28H47" stroke-width="1.5" stroke-linecap="round" stroke="#C7FFFF"/>
+<!-- 그래프 영역 -->
+<path opacity="0.28" d="M23 42L35 50L45 46L59 63V72H23V42Z" fill="url(#i3_line)"/>
+<path d="M23 42L35 50L45 46L59 63" stroke="url(#i3_line)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M51.5 63.5H59.5V55.5" stroke="url(#i3_line)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="35" cy="50" r="3" fill="#E8FFFF"/>
+<circle cx="45" cy="46" r="3" fill="#E8FFFF"/>
+<path opacity="0.55" d="M22 72H66" stroke-linecap="round" stroke="#E9FFFF"/>
+<!-- 배지: 돋보기 -->
+<circle opacity="0.45" cx="72" cy="30" r="16" fill="#071A2C"/>
+<circle cx="72" cy="26" r="15.5" fill="url(#i3_badge)" stroke="#A5FFFF"/>
+<circle cx="70" cy="24" r="5.5" fill="#102B40" stroke="#E2FFFF" stroke-width="2.5"/>
+<path d="M74.5 28.5L79 33" stroke="#102B40" stroke-width="3.2" stroke-linecap="round"/>
+<path opacity="0.6" d="M61 21C62.4 16.7 66.1 14 70 14" stroke-width="1.5" stroke-linecap="round" stroke="white"/>
+<defs>
+<linearGradient id="i3_card" x1="15" y1="22" x2="78" y2="87" gradientUnits="userSpaceOnUse">
+<stop stop-color="#203E58"/>
+<stop offset="0.52" stop-color="#10283F"/>
+<stop offset="1" stop-color="#08172C"/>
+</linearGradient>
+<linearGradient id="i3_cardStroke" x1="18" y1="22" x2="72" y2="82" gradientUnits="userSpaceOnUse">
+<stop stop-color="#86E5EB" stop-opacity="0.65"/>
+<stop offset="1" stop-color="#4D8CA9" stop-opacity="0.15"/>
+</linearGradient>
+<linearGradient id="i3_line" x1="23" y1="42" x2="62" y2="70" gradientUnits="userSpaceOnUse">
+<stop stop-color="#E8FFFF"/>
+<stop offset="0.48" stop-color="#78F2EF"/>
+<stop offset="1" stop-color="#22BECF"/>
+</linearGradient>
+<linearGradient id="i3_badge" x1="61" y1="12" x2="85" y2="42" gradientUnits="userSpaceOnUse">
+<stop stop-color="#A7FFFF"/>
+<stop offset="0.45" stop-color="#42E4E3"/>
+<stop offset="1" stop-color="#16A9BE"/>
+</linearGradient>
+</defs>
+</svg>

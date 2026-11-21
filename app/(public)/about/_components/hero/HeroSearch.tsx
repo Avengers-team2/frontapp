@@ -26,12 +26,12 @@ export default function HeroSearch() {
                 placeholder="계약하려는 주소나 동네를 입력하세요"
                 className="flex-1 bg-transparent text-[16px] text-white placeholder:text-white outline-none"
             />
-            <button
-                type="submit"
-                className="w-[113px] h-[50px] rounded-[12px] bg-[#ffc875] font-bold text-[16px] text-[#1a1206]"
-            >
-                체크 시작
-            </button>
+                <button
+                   type="submit"
+                   className="w-[113px] h-[50px] rounded-[12px] bg-[#ffc875] font-bold text-[16px] text-[#1a1206] cursor-pointer transition-colors duration-300 hover:bg-[#ffb547] active:scale-[0.97]"
+                   >
+                   체크 시작
+                </button>
         </form>
     );
 }

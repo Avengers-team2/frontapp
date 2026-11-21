@@ -1,0 +1,46 @@
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- 폐업을 고민하는 사장님: 가게 + 정리 체크 -->
+<path d="M64 24H28C18.0589 24 10 32.0589 10 42V69C10 78.9411 18.0589 87 28 87H64C73.9411 87 82 78.9411 82 69V42C82 32.0589 73.9411 24 64 24Z" fill="#08172C"/>
+<path d="M64 20.5H28C18.335 20.5 10.5 28.335 10.5 38V66C10.5 75.665 18.335 83.5 28 83.5H64C73.665 83.5 81.5 75.665 81.5 66V38C81.5 28.335 73.665 20.5 64 20.5Z" fill="url(#i2_card)" stroke="url(#i2_cardStroke)"/>
+<path opacity="0.3" d="M18 37C18 31 22 28 28 28H47" stroke-width="1.5" stroke-linecap="round" stroke="#C7FFFF"/>
+<!-- 가게 몸체 -->
+<rect x="24" y="46" width="34" height="26" rx="3" fill="url(#i2_body)"/>
+<rect x="36" y="55" width="10" height="17" rx="2" fill="#102B40"/>
+<rect x="27.5" y="51" width="6" height="7" rx="1.5" fill="#102B40"/>
+<rect x="48.5" y="51" width="6" height="7" rx="1.5" fill="#102B40"/>
+<!-- 차양 -->
+<path d="M22 39C22 37.3431 23.3431 36 25 36H57C58.6569 36 60 37.3431 60 39V43C60 45.2091 58.2091 47 56 47H26C23.7909 47 22 45.2091 22 43V39Z" fill="url(#i2_awning)"/>
+<path opacity="0.55" d="M31.5 37V46M41 37V46M50.5 37V46" stroke-linecap="round" stroke="#E9FFFF"/>
+<path opacity="0.55" d="M27 72H55" stroke-linecap="round" stroke="#E9FFFF"/>
+<!-- 배지: 정리 체크 -->
+<rect opacity="0.45" x="56" y="13" width="31" height="31" rx="10" fill="#071A2C"/>
+<rect x="55.5" y="9.5" width="31" height="31" rx="10" fill="url(#i2_badge)" stroke="#A5FFFF"/>
+<path d="M63.5 25.5L68.5 30.5L78.5 19.5" stroke="#102B40" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+<path opacity="0.6" d="M60 18C60.8 15.4 62.8 14 65.5 14" stroke-width="1.5" stroke-linecap="round" stroke="white"/>
+<defs>
+<linearGradient id="i2_card" x1="15" y1="22" x2="78" y2="87" gradientUnits="userSpaceOnUse">
+<stop stop-color="#203E58"/>
+<stop offset="0.52" stop-color="#10283F"/>
+<stop offset="1" stop-color="#08172C"/>
+</linearGradient>
+<linearGradient id="i2_cardStroke" x1="18" y1="22" x2="72" y2="82" gradientUnits="userSpaceOnUse">
+<stop stop-color="#86E5EB" stop-opacity="0.65"/>
+<stop offset="1" stop-color="#4D8CA9" stop-opacity="0.15"/>
+</linearGradient>
+<linearGradient id="i2_body" x1="24" y1="46" x2="58" y2="72" gradientUnits="userSpaceOnUse">
+<stop stop-color="#E8FFFF"/>
+<stop offset="0.48" stop-color="#78F2EF"/>
+<stop offset="1" stop-color="#22BECF"/>
+</linearGradient>
+<linearGradient id="i2_awning" x1="22" y1="36" x2="60" y2="47" gradientUnits="userSpaceOnUse">
+<stop stop-color="#A7FFFF"/>
+<stop offset="0.45" stop-color="#42E4E3"/>
+<stop offset="1" stop-color="#16A9BE"/>
+</linearGradient>
+<linearGradient id="i2_badge" x1="58" y1="10" x2="84" y2="40" gradientUnits="userSpaceOnUse">
+<stop stop-color="#A7FFFF"/>
+<stop offset="0.45" stop-color="#42E4E3"/>
+<stop offset="1" stop-color="#16A9BE"/>
+</linearGradient>
+</defs>
+</svg>
