@@ -1,4 +1,3 @@
-
 import AuthHydration from "@/components/auth/AuthHydration";
 
 export default function Home() {
