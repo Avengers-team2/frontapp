@@ -1,8 +1,7 @@
 import { Metadata } from "next";
 import "./globals.css";
-import "@/styles/tailwind/tailwind.theme.css"
 
-import { IBMPlexSansKR, outfit, notoSansKR } from "@/styles/font/font";
+import { IBMPlexSansKR, outfit, notoSansKR, jetbrainsMono } from "@/styles/font/font";
 import { cn } from "@/lib/utils";
 import ReactQueryProvider from "@/providers/ReactQueryProvider";
 import HeaderSwitch from "@/components/common/HeaderSwitch";
@@ -12,13 +11,13 @@ import AuthHydration from "@/components/auth/AuthHydration";
 
 
 export const metadata: Metadata = {
-  title: "Next Project",
-  description: "재밌게 공부하는 Next 16!",
+  title: "Startfit",
+  description: "AI 기반 창업 분석 서비스 스타트핏",
 }
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={cn(IBMPlexSansKR.variable, outfit.variable, notoSansKR.variable, "font-sans")}>
+   <html lang="en" className={cn(IBMPlexSansKR.variable, outfit.variable, notoSansKR.variable, jetbrainsMono.variable, "font-sans")}>
       <body>
         <SmoothScroll>
           <ReactQueryProvider>

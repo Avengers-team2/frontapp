@@ -1,5 +1,6 @@
 import localFont from "next/font/local";
 import { Noto_Sans_KR } from "next/font/google";
+import { JetBrains_Mono } from "next/font/google";
 
 const IBMPlexSansKR = localFont({
     src: [
@@ -82,4 +83,11 @@ const notoSansKR = Noto_Sans_KR({
     variable: "--font-noto-sans-kr",
 });
 
-export { IBMPlexSansKR, outfit, notoSansKR };
+const jetbrainsMono = JetBrains_Mono({
+    subsets: ["latin"],
+    weight: ["500"],
+    display: "swap",
+    variable: "--font-jetbrains-mono",
+});
+
+export { IBMPlexSansKR, outfit, notoSansKR, jetbrainsMono };
