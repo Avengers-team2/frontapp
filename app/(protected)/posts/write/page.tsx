@@ -1,3 +1,10 @@
-export default function WritePage() {
-  return <div>게시판 · 글쓰기</div>;
+import PostForm from "../_component/PostForm";
+
+// 게시글 작성 페이지
+export default function page() {
+    return (
+        <>
+            <PostForm mode="create" />
+        </>
+    );
 }
