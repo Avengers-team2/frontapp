@@ -121,3 +121,29 @@ export const reportPoints = [
     "상권 데이터 기반으로 입지와 경쟁력 진단",
     "부족한 부분을 찾아 맞춤형 개선 방향 제안",
 ];
+
+// [Support] 지원사업 카드 (예시)
+export const supportCards = [
+    {
+        status: "신청 가능",
+        statusBg: "#5ef0dc",
+        statusColor: "#06231f",
+        title: "예비창업자 사업화 지원",
+        tags: ["자부담", "중복 수혜 제한"],
+    },
+    {
+        status: "불가",
+        statusBg: "rgba(255,255,255,0.14)",
+        statusColor: "#e8eef6",
+        title: "청년 창업 공간 입주",
+        tags: ["연령 제한"],
+    },
+    {
+        status: "조건부",
+        statusBg: "#f7c46c",
+        statusColor: "#3a2400",
+        title: "소상공인 창업 자금",
+        tags: ["사업자 등록 후"],
+    },
+];
+
