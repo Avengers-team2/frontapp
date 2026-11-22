@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 
 import { IBMPlexSansKR, outfit, notoSansKR, jetbrainsMono } from "@/styles/font/font";
@@ -22,7 +23,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <SmoothScroll>
           <ReactQueryProvider>
             <AuthHydration/>
-            <HeaderSwitch/>
+            <Suspense fallback={null}>
+              <HeaderSwitch/>
+            </Suspense>
             {children}
             <Footer/>
           </ReactQueryProvider>
