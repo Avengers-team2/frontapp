@@ -1,5 +1,5 @@
-import ScoreRing from "@/components/analysis/ScoreRing";
-import ScoreBar from "@/components/analysis/ScoreBar";
+import ScoreRing from "./ScoreRing";
+import ScoreBar from "./ScoreBar";
 import type { ScoreItem } from "@/types/analysis-result";
 
 interface ScoreSummaryProps {

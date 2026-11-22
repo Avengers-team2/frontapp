@@ -1,29 +1,42 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AnalysisPending from "./AnalysisPending";
 import MapPlaceholder from "./MapPlaceholder";
 import PreStartupResult from "./result/PreStartupResult";
 import { useMockAnalysisProgress } from "./useMockAnalysisProgress";
+import "./analysis-result.css";
 
-// 결과 레이아웃: 왼쪽 지도, 오른쪽 상세 패널.
-// 분석 중에는 같은 레이아웃을 흐리게 깔고 AnalysisPending 모달을 위에 띄운다.
+
 export default function ResultContainer() {
   const router = useRouter();
   const { isPending, steps, result } = useMockAnalysisProgress();
 
+  useEffect(() => {
+    const html = document.documentElement;
+    const prev = html.style.overflow;
+    html.style.overflow = "hidden";
+    return () => {html.style.overflow = prev;};
+  }, []);
+
   return (
-    <div className="relative min-h-screen bg-bg">
+    <div className="fixed inset-x-0 bottom-0 top-24 z-[5] overflow-hidden bg-bg">
       <div
-        className={`flex flex-col gap-6 p-4 lg:flex-row lg:p-8 ${
+        className={`absolute inset-0 ${isPending ? "pointer-events-none blur-sm" : ""}`}
+      >
+        <MapPlaceholder />
+      </div>
+
+      <aside
+        className={`absolute bottom-4 right-4 top-4 flex w-[calc(100vw-2rem)] flex-col rounded-2xl bg-white shadow-xl lg:w-[480px] ${
           isPending ? "pointer-events-none blur-sm" : ""
         }`}
       >
-        <div className="min-w-0 flex-1">
-          <MapPlaceholder />
-        </div>
-
-        <aside className="w-full rounded-2xl bg-white p-6 shadow-sm lg:w-[480px] lg:shrink-0">
+        <div
+          data-lenis-prevent
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-6"
+        >
           {result ? (
             <PreStartupResult result={result} />
           ) : (
@@ -33,8 +46,8 @@ export default function ResultContainer() {
               <div className="h-40 w-full rounded-xl bg-surface" />
             </div>
           )}
-        </aside>
-      </div>
+        </div>
+      </aside>
 
       {isPending && (
         <AnalysisPending steps={steps} onCancel={() => router.push("/analysis")} />
