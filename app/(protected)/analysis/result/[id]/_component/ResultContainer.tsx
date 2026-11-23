@@ -28,7 +28,7 @@ export default function ResultContainer() {
       </div>
 
       {/* 분석창 영역 */}
-      <div className={`absolute bottom-4 right-4 top-30 flex w-[calc(100vw-2rem)] flex-col rounded-2xl bg-white shadow-xl lg:w-[480px] ${
+      <div className={`absolute bottom-4 right-4 top-25 flex w-[calc(100vw-2rem)] flex-col rounded-2xl bg-white shadow-xl lg:w-[480px] ${
           isPending ? "pointer-events-none blur-sm" : ""
         }`}
       >

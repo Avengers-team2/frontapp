@@ -48,7 +48,7 @@ export default function Login() {
     });
 
     const onSubmit = (loginRequestDTO: LoginRequestDTO) => {
-        // rememberMe는 백엔드 연동 전까지 화면 상태만 유지합니다.
+        // rememberMe는 백엔드 연동 전까지 화면 상태만 유지
         loginMutation.mutate(loginRequestDTO);
     };
 

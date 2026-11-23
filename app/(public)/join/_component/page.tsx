@@ -20,7 +20,7 @@ const SOCIAL_BUTTONS = [
 // 영문 + 숫자 + 특수문자(!@#$%^&*) 각 하나 이상, 8자 이상
 const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
 
-// 사업자 상태 선택지 (수정해야함!!!!!!!!!!!!!!!!!!!!!!!!)
+// 사업자 상태 선택지
 const BUSINESS_STATUSES = [
     { value: "PREPARING", label: "예비 창업자" },
     { value: "OPERATING", label: "운영 중" },
