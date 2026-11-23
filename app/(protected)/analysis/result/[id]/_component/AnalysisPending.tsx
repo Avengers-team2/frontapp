@@ -1,6 +1,6 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import type { AnalysisStep } from "@/types/analysis-result";
 
 interface AnalysisPendingProps {
@@ -19,8 +19,8 @@ export default function AnalysisPending({ steps, onCancel }: AnalysisPendingProp
         className="w-full max-w-lg rounded-3xl bg-white p-8 shadow-xl"
       >
         <div className="flex items-center gap-4">
-          <div className="flex size-12 items-center justify-center rounded-2xl bg-sub-50 text-sub-700 font-bold">
-            …
+          <div className="flex size-12 items-center justify-center rounded-2xl bg-sub-50 text-sub-700">
+            <Loader2 className="size-6 animate-spin" aria-hidden="true" />
           </div>
           <div>
             <h2 id="analysis-pending-title" className="text-xl font-bold text-ink-900">
@@ -83,8 +83,10 @@ function StepIcon({ index, status }: { index: number; status: AnalysisStep["stat
   }
   if (status === "running") {
     return (
-      <span className="flex size-8 items-center justify-center rounded-full border-2 border-sub-700 text-sm font-bold text-sub-700">
-        …
+      <span className="flex size-8 items-center justify-center gap-0.5 rounded-full border-2 border-sub-700 text-sub-700">
+        <span className="size-1 rounded-full bg-current animate-[dot-blink_1.2s_linear_infinite]" style={{ animationDelay: "0s" }} />
+        <span className="size-1 rounded-full bg-current animate-[dot-blink_1.2s_linear_infinite]" style={{ animationDelay: "-0.8s" }} />
+        <span className="size-1 rounded-full bg-current animate-[dot-blink_1.2s_linear_infinite]" style={{ animationDelay: "-0.4s" }} />
       </span>
     );
   }

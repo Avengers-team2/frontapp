@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import type { AnalysisStep } from "@/types/analysis-result";
 import { PRE_STARTUP_MOCK } from "./preStartupResult.mock";
 
-// 백엔드 연동 전 임시 진행 상태. 각 단계가 끝나는 시점(ms)을 기준으로 stage가 올라간다.
+// 백엔드 연동 전 임시. 각 단계가 끝나는 시점을 기준으로 stage가 올라간다.
 const STEP_DEFS: Omit<AnalysisStep, "status">[] = [
   { id: "input", title: "입력 조건 확인", description: "신사동 · 커피 전문점 조건을 확인했어요." },
   { id: "data", title: "상권 데이터 확인 및 분석", description: "선택한 지역과 업종의 데이터를 확인하고 있어요." },
