@@ -1,3 +1,9 @@
+import AnalysisFormContainer from "./_component/AnalysisFormContainer";
+
 export default function AnalysisPage() {
-  return <div>analysis · 조건 입력</div>;
+    return (
+        <div className="pt-[104px]">
+            <AnalysisFormContainer />
+        </div>
+    );
 }
