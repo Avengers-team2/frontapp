@@ -1,6 +1,6 @@
 import type { PreStartupResultView } from "@/types/analysis-result";
 
-// 백엔드 연동 전 목 데이터. 실제 API가 붙으면 이 객체 대신 응답 변환 결과를 넘기면 된다.
+// 백엔드 연동 전 목업 데이터. 실제 API가 붙으면 이건 삭제
 export const PRE_STARTUP_MOCK: PreStartupResultView = {
   title: "신사동 · 커피 전문점",
   conditionSummary:

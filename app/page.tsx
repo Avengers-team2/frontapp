@@ -46,7 +46,7 @@ const playActiveVideo = (swiper: SwiperType) => {
     video.play().catch(() => {});
 };
 
-// 비활성 슬라이드의 영상은 정지 (디코딩 부담 감소)
+// 비활성 슬라이드의 영상은 정지
 const pauseInactiveVideos = (swiper: SwiperType) => {
     swiper.slides.forEach((slide, i) => {
         if (i !== swiper.activeIndex) slide.querySelector("video")?.pause();
@@ -104,11 +104,11 @@ export default function Slide() {
                                     <p className="text-[#C9D3E1] font-regular">{slide.sub}</p>
 
                                     <div className="flex items-stretch border-1 border-white/14 rounded-[14px] bg-[#0A1424]/55 px-2 py-2 h-[64px] w-[560px]">
-                                        <input type="text" className="text-[#8FA3BC] w-full px-2 py-1" placeholder="분석할 주소를 입력하세요"/>
+                                        <input type="text" className="text-[#8FA3BC] w-full px-2 py-1 outline-none" placeholder="분석할 주소를 입력하세요"/>
                                         <button
                                             type="button"
                                             onClick={() => router.push("/analysis")}
-                                            className="flex justify-center items-center bg-[#FFB547] rounded-[12px] font-bold w-[140px] h-[50px] text-[16px] ml-4"
+                                            className="flex justify-center items-center bg-[#ffc875] rounded-[12px] font-bold w-[140px] h-[50px] text-[16px] text-[#1a1206] cursor-pointer transition-colors duration-300 hover:bg-[#ffb547] active:scale-[0.97] ml-4"
                                         >체크시작</button>
                                     </div>
                                 </div>
