@@ -3,10 +3,10 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AnalysisPending from "./AnalysisPending";
-import MapPlaceholder from "./MapPlaceholder";
+import MapContainer from "./MapContainer";
 import PreStartupResult from "./result/PreStartupResult";
 import { useMockAnalysisProgress } from "./useMockAnalysisProgress";
-import "./analysis-result.css";
+import "../../../../../../keyframes/analysis-result.keyframe.css";
 
 
 export default function ResultContainer() {
@@ -21,19 +21,19 @@ export default function ResultContainer() {
   }, []);
 
   return (
-    <div className="fixed inset-x-0 bottom-0 top-24 z-[5] overflow-hidden bg-bg">
-      <div
-        className={`absolute inset-0 ${isPending ? "pointer-events-none blur-sm" : ""}`}
-      >
-        <MapPlaceholder />
+    <div className="fixed inset-x-0 bottom-0 top-0 z-20 overflow-hidden bg-bg">
+      {/* 지도 컴포넌트 */}
+      <div className={`absolute inset-0 ${isPending ? "pointer-events-none blur-sm" : ""}`}>
+        <MapContainer />
       </div>
 
-      <aside
-        className={`absolute bottom-4 right-4 top-4 flex w-[calc(100vw-2rem)] flex-col rounded-2xl bg-white shadow-xl lg:w-[480px] ${
+      {/* 분석창 영역 */}
+      <div className={`absolute bottom-4 right-4 top-30 flex w-[calc(100vw-2rem)] flex-col rounded-2xl bg-white shadow-xl lg:w-[480px] ${
           isPending ? "pointer-events-none blur-sm" : ""
         }`}
       >
         <div
+          // 기본스크롤 설정
           data-lenis-prevent
           className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-6"
         >
@@ -47,7 +47,7 @@ export default function ResultContainer() {
             </div>
           )}
         </div>
-      </aside>
+      </div>
 
       {isPending && (
         <AnalysisPending steps={steps} onCancel={() => router.push("/analysis")} />

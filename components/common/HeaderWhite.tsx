@@ -6,7 +6,7 @@ import HeaderAuth from "@/components/auth/HeaderAuth";
 
 export default function HeaderWhite() {
     return (
-        <header className="fixed top-0 flex justify-center items-center w-full h-24 bg-white shadow-[0_4px_16px_rgba(0,0,0,0.08)] px-[5%] z-10 font-[var(--font-noto-sans-kr)]">
+        <header className="fixed top-0 flex justify-center items-center w-full h-24 bg-white/70 backdrop-blur-md backdrop-saturate-150 border-b border-white/60 shadow-[0_4px_16px_rgba(0,0,0,0.08)] px-[5%] z-100 font-[var(--font-noto-sans-kr)]">
             <div className="relative flex justify-between items-center h-24 w-full max-w-[1440px]">
                 <Link href="/">
                     <Image src={logoDark} alt="" />
