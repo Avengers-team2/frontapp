@@ -27,15 +27,6 @@ export const MOCK_SUPPORT_BOOKMARKS = [
     { id: 4, dday: 15, tag: "시설 · 공간", title: "2026년 키친인큐베이터 개별 · 공유주방 25기 및 제조주방 13기 모집", org: "서울경제진흥원 · 접수 2026.11.02 – 11.26", url: "https://www.k-startup.go.kr", bookmarked: true },
 ];
 
-// 기획서 검토
-export type ReportStatus = "DONE" | "PROCESSING" | "FAILED";
-export const MOCK_REPORTS: { report_job_id: number; file_type: "PDF" | "DOCX"; file_name: string; status: ReportStatus; created_at: string }[] = [
-    { report_job_id: 1, file_type: "PDF", file_name: "카페_창업계획서_최종.pdf", status: "DONE", created_at: "2026-11-14" },
-    { report_job_id: 2, file_type: "DOCX", file_name: "디저트카페_사업계획서_v2.docx", status: "DONE", created_at: "2026-11-10" },
-    { report_job_id: 3, file_type: "DOCX", file_name: "디저트카페_사업계획서_v1.docx", status: "PROCESSING", created_at: "2026-11-09" },
-    { report_job_id: 4, file_type: "PDF", file_name: "창업안_초안.pdf", status: "FAILED", created_at: "2026-11-03" },
-];
-
 // 사업자 상태 선택지 (회원정보 수정)
 export const BUSINESS_STATUS_OPTIONS = ["예비 창업자", "운영 중", "폐업 예정", "가게 이전", "미정"];
 
