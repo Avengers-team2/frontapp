@@ -46,6 +46,13 @@ export default function ReviewProgressModal({ fileName, status, onLater }: Props
 
     return (
         <ModalShell>
+        {/* 점 깜빡임 애니메이션 (이 모달 전용) */}
+            <style>{`
+                @keyframes report-dot-blink {
+                    0%, 60%, 100% { opacity: 0.2; }
+                    30% { opacity: 1; }
+                }
+            `}</style>
             <div className="w-[912px] p-[48px] rounded-[24px] bg-white shadow-[0_30px_80px_rgba(7,16,31,0.3)]">
                 {/* 상단 */}
                 <div className="flex items-center gap-[29px]">
@@ -87,7 +94,17 @@ export default function ReviewProgressModal({ fileName, status, onLater }: Props
                                                 : "bg-[#f1f3f5] text-[#0b7468]"
                                     }`}
                                 >
-                                    {state === "done" ? "✓" : state === "active" ? <span className="animate-pulse">…</span> : i + 1}
+                                   {state === "done" ? (
+                                         "✓"
+                                ) : state === "active" ? (
+                                    <span className="flex items-center gap-[3px]">
+                                        <span className="w-[6px] h-[6px] rounded-full bg-current animate-[report-dot-blink_1.2s_linear_infinite]" style={{ animationDelay: "0s" }} />
+                                        <span className="w-[6px] h-[6px] rounded-full bg-current animate-[report-dot-blink_1.2s_linear_infinite]" style={{ animationDelay: "-0.8s" }} />
+                                        <span className="w-[6px] h-[6px] rounded-full bg-current animate-[report-dot-blink_1.2s_linear_infinite]" style={{ animationDelay: "-0.4s" }} />
+                                    </span>
+                                ) : (
+                                    i + 1
+                                )}
                                 </span>
 
                                 {/* 내용 */}
