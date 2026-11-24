@@ -7,7 +7,7 @@ import { HeroSpotProvider } from "./HeroSpotContext";
 
 export default function AboutHero() {
     return (
-        <section className="relative w-full h-[901px] mt-[96px] overflow-hidden bg-[#070d1a]">
+        <section className="relative w-full h-[901px] overflow-hidden bg-[#070d1a] pt-">
             {/* 배경 이미지 */}
             <Image
                 src="/assets/images/about/hero-street.jpg"
@@ -46,9 +46,9 @@ export default function AboutHero() {
 
             <HeroSpotProvider>
              {/* 오른쪽 점수 카드 */}
-             <div className="absolute top-[72px] right-[max(24px,calc(50%_-_721px))]">
-                 <HeroScoreCard />
-             </div>
+            <div className="absolute top-[72px] right-[max(24px,calc(50%_-_721px))]">
+                <HeroScoreCard />
+            </div>
 
              {/* 하단 수치 바 */}
              <div className="absolute bottom-[53px] left-[max(24px,calc(50%_-_772px))]">

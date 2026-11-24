@@ -1,23 +1,38 @@
 "use client"
 
+import { getMyPostsApi } from "@/api/post/post.api";
+import ErrorComponent from "@/components/common/ErrorComponent";
+import Loading from "@/components/common/Loading";
 import { PostCategoryLabel } from "@/enums/post.enum";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState } from "react";
 import Pagination from "../../posts/_component/Pagination";
 import MyPageListHeader from "./MyPageListHeader";
-import { MOCK_MY_POSTS } from "./mockData";
 
 const PAGE_SIZE = 10;
 
-// 내가 쓴 글 — 마이페이지 목록 스타일
-// TODO: 지금은 가짜 데이터. 로그인 연결 후 getMyPostsApi(page, size) (GET /post/me)로 바꾸기
+// 날짜 → "2026-11-04" 형식
+const formatDate = (value: string) => {
+    const d = new Date(value);
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${d.getFullYear()}-${month}-${day}`;
+}
+
+// 내가 쓴 글 — 마이페이지 목록 스타일 (GET /post/me, 검색은 백엔드 keyword)
 export default function MyPostList() {
     const [page, setPage] = useState(1);
     const [keyword, setKeyword] = useState("");
 
-    const filtered = MOCK_MY_POSTS.filter((post) => post.post_title.includes(keyword));
-    const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-    const posts = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    const { data, isLoading, error } = useQuery({
+        queryKey: ["myPosts", page, keyword],
+        queryFn: () => getMyPostsApi(page, PAGE_SIZE, keyword || undefined),
+        placeholderData: keepPreviousData
+    });
+
+    const pageData = data?.data;
+    const posts = pageData?.items ?? [];
 
     // 검색하면 1페이지로
     const handleSearch = (next: string) => {
@@ -27,11 +42,15 @@ export default function MyPostList() {
 
     return (
         <section>
-            <MyPageListHeader total={filtered.length} placeholder="내가 쓴 글을 검색해 주세요" onSearch={handleSearch} />
+            <MyPageListHeader total={pageData?.total_count ?? 0} placeholder="내가 쓴 글을 검색해 주세요" onSearch={handleSearch} />
 
             <div className="mt-6 h-0.5 bg-sub" />
 
-            {posts.length === 0 ? (
+            {isLoading ? (
+                <Loading />
+            ) : error ? (
+                <ErrorComponent />
+            ) : posts.length === 0 ? (
                 <p className="py-20 text-center text-lg text-ink-300">작성한 글이 없어요.</p>
             ) : (
                 <ul>
@@ -49,14 +68,14 @@ export default function MyPostList() {
                                         </span>
                                     )}
                                 </span>
-                                <span className="shrink-0 text-base text-ink-300">{post.post_created_at}</span>
+                                <span className="shrink-0 text-base text-ink-300">{formatDate(post.post_created_at)}</span>
                             </Link>
                         </li>
                     ))}
                 </ul>
             )}
 
-            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+            <Pagination page={page} totalPages={pageData?.total_pages} onPageChange={setPage} />
         </section>
     );
 }
