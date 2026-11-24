@@ -3,13 +3,13 @@
 // ─────────────────────────────────────────
 export const MOCK = {
     loggedIn: true,    // false → 로그인 필요 모달 (확인할 땐 true로 바꿔서 로그인 단계 삭제 후 다시 false 설정 넣기)
-    premium: false,     // false → Premium 안내 모달
+    premium: true,     // false → Premium 안내 모달
     uploadFail: false, // true  → 오류 화면
 };
 
 // 업로드 가능한 파일
-export const ACCEPT = ".pdf,.doc,.docx,.hwp,.hwpx";
-const ALLOWED = ["pdf", "doc", "docx", "hwp", "hwpx"];
+export const ACCEPT = ".pdf,.doc,.docx";
+const ALLOWED = ["pdf", "doc", "docx"];
 export const MAX_SIZE_MB = 20;
 
 export function getExt(name: string) {

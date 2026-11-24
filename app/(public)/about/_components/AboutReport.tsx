@@ -7,18 +7,18 @@ export default function AboutReport() {
         <section className="relative w-full h-[1076px] overflow-hidden bg-[#13284a]">
             {/* 왼쪽 브라우저 */}
             <Reveal className="absolute top-[188px] left-[max(24px,calc(50%_-_604px))]">
-                <BrowserMock
-                    url="startfit.kr/premium/review"
-                    src="/assets/images/about/report-capture.png"
-                    imgWidth={1560}
-                    imgHeight={1937}
-                    width={780}
-                    viewHeight={660}
-                    pillWidth={192}
-                    pillTop={8}
-                    shadow="shadow-[0_36px_70px_rgba(11,27,51,0.5),0_4px_12px_rgba(11,27,51,0.06)]"
-                    duration={9000}
-                />
+            <BrowserMock
+                url="startfit.kr/premium/review"
+                src="/assets/images/about/report-export-capture.png"
+                imgWidth={2880}
+                imgHeight={5850}
+                width={780}
+                viewHeight={660}
+                pillWidth={192}
+                pillTop={8}
+                shadow="shadow-[0_36px_70px_rgba(11,27,51,0.5),0_4px_12px_rgba(11,27,51,0.06)]"
+                duration={16000}
+            />
             </Reveal>
 
             {/* 오른쪽 글 */}
