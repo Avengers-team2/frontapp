@@ -2,8 +2,8 @@
 // 테스트용 스위치 (화면 확인할 때 바꿔 보세요)
 // ─────────────────────────────────────────
 export const MOCK = {
-    loggedIn: true,    // false → 로그인 필요 모달
-    premium: true,     // false → Premium 안내 모달
+    loggedIn: true,    // false → 로그인 필요 모달 (확인할 땐 true로 바꿔서 로그인 단계 삭제 후 다시 false 설정 넣기)
+    premium: false,     // false → Premium 안내 모달
     uploadFail: false, // true  → 오류 화면
 };
 
@@ -19,10 +19,10 @@ export function getExt(name: string) {
 // 문제가 있으면 안내 문구, 없으면 null
 export function validateFile(file: File): string | null {
     if (!ALLOWED.includes(getExt(file.name))) {
-        return "docs, pdf, hwp 등 문서 파일만 올릴 수 있어요.";
+        return "docs, pdf 문서 파일만 올릴 수 있어요.";
     }
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-        return `파일 용량은 ${MAX_SIZE_MB}MB까지 올릴 수 있어요.`;
+        return `파일 용량은 ${MAX_SIZE_MB}MB까지 올릴 수 있습니다.`;
     }
     return null;
 }

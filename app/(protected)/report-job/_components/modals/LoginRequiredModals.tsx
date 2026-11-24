@@ -39,7 +39,7 @@ export default function LoginRequiredModal({ onClose }: Props) {
                     로그인
                 </Link>
                 <Link
-                    href="/signup"
+                    href="/join"
                     className="mt-[12px] flex items-center justify-center h-[56px] rounded-[12px] border border-[#cbd5e1] bg-white text-[20px] font-bold text-[#5a6b80] transition-colors hover:bg-[#f7f9fc]"
                 >
                     회원가입
