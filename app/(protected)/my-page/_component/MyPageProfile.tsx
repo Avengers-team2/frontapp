@@ -4,7 +4,7 @@ import { getMyPostsApi } from "@/api/post/post.api";
 import useAuthStore from "@/stores/useAuthStore";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { MOCK_ANALYSES, MOCK_SUPPORT_BOOKMARKS } from "./mockData";
+import { BUSINESS_STATUS_OPTIONS, MOCK_ANALYSES, MOCK_SUPPORT_BOOKMARKS } from "./mockData";
 
 // 프로필 + 숫자 요약 (저장한 분석 / 관심 지원사업 / 내가 쓴 글)
 export default function MyPageProfile() {
@@ -13,7 +13,8 @@ export default function MyPageProfile() {
     // 로그인 정보 (값이 없으면 빈 글자 / "미설정")
     const nickname = user?.user_nickname || "";
     const email = user?.user_email || "";
-    const businessStatus = user?.user_business_status || "";
+    // DB에는 코드값(PREPARING 등)으로 저장돼 있어서 화면용 한글로 바꿈
+    const businessStatus = BUSINESS_STATUS_OPTIONS.find((s) => s.value === user?.user_business_status)?.label ?? "";
     const region = user?.user_interest_region || "미설정";
     const industry = user?.user_interest_industry || "미설정";
 
