@@ -64,9 +64,9 @@ export const heroSpots = [
 // [TargetRoller] 움직이는 텍스트
 export const targetItems = [
     { label: "첫 창업을 시작하는 예비 창업자", icon: "/assets/icons/about_icon1.svg" },
-    { label: "폐업을 고민하는 사장님", icon: "/assets/icons/about_icon2.svg" },
-    { label: "매출이 떨어져 고민인 사장님", icon: "/assets/icons/about_icon3.svg" },
     { label: "이전/확장을 고민하는 사장님", icon: "/assets/icons/about_icon4.svg" },
+    { label: "매출이 떨어져 고민인 사장님", icon: "/assets/icons/about_icon3.svg" },
+    { label: "폐업을 고민하는 사장님", icon: "/assets/icons/about_icon2.svg" },
 ];
 
 // [Analysis] 체크 리스트
@@ -122,26 +122,25 @@ export const reportPoints = [
     "부족한 부분을 찾아 맞춤형 개선 방향 제안",
 ];
 
-// [Support] 지원사업 카드 (예시)
 export const supportCards = [
     {
         status: "신청 가능",
-        statusBg: "#5ef0dc",
-        statusColor: "#06231f",
+        badgeBg: "#5ef0dc",
+        badgeColor: "#06231f",
         title: "예비창업자 사업화 지원",
         tags: ["자부담", "중복 수혜 제한"],
     },
     {
         status: "불가",
-        statusBg: "rgba(255,255,255,0.14)",
-        statusColor: "#e8eef6",
+        badgeBg: "rgba(255,255,255,0.14)",
+        badgeColor: "#e8eef6",
         title: "청년 창업 공간 입주",
         tags: ["연령 제한"],
     },
     {
         status: "조건부",
-        statusBg: "#f7c46c",
-        statusColor: "#3a2400",
+        badgeBg: "#f7c46c",
+        badgeColor: "#3a2400",
         title: "소상공인 창업 자금",
         tags: ["사업자 등록 후"],
     },
