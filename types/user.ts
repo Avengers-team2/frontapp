@@ -5,6 +5,7 @@ export interface User {
   user_email: string;
   user_sex: string;
   user_nickname: string;
+  user_profile_image?: string | null; // 프로필 사진 URL (백엔드 필드명 확정 전, 없으면 닉네임 첫 글자 표시)
   user_birth: string;
   user_phone: string;
   user_provider: string | null;
