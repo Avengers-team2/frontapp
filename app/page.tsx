@@ -108,7 +108,7 @@ export default function Slide() {
                                         <button
                                             type="button"
                                             onClick={() => router.push("/analysis")}
-                                            className="flex justify-center items-center bg-[#ffc875] rounded-[12px] font-bold w-[140px] h-[50px] text-[16px] text-[#1a1206] cursor-pointer transition-colors duration-300 hover:bg-[#ffb547] active:scale-[0.97] ml-4"
+                                            className="flex justify-center items-center bg-[#ffc875] rounded-[12px] font-bold w-[140px] h-[full] text-[16px] text-[#1a1206] cursor-pointer transition-colors duration-300 hover:bg-[#ffb547] active:scale-[0.97] ml-4"
                                         >체크시작</button>
                                     </div>
                                 </div>

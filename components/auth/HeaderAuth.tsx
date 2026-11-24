@@ -20,7 +20,9 @@ export default function HeaderAuth({ variant }: HeaderAuthProps) {
     }, []);
 
     if (mounted && isAuthenticated && user) {
-        const initial = user.user_name?.charAt(0) ?? "";
+        // 프로필 사진이 있으면 사진, 없으면 닉네임 첫 글자
+        const initial = user.user_nickname?.trim().charAt(0) ?? "";
+        const profileImage = user.user_profile_image;
         const avatarClass = variant === "dark"
             ? "bg-[#5EF0DC] text-[#050B17]"
             : "bg-[#1F3A5F] text-white";
@@ -29,9 +31,13 @@ export default function HeaderAuth({ variant }: HeaderAuthProps) {
             <Link
                 href="/my-page"
                 aria-label="마이페이지"
-                className={`flex justify-center items-center w-10 h-10 rounded-full font-bold ${avatarClass}`}
+                className={`flex justify-center items-center w-10 h-10 rounded-full overflow-hidden font-bold ${avatarClass}`}
             >
-                {initial}
+                {profileImage ? (
+                    <img src={profileImage} alt="" className="size-full object-cover" />
+                ) : (
+                    initial
+                )}
             </Link>
         );
     }
