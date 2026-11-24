@@ -79,13 +79,13 @@ export default function AnalysisFormContainer() {
 
     return (
         <>
-            <section className="relative overflow-hidden bg-navy-950">
+            <section className="relative overflow-hidden bg-navy-950 px-[5%] pt-20">
                 <div
                     aria-hidden
                     className="absolute inset-0 bg-[url('/assets/images/analysis/hero-bg.jpg')] bg-cover bg-center"
                 />
                 <div aria-hidden className="absolute inset-0 bg-linear-to-r from-navy-950 via-navy-950/70 to-transparent" />
-                <div className="relative mx-auto flex h-[300px] max-w-[1440px] items-center justify-between px-6">
+                <div className="relative mx-auto flex h-[300px] w-full max-w-[1440px] items-center justify-between">
                     <div>
                         <p className="text-[17px] text-mist-300">홈 › 상권 분석</p>
                         <h1 className="mt-5 text-[52px] font-bold tracking-tight text-white">
@@ -97,8 +97,8 @@ export default function AnalysisFormContainer() {
                 </div>
             </section>
 
-            <div className="bg-white">
-                <div className="mx-auto flex max-w-[1440px] gap-16 px-6 pb-24">
+            <div className="bg-white px-[5%]">
+                <div className="mx-auto flex w-full max-w-[1440px] gap-16 pb-24">
                     <SectionNav />
 
                     <form onSubmit={handleSubmit(onSubmit)} className="min-w-0 flex-1 pt-10">
