@@ -12,8 +12,7 @@ import useAuthStore from "@/stores/useAuthStore";
 
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-// 소셜 로그인 버튼 목록 (path: 백엔드 OAuth 시작 경로 /auth/{path})
-// 아이콘 이미지는 public/assets/icons 에 있음 (원형 배경이 이미지에 포함됨)
+// 소셜 로그인 버튼 목록 (path: 경로 /auth/{path})
 const SOCIAL_BUTTONS = [
     { path: "kakao", label: "카카오로 로그인", icon: "/assets/icons/login_Kakao_icon.png" },
     { path: "naver", label: "네이버로 로그인", icon: "/assets/icons/login_Naver_icon.png" },

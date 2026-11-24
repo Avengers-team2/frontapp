@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
@@ -29,12 +29,37 @@ const BUSINESS_STATUSES = [
     { value: "UNDECIDED", label: "미정" },
 ];
 
+// 성별 선택지
+const SEX_OPTIONS = [
+    { value: "male", label: "남성" },
+    { value: "female", label: "여성" },
+] as const;
+
+// 휴대폰 번호 (하이픈 포함/미포함 모두 허용)
+const phoneRegex = /^01[016789]-?\d{3,4}-?\d{4}$/;
+// 전송 시 010-1234-5678 형태로 통일
+const formatPhone = (value: string) => {
+    const digits = value.replace(/\D/g, "");
+    return digits.length === 11
+        ? `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`
+        : `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+};
+// 오늘 날짜 (로컬 기준 YYYY-MM-DD)
+const getToday = () => {
+    const d = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+
 // 폼타입 (약관 체크 포함)
 interface JoinFormValues {
     user_email: string;
     user_password: string;
     passwordConfirm: string;
     user_nickname: string;
+    user_sex: "male" | "female";
+    user_birth: string;
+    user_phone: string;
     user_business_status: string;
     agree_terms: boolean;
     agree_privacy: boolean;
@@ -44,6 +69,13 @@ interface JoinFormValues {
 // 회원가입 페이지
 export default function JoinSignUp() {
     const router = useRouter();
+
+    // 소셜 가입 모드: 백엔드가 /join?user_email=&user_provider=&user_provider_id= 로 리다이렉트
+    const searchParams = useSearchParams();
+    const socialEmail = searchParams.get("user_email") ?? "";
+    const socialProvider = searchParams.get("user_provider") ?? "";
+    const socialProviderId = searchParams.get("user_provider_id") ?? "";
+    const isSocial = !!socialEmail && !!socialProvider && !!socialProviderId;
 
     // 이메일 중복 확인 결과 (이메일이 바뀌면 다시 확인해야 함)
     const [emailChecked, setEmailChecked] = useState(false);
@@ -60,13 +92,14 @@ export default function JoinSignUp() {
         formState: { errors, isValid, isSubmitting },
     } = useForm<JoinFormValues>({
         mode: "onChange",
-        defaultValues: { user_business_status: "PREPARING" },
+        defaultValues: { user_business_status: "PREPARING", user_email: socialEmail },
     });
 
     const agreeTerms = watch("agree_terms");
     const agreePrivacy = watch("agree_privacy");
     const agreeMarketing = watch("agree_marketing");
     const businessStatus = watch("user_business_status");
+    const userSex = watch("user_sex");
     const isAllAgreed = agreeTerms && agreePrivacy && agreeMarketing;
     // 이메일 입력 오류 또는 중복 확인 실패 시 빨간 테두리
     const emailHasError = !!errors.user_email || (!!emailCheckMessage && !emailChecked);
@@ -119,14 +152,19 @@ export default function JoinSignUp() {
     };
 
     const onSubmit = (values: JoinFormValues) => {
-        if (!emailChecked) {
+        if (!isSocial && !emailChecked) {
             alert("이메일 중복 확인을 해주세요.");
             return;
         }
         const payload: SignUpRequestDTO = {
             user_email: values.user_email,
-            user_password: values.user_password,
+            ...(isSocial
+                ? { user_provider: socialProvider, user_provider_id: socialProviderId }
+                : { user_password: values.user_password }),
             user_nickname: values.user_nickname,
+            user_sex: values.user_sex,
+            user_birth: values.user_birth,
+            user_phone: formatPhone(values.user_phone),
             user_business_status: values.user_business_status,
             agree_terms: values.agree_terms,
             agree_privacy: values.agree_privacy,
@@ -136,7 +174,7 @@ export default function JoinSignUp() {
     };
 
     const isDisabled =
-        !isValid || !agreeTerms || !agreePrivacy || !emailChecked || isSubmitting || signUpMutation.isPending;
+        !isValid || !agreeTerms || !agreePrivacy || (!isSocial && !emailChecked) || isSubmitting || signUpMutation.isPending;
 
     // 에러 여부에 따라 테두리 색 변경 (빨강 / 기본 + 포커스 시 진한 남색)
     const inputClass = (hasError: boolean) =>
@@ -164,12 +202,15 @@ export default function JoinSignUp() {
                             <div
                                 className={`mt-2 flex h-[52px] items-center rounded-[10px] border pl-4 pr-[6px] ${
                                     emailHasError ? "border-[#E5484D]" : "border-[#D5DCE6] focus-within:border-[#0B1B33]"
-                                }`}
+                                } ${isSocial ? "bg-[#F3F6FA]" : ""}`}
                             >
                                 <input
                                     type="text"
                                     placeholder="example@startfit.kr"
-                                    className="min-w-0 flex-1 text-[16px] outline-none"
+                                    readOnly={isSocial}
+                                    className={`min-w-0 flex-1 bg-transparent text-[16px] outline-none ${
+                                        isSocial ? "cursor-not-allowed text-[#6B7A90]" : ""
+                                    }`}
                                     {...register("user_email", {
                                         required: "이메일을 입력해 주세요.",
                                         pattern: { value: emailRegex, message: "이메일 양식에 맞게 입력해 주세요." },
@@ -179,14 +220,20 @@ export default function JoinSignUp() {
                                         },
                                     })}
                                 />
-                                <button
-                                    type="button"
-                                    onClick={handleCheckEmail}
-                                    disabled={checkEmailMutation.isPending}
-                                    className="ml-2 h-[40px] shrink-0 rounded-[8px] bg-[#F3F6FA] px-4 text-[14px] font-semibold text-[#3D4A5C] hover:bg-[#E3E8EF] disabled:cursor-not-allowed cursor-pointer"
-                                >
-                                    {checkEmailMutation.isPending ? "확인 중" : "중복 확인"}
-                                </button>
+                                {isSocial ? (
+                                    <span className="ml-2 shrink-0 pr-2 text-[13px] text-[#6B7A90]">
+                                        {socialProvider} 인증됨
+                                    </span>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={handleCheckEmail}
+                                        disabled={checkEmailMutation.isPending}
+                                        className="ml-2 h-[40px] shrink-0 rounded-[8px] bg-[#F3F6FA] px-4 text-[14px] font-semibold text-[#3D4A5C] hover:bg-[#E3E8EF] disabled:cursor-not-allowed cursor-pointer"
+                                    >
+                                        {checkEmailMutation.isPending ? "확인 중" : "중복 확인"}
+                                    </button>
+                                )}
                             </div>
                             {errors.user_email && <p className={errorClass}>{errors.user_email.message}</p>}
                             {!errors.user_email && emailCheckMessage && (
@@ -196,7 +243,8 @@ export default function JoinSignUp() {
                             )}
                         </label>
 
-                        {/* 비밀번호 */}
+                        {/* 비밀번호 / 비밀번호 확인 (소셜 가입에서는 숨김) */}
+                        {!isSocial && (<>
                         <label className="mt-6 flex flex-col">
                             <span className="text-[15px] font-bold text-[#0B1B33]">비밀번호</span>
                             <div
@@ -241,6 +289,7 @@ export default function JoinSignUp() {
                             />
                             {errors.passwordConfirm && <p className={errorClass}>{errors.passwordConfirm.message}</p>}
                         </label>
+                        </>)}
 
                         {/* 닉네임 */}
                         <label className="mt-6 flex flex-col">
@@ -254,6 +303,72 @@ export default function JoinSignUp() {
                                 })}
                             />
                             {errors.user_nickname && <p className={errorClass}>{errors.user_nickname.message}</p>}
+                        </label>
+                    </section>
+
+                    {/* 기본 정보 */}
+                    <section className="mt-12 border-t border-[#E3E8EF] pt-10">
+                        <h2 className="flex items-baseline gap-2 text-[22px] font-bold text-[#0B1B33]">
+                            기본 정보
+                        </h2>
+
+                        {/* 성별 */}
+                        <div className="mt-6 flex flex-col">
+                            <span className="text-[15px] font-bold text-[#0B1B33]">성별</span>
+                            <div className="mt-2 flex gap-2">
+                                {SEX_OPTIONS.map((option) => {
+                                    const isSelected = userSex === option.value;
+                                    return (
+                                        <label
+                                            key={option.value}
+                                            className={`cursor-pointer rounded-full border px-4 py-2 text-[14px] transition-colors ${
+                                                isSelected
+                                                    ? "border-[#0B1B33] bg-[#0B1B33] text-white"
+                                                    : "border-[#D5DCE6] bg-white text-[#3D4A5C] hover:bg-[#F3F6FA]"
+                                            }`}
+                                        >
+                                            <input
+                                                type="radio"
+                                                value={option.value}
+                                                className="sr-only"
+                                                {...register("user_sex", { required: "성별을 선택해 주세요." })}
+                                            />
+                                            {option.label}
+                                        </label>
+                                    );
+                                })}
+                            </div>
+                            {errors.user_sex && <p className={errorClass}>{errors.user_sex.message}</p>}
+                        </div>
+
+                        {/* 생년월일 */}
+                        <label className="mt-6 flex flex-col">
+                            <span className="text-[15px] font-bold text-[#0B1B33]">생년월일</span>
+                            <input
+                                type="date"
+                                max={getToday()}
+                                className={inputClass(!!errors.user_birth)}
+                                {...register("user_birth", {
+                                    required: "생년월일을 입력해 주세요.",
+                                    validate: (value) => value <= getToday() || "오늘 이후 날짜는 선택할 수 없어요.",
+                                })}
+                            />
+                            {errors.user_birth && <p className={errorClass}>{errors.user_birth.message}</p>}
+                        </label>
+
+                        {/* 휴대폰 번호 */}
+                        <label className="mt-6 flex flex-col">
+                            <span className="text-[15px] font-bold text-[#0B1B33]">휴대폰 번호</span>
+                            <input
+                                type="tel"
+                                placeholder="010-1234-5678"
+                                className={inputClass(!!errors.user_phone)}
+                                {...register("user_phone", {
+                                    required: "휴대폰 번호를 입력해 주세요.",
+                                    pattern: { value: phoneRegex, message: "휴대폰 번호 형식에 맞게 입력해 주세요." },
+                                })}
+                            />
+                            {errors.user_phone && <p className={errorClass}>{errors.user_phone.message}</p>}
                         </label>
                     </section>
 
@@ -346,7 +461,8 @@ export default function JoinSignUp() {
                             {signUpMutation.isPending ? "가입 중..." : "가입하기"}
                         </button>
                     </div>
-                    {/* 소셜 가입 */}
+                    {/* 소셜 가입 (소셜 가입 모드에서는 숨김) */}
+                    {!isSocial && (<>
                     <div className="mt-12 flex items-center gap-3 text-[13px] text-[#8A96A8]">
                         <span className="h-px flex-1 bg-[#E3E8EF]" />
                         또는 소셜로 가입
@@ -365,6 +481,7 @@ export default function JoinSignUp() {
                             </a>
                         ))}
                     </div>
+                    </>)}
                 </form>
             </div>
         </div>
