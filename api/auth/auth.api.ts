@@ -64,3 +64,15 @@ export const checkEmailApi = async (email: string): Promise<ApiResponseDTO> => {
     const datas: ApiResponseDTO = await response.json()
     return datas
 }
+
+// 내 정보 조회 함수 (로그인 직후 헤더 등에 user를 채울 때 사용)
+export const getMeApi = async (): Promise<ApiResponseDTO> => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/me`, {
+        method: "POST",
+        credentials: "include"
+    })
+
+    if(!response.ok) throw new Error("내 정보를 불러오지 못했습니다.")
+    const datas: ApiResponseDTO = await response.json()
+    return datas
+}

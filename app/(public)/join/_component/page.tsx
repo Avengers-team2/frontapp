@@ -56,6 +56,7 @@ interface JoinFormValues {
     user_email: string;
     user_password: string;
     passwordConfirm: string;
+    user_name: string;
     user_nickname: string;
     user_sex: "male" | "female";
     user_birth: string;
@@ -76,6 +77,8 @@ export default function JoinSignUp() {
     const socialProvider = searchParams.get("user_provider") ?? "";
     const socialProviderId = searchParams.get("user_provider_id") ?? "";
     const isSocial = !!socialEmail && !!socialProvider && !!socialProviderId;
+    // 소셜에서 이름을 받아왔으면 수정 불가로 채운다 (못 받아왔으면 직접 입력)
+    const socialName = isSocial ? searchParams.get("user_name") ?? "" : "";
 
     // 이메일 중복 확인 결과 (이메일이 바뀌면 다시 확인해야 함)
     const [emailChecked, setEmailChecked] = useState(false);
@@ -92,7 +95,7 @@ export default function JoinSignUp() {
         formState: { errors, isValid, isSubmitting },
     } = useForm<JoinFormValues>({
         mode: "onChange",
-        defaultValues: { user_business_status: "PREPARING", user_email: socialEmail },
+        defaultValues: { user_business_status: "PREPARING", user_email: socialEmail, user_name: socialName },
     });
 
     const agreeTerms = watch("agree_terms");
@@ -161,6 +164,7 @@ export default function JoinSignUp() {
             ...(isSocial
                 ? { user_provider: socialProvider, user_provider_id: socialProviderId }
                 : { user_password: values.user_password }),
+            user_name: values.user_name.trim(),
             user_nickname: values.user_nickname,
             user_sex: values.user_sex,
             user_birth: values.user_birth,
@@ -197,7 +201,7 @@ export default function JoinSignUp() {
 
                         {/* 이메일 + 중복 확인 */}
                         <label className="mt-6 flex flex-col">
-                            <span className="text-[15px] font-bold text-[#0B1B33]">이메일</span>
+                            <span className="text-[15px] font-bold text-[#0B1B33]">이메일<span className="ml-0.5 text-[#E5484D]">*</span></span>
                             {/* 입력창 테두리 안 오른쪽에 중복 확인 버튼 */}
                             <div
                                 className={`mt-2 flex h-[52px] items-center rounded-[10px] border pl-4 pr-[6px] ${
@@ -246,7 +250,7 @@ export default function JoinSignUp() {
                         {/* 비밀번호 / 비밀번호 확인 (소셜 가입에서는 숨김) */}
                         {!isSocial && (<>
                         <label className="mt-6 flex flex-col">
-                            <span className="text-[15px] font-bold text-[#0B1B33]">비밀번호</span>
+                            <span className="text-[15px] font-bold text-[#0B1B33]">비밀번호<span className="ml-0.5 text-[#E5484D]">*</span></span>
                             <div
                                 className={`mt-2 flex h-[52px] items-center rounded-[10px] border px-4 ${
                                     errors.user_password ? "border-[#E5484D]" : "border-[#D5DCE6] focus-within:border-[#0B1B33]"
@@ -277,7 +281,7 @@ export default function JoinSignUp() {
 
                         {/* 비밀번호 확인 */}
                         <label className="mt-6 flex flex-col">
-                            <span className="text-[15px] font-bold text-[#0B1B33]">비밀번호 확인</span>
+                            <span className="text-[15px] font-bold text-[#0B1B33]">비밀번호 확인<span className="ml-0.5 text-[#E5484D]">*</span></span>
                             <input
                                 type="password"
                                 placeholder="비밀번호를 한 번 더 입력해 주세요"
@@ -293,7 +297,7 @@ export default function JoinSignUp() {
 
                         {/* 닉네임 */}
                         <label className="mt-6 flex flex-col">
-                            <span className="text-[15px] font-bold text-[#0B1B33]">닉네임</span>
+                            <span className="text-[15px] font-bold text-[#0B1B33]">닉네임<span className="ml-0.5 text-[#E5484D]">*</span></span>
                             <input
                                 type="text"
                                 placeholder="사용할 닉네임을 입력해 주세요"
@@ -312,9 +316,26 @@ export default function JoinSignUp() {
                             기본 정보
                         </h2>
 
+                        {/* 이름 */}
+                        <label className="mt-6 flex flex-col">
+                            <span className="text-[15px] font-bold text-[#0B1B33]">이름<span className="ml-0.5 text-[#E5484D]">*</span></span>
+                            <input
+                                type="text"
+                                placeholder="실명을 입력해 주세요"
+                                readOnly={!!socialName}
+                                className={`${inputClass(!!errors.user_name)} ${
+                                    socialName ? "cursor-not-allowed bg-[#F3F6FA] text-[#6B7A90]" : ""
+                                }`}
+                                {...register("user_name", {
+                                    validate: (value) => value.trim().length > 0 || "이름을 입력해 주세요.",
+                                })}
+                            />
+                            {errors.user_name && <p className={errorClass}>{errors.user_name.message}</p>}
+                        </label>
+
                         {/* 성별 */}
                         <div className="mt-6 flex flex-col">
-                            <span className="text-[15px] font-bold text-[#0B1B33]">성별</span>
+                            <span className="text-[15px] font-bold text-[#0B1B33]">성별<span className="ml-0.5 text-[#E5484D]">*</span></span>
                             <div className="mt-2 flex gap-2">
                                 {SEX_OPTIONS.map((option) => {
                                     const isSelected = userSex === option.value;
@@ -343,7 +364,7 @@ export default function JoinSignUp() {
 
                         {/* 생년월일 */}
                         <label className="mt-6 flex flex-col">
-                            <span className="text-[15px] font-bold text-[#0B1B33]">생년월일</span>
+                            <span className="text-[15px] font-bold text-[#0B1B33]">생년월일<span className="ml-0.5 text-[#E5484D]">*</span></span>
                             <input
                                 type="date"
                                 max={getToday()}
@@ -358,7 +379,7 @@ export default function JoinSignUp() {
 
                         {/* 휴대폰 번호 */}
                         <label className="mt-6 flex flex-col">
-                            <span className="text-[15px] font-bold text-[#0B1B33]">휴대폰 번호</span>
+                            <span className="text-[15px] font-bold text-[#0B1B33]">휴대폰 번호<span className="ml-0.5 text-[#E5484D]">*</span></span>
                             <input
                                 type="tel"
                                 placeholder="010-1234-5678"
@@ -468,7 +489,7 @@ export default function JoinSignUp() {
                         또는 소셜로 가입
                         <span className="h-px flex-1 bg-[#E3E8EF]" />
                     </div>
-                    <div className="mt-12 flex justify-center gap-4">
+                    <div className="mt-12 flex justify-center gap-10">
                         {SOCIAL_BUTTONS.map((button) => (
                             <a
                                 key={button.path}

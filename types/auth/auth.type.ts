@@ -10,6 +10,7 @@ export interface SignUpRequestDTO {
     user_password?: string;      // 소셜 가입 시 생략
     user_provider?: string;      // 소셜 가입 시에만 (kakao / naver / google)
     user_provider_id?: string;   // 소셜 가입 시에만
+    user_name: string;           // 실명 (소셜 가입은 소셜 이름)
     user_nickname: string;
     user_sex: "male" | "female";
     user_birth: string;          // YYYY-MM-DD

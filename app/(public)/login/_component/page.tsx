@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
-import { loginApi } from "@/api/auth/auth.api";
+import { getMeApi, loginApi } from "@/api/auth/auth.api";
 import { LoginRequestDTO } from "@/types/auth/auth.type";
 import { ApiResponseDTO } from "@/types/common/common.type";
 import useAuthStore from "@/stores/useAuthStore";
@@ -23,6 +23,7 @@ const SOCIAL_BUTTONS = [
 export default function Login() {
     const router = useRouter();
     const setIsAuthenticated = useAuthStore((state) => state.setIsAuthenticated);
+    const setUser = useAuthStore((state) => state.setUser);
 
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
@@ -36,7 +37,14 @@ export default function Login() {
     // 로그인 mutation
     const loginMutation = useMutation({
         mutationFn: loginApi,
-        onSuccess: (datas: ApiResponseDTO) => {
+        onSuccess: async (datas: ApiResponseDTO) => {
+            // 헤더가 바로 바뀌도록 내 정보를 먼저 채운다 (실패해도 로그인 자체는 유지)
+            try {
+                const me = await getMeApi();
+                setUser(me.data);
+            } catch {
+                // AuthHydration이 다음 로드 때 다시 채운다
+            }
             setIsAuthenticated(true);
             alert(datas.message);
             router.push("/");
