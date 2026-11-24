@@ -2,7 +2,7 @@
 
 import useAuthStore from "@/stores/useAuthStore";
 import { SubmitEvent, useState } from "react";
-import { BUSINESS_STATUS_OPTIONS, MOCK_PROFILE } from "../../_component/mockData";
+import { BUSINESS_STATUS_OPTIONS } from "../../_component/mockData";
 import { helperClass, inputClass, labelClass, secondaryButtonClass, sectionTitleClass } from "./fieldStyle";
 
 interface ProfileEditFormProps {
@@ -13,11 +13,12 @@ interface ProfileEditFormProps {
 export default function ProfileEditForm({onSaved}: ProfileEditFormProps) {
     const user = useAuthStore((state) => state.user);
 
-    const [nickname, setNickname] = useState(user?.user_nickname || MOCK_PROFILE.nickname);
-    const [businessStatus, setBusinessStatus] = useState(MOCK_PROFILE.businessStatus);
-    const [region, setRegion] = useState(`서울 ${MOCK_PROFILE.region}`);
-    const [industry, setIndustry] = useState(MOCK_PROFILE.industry);
-    const email = user?.user_email || "gildong@startfit.kr";
+    // 입력칸 처음 값 = 로그인 정보 (없으면 빈 칸)
+    const [nickname, setNickname] = useState(user?.user_nickname || "");
+    const [businessStatus, setBusinessStatus] = useState(user?.user_business_status || "");
+    const [region, setRegion] = useState(user?.user_interest_region || "");
+    const [industry, setIndustry] = useState(user?.user_interest_industry || "");
+    const email = user?.user_email || "";
 
     // TODO: 회원정보 수정 API 연결
     const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
