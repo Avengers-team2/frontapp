@@ -5,16 +5,31 @@ import { ACCEPT } from "../_lib/reportJob";
 
 type Props = {
     error: boolean;
+    canUpload: boolean;      // 로그인 여부
+    onBlocked: () => void;   // 로그인 안 했을 때 (로그인 모달 열기)
     onFile: (file: File) => void;
 };
 
-export default function FileDropBox({ error, onFile }: Props) {
+export default function FileDropBox({ error, canUpload, onBlocked, onFile }: Props) {
     const inputRef = useRef<HTMLInputElement>(null);
     const [dragging, setDragging] = useState(false);
+
+    // 파일 선택하기 버튼
+    const handlePick = () => {
+        if (!canUpload) {
+            onBlocked();
+            return;
+        }
+        inputRef.current?.click();
+    };
 
     const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         setDragging(false);
+        if (!canUpload) {
+            onBlocked();
+            return;
+        }
         const dropped = e.dataTransfer.files[0];
         if (dropped) onFile(dropped);
     };
@@ -75,7 +90,7 @@ export default function FileDropBox({ error, onFile }: Props) {
 
             <button
                 type="button"
-                onClick={() => inputRef.current?.click()}
+                onClick={handlePick}
                 className={`mt-[25px] w-[140px] h-[48px] rounded-full border-[1.2px] bg-white text-[16px] font-semibold cursor-pointer transition-colors duration-300 ${
                     error
                         ? "border-[#e5484d] text-[#e5484d] hover:bg-[#e5484d] hover:text-white"

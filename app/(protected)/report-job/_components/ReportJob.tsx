@@ -7,13 +7,18 @@ import { MOCK, validateFile, createReportJob, getReportJobStatus, type ReportJob
 import FileDropBox from "./FileDropBox";
 import FileItem from "./FileItem";
 import ReviewProgressModal from "./modals/ReviewProgressModal";
-import LoginRequiredModal from "./modals/LoginRequiredModals";
 import PremiumModal from "./modals/PremiumModal";
+import LoginRequiredModal from "./modals/LoginRequiredModals";
 
 type ModalType = null | "progress" | "login" | "premium";
 
 export default function ReportJob() {
     const router = useRouter();
+
+    // TODO: 팀 로그인 상태로 교체 (지금은 _lib/reportJob.ts의 MOCK 값)
+    const isLoggedIn = MOCK.loggedIn;
+    const isPremium = MOCK.premium;
+
     const [file, setFile] = useState<File | null>(null);
     const [uploadError, setUploadError] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -23,6 +28,10 @@ export default function ReportJob() {
 
     // 파일 선택 / 드롭
     const handleFile = (next: File) => {
+        if (!isLoggedIn) {
+            setModal("login");
+            return;
+        }
         const message = validateFile(next);
         if (message) {
             alert(message);
@@ -40,8 +49,8 @@ export default function ReportJob() {
     // 분석 시작하기
     const handleStart = async () => {
         if (!file || uploadError || submitting) return;
-        if (!MOCK.loggedIn) return setModal("login");   // TODO: 팀 로그인 상태로 교체
-        if (!MOCK.premium) return setModal("premium");  // TODO: 구독 여부로 교체
+        if (!isLoggedIn) return setModal("login");
+        if (!isPremium) return setModal("premium");
 
         setSubmitting(true);
         try {
@@ -103,7 +112,12 @@ export default function ReportJob() {
                     </p>
 
                     <div className="mt-[129px]">
-                        <FileDropBox error={uploadError} onFile={handleFile} />
+                        <FileDropBox
+                            error={uploadError}
+                            canUpload={isLoggedIn}
+                            onBlocked={() => setModal("login")}
+                            onFile={handleFile}
+                        />
                     </div>
 
                     {file && (

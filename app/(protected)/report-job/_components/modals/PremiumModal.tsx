@@ -36,7 +36,7 @@ export default function PremiumModal({ onClose }: Props) {
                     </button>
                     {/* TODO: 구독 페이지 경로로 맞춰 주세요 */}
                     <Link
-                        href="/subscribe"
+                        href="/subscription"
                         className="group flex items-center justify-center gap-[10px] w-[200px] h-[67px] rounded-full bg-[#13284a] text-[20px] font-bold text-white transition-colors hover:bg-[#1d3a66]"
                     >
                         구독 알아보기
