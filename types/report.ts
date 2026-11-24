@@ -18,3 +18,27 @@ export interface ReportExport {
   export_file_path: string;
   export_created_at: string;
 }
+
+// 검토 진행 상태 (백엔드 ReportStatus와 같은 값)
+export type ReportJobStatus =
+  | "PENDING"
+  | "PROCESSING"
+  | "FILE_CHECK"
+  | "AI_REVIEW"
+  | "SUMMARIZING"
+  | "COMPLETED"
+  | "FAILED";
+
+// 검토 요청 응답 (GET /reports/jobs 목록 한 줄)
+// 백엔드 ReportJobResponseDTO가 camelCase 별칭으로 내려와서 키가 camelCase
+export interface ReportJobItem {
+  reportJobId: number;
+  reportJobFileName: string;
+  reportJobFileType: string;
+  reportJobFileSize: number;
+  reportJobPageCount: number | null;
+  reportJobStatus: ReportJobStatus;
+  reportJobErrorMessage: string | null;
+  reportJobCreatedAt: string | null;
+  reportJobCompletedAt: string | null;
+}
