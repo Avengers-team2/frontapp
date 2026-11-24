@@ -17,20 +17,20 @@ interface MyPageSideNavProps {
     activeHref?: string; // 선택할 메뉴를 직접 정할 때 (회원정보 수정 화면: 스크롤 위치 기준). 없으면 현재 주소 기준
 }
 
-// 회원정보 수정 화면 Figma 스타일로 통일 (선택: 28px 민트 / 나머지: 20px 검정)
+// 선택: 왼쪽 세로 막대 + 굵은 검정 / 나머지: 회색
 export default function MyPageSideNav({activeHref}: MyPageSideNavProps) {
     const pathname = usePathname();
     const currentHref = activeHref ?? pathname;
 
     return (
-        <nav className="flex flex-col items-start gap-7">
+        <nav className="flex flex-col items-start gap-5">
             {MENUS.map((menu) => {
                 const isActive = menu.href === currentHref;
                 return (
                     <Link
                         key={menu.label}
                         href={menu.href}
-                        className={`font-semibold transition-all ${isActive ? "text-[28px] text-[#40CEAF]" : "text-xl text-black"}`}
+                        className={`border-l-[3px] pl-3 text-lg transition-colors ${isActive ? "border-ink-900 font-bold text-ink-900" : "border-transparent text-ink-400 hover:text-ink-900"}`}
                     >
                         {menu.label}
                     </Link>

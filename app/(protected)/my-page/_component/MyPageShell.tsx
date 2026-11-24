@@ -20,11 +20,9 @@ export default function MyPageShell({children}: MyPageShellProps) {
             <div className="mt-15 h-px bg-line-gray" />
 
             <div className="mt-13 flex">
-                {/* 스크롤해도 메뉴가 따라 내려옴 (sticky) */}
+                {/* 메뉴는 제자리에 고정 (스크롤해도 따라 내려오지 않음) */}
                 <aside className="w-91.5 shrink-0 pl-6.25 pt-12">
-                    <div className="sticky top-34">
-                        <MyPageSideNav />
-                    </div>
+                    <MyPageSideNav />
                 </aside>
                 <div className="min-w-0 flex-1">
                     {children}
