@@ -49,9 +49,15 @@ export const getPostDetailApi = async (postId: number): Promise<ApiResponseDTO<P
     return datas;
 };
 
-// 내 게시글 목록 조회 — GET /post/me
-export const getMyPostsApi = async (page: number, size: number): Promise<ApiResponseDTO<PageResponse<PostListItem>>> => {
-    const response = await fetch(`${BASE_URL}/me?page=${page}&size=${size}`, {
+// 내 게시글 목록 조회 — GET /post/me (keyword가 있으면 제목·내용 검색)
+export const getMyPostsApi = async (page: number, size: number, keyword?: string): Promise<ApiResponseDTO<PageResponse<PostListItem>>> => {
+    const query = new URLSearchParams({
+        page: String(page),
+        size: String(size),
+    });
+    if (keyword) query.append("keyword", keyword);
+
+    const response = await fetch(`${BASE_URL}/me?${query.toString()}`, {
         credentials: "include"
     });
 
