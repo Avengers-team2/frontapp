@@ -1,4 +1,5 @@
 import type { ReportResult } from "../_lib/reportExport";
+import Image from "next/image";
 
 type Props = {
     data: ReportResult;
@@ -33,9 +34,17 @@ export default function ReportViewer({ data, tab }: Props) {
                     <button
                         type="button"
                         onClick={handleDownload}
-                        className="w-[154px] h-[56px] rounded-full bg-[#13284a] text-[16px] font-semibold text-white cursor-pointer transition-colors hover:bg-[#1d3a66] active:scale-[0.97]"
+                        className="group flex items-center justify-center gap-[8px] h-[56px] px-[26px] rounded-full bg-[#13284a] text-[16px] font-semibold text-white cursor-pointer transition-colors hover:bg-[#1d3a66] active:scale-[0.97]"
                     >
                         PDF 내려받기
+                        <Image
+                            src="/assets/icons/pdf_arrow_icon.svg"
+                            alt=""
+                            width={18}
+                            height={18}
+                            unoptimized
+                            className="transition-transform duration-300 group-hover:translate-y-[2px]"
+                        />
                     </button>
                 )}
             </div>
