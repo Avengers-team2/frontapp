@@ -1,10 +1,12 @@
 "use client"
 
 import { createPostApi, getPostDetailApi, updatePostApi } from "@/api/post/post.api";
+import { uploadImageApi } from "@/api/upload/upload.api";
 import Loading from "@/components/common/Loading";
 import { PostCategoryLabel, PostWritableCategories } from "@/enums/post.enum";
 import { PostCreateRequest } from "@/types/post/post.type";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -18,6 +20,8 @@ interface PostFormProps {
 
 const MAX_CONTENT = 5000; // 내용 최대 글자 수
 const MAX_TITLE = 200;    // 제목 최대 글자 수 (백엔드 String(200))
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 사진 최대 5MB (백엔드와 같음)
+const MAX_IMAGES = 10;                  // 게시글당 사진 최대 장수 (백엔드와 같음)
 
 // 글쓰기 / 글 수정 공용 폼 (주제 / 제목 / 내용 / 취소 · 등록)
 export default function PostForm({mode, params}: PostFormProps) {
@@ -50,7 +54,7 @@ export default function PostForm({mode, params}: PostFormProps) {
             post_category: post.post_category,
             post_title: post.post_title,
             post_content: post.post_content,
-            post_image_url: post.post_image_url
+            post_image_urls: post.images.map((image) => image.image_url)
         });
     }, [detail, isEdit, reset]);
 
@@ -68,7 +72,8 @@ export default function PostForm({mode, params}: PostFormProps) {
 
     const onSubmit = async (body: PostCreateRequest) => {
         try {
-            await saveMutation.mutateAsync(body);
+            // 사진을 안 건드렸어도 항상 목록을 보냄 (수정 때 빠지면 백엔드가 사진을 전부 지움)
+            await saveMutation.mutateAsync({ ...body, post_image_urls: body.post_image_urls ?? [] });
         } catch {
             // onError에서 처리
         }
@@ -141,6 +146,70 @@ export default function PostForm({mode, params}: PostFormProps) {
         applyContent(next, start + inserted.length, start + inserted.length);
     }
 
+    // ===== 사진 업로드 (게시글당 최대 10장) =====
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const [uploadingCount, setUploadingCount] = useState(0); // 올리는 중인 사진 수
+    const isUploading = uploadingCount > 0;
+    const watchedImageUrls = useWatch({ control, name: "post_image_urls" });
+    const imageUrls = watchedImageUrls ?? [];
+
+    // 사진 버튼 클릭 → 파일 선택창 열기 (10장이 차 있으면 안내만)
+    const handleImageClick = () => {
+        if (imageUrls.length >= MAX_IMAGES) {
+            window.alert(`사진은 최대 ${MAX_IMAGES}장까지 올릴 수 있어요.`);
+            return;
+        }
+        fileInputRef.current?.click();
+    }
+
+    // 파일 하나를 S3에 올리고 주소 받기
+    const uploadOne = async (file: File): Promise<string> => {
+        const res = await uploadImageApi(file, "post");
+        const url = res.data?.originalUrl ?? res.data?.original_url;
+        if (!url) throw new Error("업로드 주소를 받지 못했어요.");
+        return url;
+    }
+
+    // 여러 장 고르면 검사 → S3에 올리고, 받은 주소를 post_image_urls 뒤에 붙이기 (고른 순서 유지)
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files ?? []);
+        e.target.value = ""; // 같은 파일 다시 골라도 동작하게 비움
+        if (files.length === 0) return;
+
+        const current = imageUrls;
+        const remain = MAX_IMAGES - current.length;
+        const notImage = files.filter((file) => !file.type.startsWith("image/"));
+        const tooBig = files.filter((file) => file.type.startsWith("image/") && file.size > MAX_IMAGE_SIZE);
+        const valid = files.filter((file) => file.type.startsWith("image/") && file.size <= MAX_IMAGE_SIZE);
+        const targets = valid.slice(0, remain);
+
+        const messages: string[] = [];
+        if (notImage.length > 0) messages.push(`이미지가 아닌 파일 ${notImage.length}개는 뺐어요.`);
+        if (tooBig.length > 0) messages.push(`5MB가 넘는 사진 ${tooBig.length}장은 뺐어요.`);
+        if (valid.length > remain) messages.push(`사진은 최대 ${MAX_IMAGES}장이라 ${valid.length - remain}장은 뺐어요.`);
+        if (messages.length > 0) window.alert(messages.join("\n"));
+        if (targets.length === 0) return;
+
+        setUploadingCount(targets.length);
+        const results = await Promise.allSettled(targets.map(uploadOne));
+        setUploadingCount(0);
+
+        const uploaded = results
+            .filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled")
+            .map((r) => r.value);
+        const failedCount = results.length - uploaded.length;
+        if (failedCount > 0) window.alert(`사진 ${failedCount}장은 업로드에 실패했어요.`);
+
+        if (uploaded.length > 0) {
+            setValue("post_image_urls", [...current, ...uploaded].slice(0, MAX_IMAGES), { shouldDirty: true });
+        }
+    }
+
+    // 첨부한 사진 한 장 빼기 (S3 파일은 그대로 두고 글에서만 뺌)
+    const handleImageRemove = (index: number) => {
+        setValue("post_image_urls", imageUrls.filter((_, i) => i !== index), { shouldDirty: true });
+    }
+
     const selectedCategory = useWatch({ control, name: "post_category" });
     const contentLength = useWatch({ control, name: "post_content" })?.length ?? 0;
 
@@ -207,8 +276,9 @@ export default function PostForm({mode, params}: PostFormProps) {
                             onUnderline={() => wrapSelection("__", "밑줄 글씨")}
                             onList={handleList}
                             onLink={handleLink}
-                            onImage={() => window.alert("사진 업로드는 준비 중이에요.")} // S3 업로드 연결 전
+                            onImage={handleImageClick}
                         />
+                        <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleImageChange} className="hidden" />
                         <textarea
                             placeholder="내용을 입력하세요."
                             maxLength={MAX_CONTENT}
@@ -224,6 +294,32 @@ export default function PostForm({mode, params}: PostFormProps) {
                         </p>
                     </div>
                     {errors?.post_content && <p className={errorClass}>내용을 입력해 주세요.</p>}
+
+                    {/* 첨부 사진 미리보기 (최대 10장) */}
+                    {(imageUrls.length > 0 || isUploading) && (
+                        <div className="mt-3">
+                            <p className="text-sm text-ink-400">
+                                사진 {imageUrls.length} / {MAX_IMAGES}장
+                                {isUploading && ` · ${uploadingCount}장 올리는 중...`}
+                            </p>
+                            <div className="mt-2 flex flex-wrap gap-2.5">
+                                {imageUrls.map((url, index) => (
+                                    <div key={`${url}-${index}`} className="relative">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={url} alt={`첨부 사진 ${index + 1}`} className="size-28 rounded-xl border border-line object-cover" />
+                                        <button
+                                            type="button"
+                                            onClick={() => handleImageRemove(index)}
+                                            title="사진 빼기"
+                                            className="absolute right-1.5 top-1.5 flex size-6 items-center justify-center rounded-full bg-ink-900/70 text-white"
+                                        >
+                                            <X className="size-3.5" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* 분석 결과 첨부 (선택) — 프론트 화면만 */}
@@ -240,7 +336,7 @@ export default function PostForm({mode, params}: PostFormProps) {
                     </button>
                     <button
                         type="submit"
-                        disabled={isSubmitting || saveMutation.isPending}
+                        disabled={isSubmitting || saveMutation.isPending || isUploading}
                         className="rounded-full bg-main-dark px-5 py-3 text-base font-bold text-white disabled:opacity-40"
                     >
                         {isEdit ? "수정하기" : "등록하기"}

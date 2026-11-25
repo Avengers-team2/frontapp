@@ -138,9 +138,14 @@ export default function PostDetailContainer({params}: PostDetailContainerProps) 
                     <PostContent content={post.post_content} />
                 </div>
 
-                {post.post_image_url && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={post.post_image_url} alt="첨부 이미지" className="mt-6 max-h-120 rounded-xl px-5.25" />
+                {/* 첨부 사진 (순서대로) */}
+                {post.images?.length > 0 && (
+                    <div className="mt-6 flex flex-col items-start gap-4 px-5.25">
+                        {post.images.map((image) => (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img key={image.image_id} src={image.image_url} alt={`첨부 이미지 ${image.image_sort_order + 1}`} className="max-h-120 rounded-xl" />
+                        ))}
+                    </div>
                 )}
 
                 {/* 공감 / 북마크 / 공유 */}
