@@ -3,31 +3,71 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FIT } from "../_lib/fit";
-import { MOCK, validateFile, createReportJob, getReportJobStatus, type ReportJobStatus } from "../_lib/reportJob";
+import {
+    MOCK,
+    ApiError,
+    validateFile,
+    uploadReportFile,
+    startReportJob,
+    getReportJob,
+    deleteReportJob,
+    type ReportJob as Job,
+    type ReportJobStatus,
+} from "../_lib/reportJob";
 import FileDropBox from "./FileDropBox";
 import FileItem from "./FileItem";
 import ReviewProgressModal from "./modals/ReviewProgressModal";
-import PremiumModal from "./modals/PremiumModal";
 import LoginRequiredModal from "./modals/LoginRequiredModals";
+import PremiumModal from "./modals/PremiumModal";
 
 type ModalType = null | "progress" | "login" | "premium";
 
-export default function ReportJob() {
+type Props = {
+    resumeJobId: number | null; // 다시 검토하기로 돌아온 경우
+};
+
+const errorText = (e: unknown, fallback: string) => (e instanceof Error ? e.message : fallback);
+
+export default function ReportJob({ resumeJobId }: Props) {
     const router = useRouter();
 
-    // TODO: 팀 로그인 상태로 교체 (지금은 _lib/reportJob.ts의 MOCK 값)
+    // TODO: 팀 로그인 상태 · 구독 여부로 교체 (지금은 _lib/reportJob.ts의 MOCK 값)
     const isLoggedIn = MOCK.loggedIn;
     const isPremium = MOCK.premium;
 
-    const [file, setFile] = useState<File | null>(null);
+    const [job, setJob] = useState<Job | null>(null);                                       // 서버에 올라간 요청
+    const [pendingFile, setPendingFile] = useState<{ name: string; size: number } | null>(null); // 업로드 중 표시용
+    const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState(false);
-    const [submitting, setSubmitting] = useState(false);
+    const [starting, setStarting] = useState(false);
     const [modal, setModal] = useState<ModalType>(null);
-    const [jobId, setJobId] = useState<number | null>(null);
-    const [status, setStatus] = useState<ReportJobStatus>("queued");
+    const [polling, setPolling] = useState(false);
+    const [status, setStatus] = useState<ReportJobStatus>("PENDING");
 
-    // 파일 선택 / 드롭
-    const handleFile = (next: File) => {
+    // 로그인이 풀린 경우(401)는 로그인 모달로
+    const isAuthError = (e: unknown) => {
+        if (e instanceof ApiError && e.status === 401) {
+            setModal("login");
+            return true;
+        }
+        return false;
+    };
+
+    // 다시 검토하기로 돌아온 경우: 진행 모달부터 이어서 보여줌
+    useEffect(() => {
+        if (resumeJobId === null) return;
+        getReportJob(resumeJobId)
+            .then((resumed) => {
+                setJob(resumed);
+                setStatus(resumed.status);
+                setModal("progress");
+                setPolling(true);
+            })
+            .catch((e) => alert(errorText(e, "검토 정보를 불러오지 못했어요.")));
+    }, [resumeJobId]);
+
+    // 파일 선택 / 드롭 → 바로 업로드
+    const handleFile = async (next: File) => {
         if (!isLoggedIn) {
             setModal("login");
             return;
@@ -37,67 +77,103 @@ export default function ReportJob() {
             alert(message);
             return;
         }
-        setFile(next);
+
+        // 이미 올린 파일이 있으면 서버에서도 지우고 교체
+        if (job) deleteReportJob(job.id).catch(() => {});
+
+        setJob(null);
         setUploadError(false);
+        setPendingFile({ name: next.name, size: next.size });
+        setUploading(true);
+
+        try {
+            setJob(await uploadReportFile(next));
+        } catch (e) {
+            if (isAuthError(e)) {
+                setPendingFile(null);
+            } else if (e instanceof ApiError && e.status === 400) {
+                alert(e.message); // 형식 · 용량 · 빈 파일 안내
+                setPendingFile(null);
+            } else {
+                setUploadError(true); // 전송 실패 → 빨간 오류 화면
+            }
+        } finally {
+            setUploading(false);
+        }
     };
 
-    const handleRemove = () => {
-        setFile(null);
+    // 삭제
+    const handleRemove = async () => {
+        if (job) {
+            try {
+                await deleteReportJob(job.id);
+            } catch (e) {
+                if (!isAuthError(e)) alert(errorText(e, "삭제하지 못했어요."));
+                return;
+            }
+        }
+        setJob(null);
+        setPendingFile(null);
         setUploadError(false);
     };
 
     // 분석 시작하기
     const handleStart = async () => {
-        if (!file || uploadError || submitting) return;
+        if (!job || uploading || uploadError || starting) return;
         if (!isLoggedIn) return setModal("login");
         if (!isPremium) return setModal("premium");
 
-        setSubmitting(true);
+        setStarting(true);
         try {
-            const res = await createReportJob(file);
-            setStatus("queued");
-            setJobId(res.jobId);
+            const started = await startReportJob(job.id);
+            setStatus(started.status);
             setModal("progress");
-        } catch {
-            setUploadError(true);
+            setPolling(true);
+        } catch (e) {
+            if (!isAuthError(e)) alert(errorText(e, "검토를 시작하지 못했어요."));
         } finally {
-            setSubmitting(false);
+            setStarting(false);
         }
     };
 
-    // 검토 진행 상태 확인 (1.5초마다)
+    // 검토 진행 상태 확인 (2초마다)
     useEffect(() => {
-        if (jobId === null) return;
+        if (!polling || !job) return;
+        const id = job.id;
         let stopped = false;
 
         const timer = setInterval(async () => {
             try {
-                const next = await getReportJobStatus(jobId);
+                const latest = await getReportJob(id);
                 if (stopped) return;
-                setStatus(next);
+                setStatus(latest.status);
 
-                if (next === "done") {
+                if (latest.status === "COMPLETED") {
                     clearInterval(timer);
-                    router.push(`/report-job/result?job=${jobId}`);
+                    router.push(`/report-job/result?job=${id}`);
                 }
-                if (next === "failed") {
+                if (latest.status === "FAILED") {
                     clearInterval(timer);
-                    setModal(null);
-                    setJobId(null);
-                    setUploadError(true);
+                    router.push(`/report-job/result?job=${id}&status=failed`);
                 }
             } catch {
                 // 일시적인 네트워크 오류는 다음 확인 때 다시 시도
             }
-        }, 1500);
+        }, 2000);
 
         return () => {
             stopped = true;
             clearInterval(timer);
         };
-    }, [jobId, router]);
+    }, [polling, job, router]);
 
-    const canStart = !!file && !uploadError && !submitting;
+    const shownFile = job
+        ? { name: job.fileName, size: job.fileSize, pageCount: job.pageCount }
+        : pendingFile
+            ? { name: pendingFile.name, size: pendingFile.size, pageCount: null }
+            : null;
+    const fileState = uploadError ? "error" : uploading ? "uploading" : "done";
+    const canStart = !!job && job.status === "PENDING" && !uploading && !uploadError && !starting;
 
     return (
         // pt: 헤더 높이 (소개 페이지에서 맞춘 숫자와 동일하게)
@@ -120,9 +196,15 @@ export default function ReportJob() {
                         />
                     </div>
 
-                    {file && (
+                    {shownFile && (
                         <div className="mt-[25px]">
-                            <FileItem file={file} error={uploadError} onRemove={handleRemove} />
+                            <FileItem
+                                fileName={shownFile.name}
+                                fileSize={shownFile.size}
+                                pageCount={shownFile.pageCount}
+                                state={fileState}
+                                onRemove={handleRemove}
+                            />
                         </div>
                     )}
 
@@ -136,14 +218,14 @@ export default function ReportJob() {
                                 : "bg-[#ddd] cursor-not-allowed"
                         }`}
                     >
-                        {submitting ? "업로드 중..." : "분석 시작하기"}
+                        {starting ? "검토 시작 중..." : "분석 시작하기"}
                     </button>
                 </div>
             </section>
 
-            {modal === "progress" && file && (
+            {modal === "progress" && job && (
                 <ReviewProgressModal
-                    fileName={file.name}
+                    fileName={job.fileName}
                     status={status}
                     onLater={() => router.push("/user")}
                 />

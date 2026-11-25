@@ -7,14 +7,14 @@ type Props = {
     onLater: () => void;
 };
 
-// 상태 → 지금 진행 중인 단계 번호
+// 백엔드 상태 → 지금 진행 중인 단계 번호
 const CURRENT: Record<ReportJobStatus, number> = {
-    queued: 0,
-    file_checked: 1,
-    reviewing: 1,
-    summarizing: 2,
-    done: 3,
-    failed: 0,
+    PENDING: 0,
+    FILE_CHECK: 0,
+    AI_REVIEW: 1,
+    SUMMARIZING: 2,
+    COMPLETED: 3,
+    FAILED: 0,
 };
 
 export default function ReviewProgressModal({ fileName, status, onLater }: Props) {
