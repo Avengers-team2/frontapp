@@ -1,4 +1,8 @@
+"use client";
+
+import { useState } from "react";
 import type { ReportResult } from "../_lib/reportExport";
+import { ApiError, getReportExportUrl } from "../_lib/reportJob";
 import Image from "next/image";
 
 type Props = {
@@ -7,19 +11,42 @@ type Props = {
 };
 
 export default function ReportViewer({ data, tab }: Props) {
-    const handleDownload = () => {
-        if (!data.pdf.url) {
-            alert("PDF는 백엔드 연결 후 내려받을 수 있어요.");
-            return;
+    const [downloading, setDownloading] = useState(false);
+    const [toast, setToast] = useState<string | null>(null);
+
+    const showToast = (message: string) => {
+        setToast(message);
+        setTimeout(() => setToast(null), 2500);
+    };
+
+    // 백엔드에서 S3 임시 다운로드 주소를 받아 바로 내려받기
+    const handleDownload = async () => {
+        if (downloading) return;
+        setDownloading(true);
+        try {
+            const { downloadUrl } = await getReportExportUrl(data.jobId);
+            // S3 주소가 "첨부파일로 받기"로 설정돼 있어서 이동하면 페이지는 그대로 두고 파일만 내려받아져요
+            window.location.href = downloadUrl;
+            showToast("✓ 검토 보고서를 내려받았어요");
+        } catch (e) {
+            if (e instanceof ApiError && e.status === 401) {
+                alert("로그인이 필요해요. 로그인 후 다시 시도해 주세요.");
+            } else {
+                alert(e instanceof Error ? e.message : "보고서를 내려받지 못했어요. 잠시 후 다시 시도해 주세요.");
+            }
+        } finally {
+            setDownloading(false);
         }
-        const a = document.createElement("a");
-        a.href = data.pdf.url;
-        a.download = data.pdf.fileName;
-        a.click();
     };
 
     return (
         <div className="w-[885px] shrink-0">
+            {/* 다운로드 완료 토스트 */}
+            {toast && (
+                <div className="fixed top-[120px] left-1/2 -translate-x-1/2 z-[100] px-[28px] py-[16px] rounded-full bg-[#13284a] text-[16px] font-semibold text-white shadow-lg animate-in fade-in duration-300">
+                    {toast}
+                </div>
+            )}
             {/* 상단 파일 바 */}
             <div className="flex items-center justify-between h-[88px] pl-[19px] pr-[50px] border-[1.2px] border-[#cfcfcf] bg-white">
                 <div>
@@ -34,9 +61,10 @@ export default function ReportViewer({ data, tab }: Props) {
                     <button
                         type="button"
                         onClick={handleDownload}
-                        className="group flex items-center justify-center gap-[8px] h-[56px] px-[26px] rounded-full bg-[#13284a] text-[16px] font-semibold text-white cursor-pointer transition-colors hover:bg-[#1d3a66] active:scale-[0.97]"
+                        disabled={downloading}
+                        className="group disabled:opacity-60 disabled:cursor-wait flex items-center justify-center gap-[8px] h-[56px] px-[26px] rounded-full bg-[#13284a] text-[16px] font-semibold text-white cursor-pointer transition-colors hover:bg-[#1d3a66] active:scale-[0.97]"
                     >
-                        PDF 내려받기
+                        {downloading ? "준비 중..." : "PDF 내려받기"}
                         <Image
                             src="/assets/icons/pdf_arrow_icon.svg"
                             alt=""
