@@ -52,7 +52,7 @@ export const SECTIONS = [
     { id: "note", label: "추가 의견", required: false },
 ] as const;
 
-export const BUDGET_MAX = 5000;
+export const BUDGET_MAX = 30000;
 export const NOTE_MAX = 500;
 
 export const STORE_SIZES = [
