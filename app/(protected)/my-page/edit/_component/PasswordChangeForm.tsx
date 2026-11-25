@@ -1,6 +1,9 @@
 "use client"
 
+import useAuthStore from "@/stores/useAuthStore";
+import { useMutation } from "@tanstack/react-query";
 import { SubmitEvent, useState } from "react";
+import { updateProfileApi } from "../_lib/profile.api";
 import { errorClass, helperClass, inputClass, labelClass, secondaryButtonClass, sectionTitleClass } from "./fieldStyle";
 
 interface PasswordChangeFormProps {
@@ -18,16 +21,31 @@ export default function PasswordChangeForm({onChanged}: PasswordChangeFormProps)
 
     const isRuleError = next.length > 0 && !PASSWORD_RULE.test(next);
     const isMismatch = confirm.length > 0 && next !== confirm;
-    const canSubmit = current.length > 0 && PASSWORD_RULE.test(next) && next === confirm;
+    const user = useAuthStore((state) => state.user);
 
-    // TODO: 비밀번호 변경 API 연결
+    // 새 비밀번호 저장 (PUT /users/{user_id}, user_password만 보냄)
+    // TODO: 백엔드가 현재 비밀번호를 확인하지 않음 → 확인 기능이 생기면 current도 같이 보내기
+    const passwordMutation = useMutation({
+        mutationFn: () => updateProfileApi(user!.user_id, { user_password: next }),
+        onSuccess: () => {
+            setCurrent("");
+            setNext("");
+            setConfirm("");
+            onChanged();
+        },
+        onError: (error) => window.alert(error.message),
+    });
+
+    const canSubmit = current.length > 0 && PASSWORD_RULE.test(next) && next === confirm && !passwordMutation.isPending;
+
     const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!canSubmit) return;
-        setCurrent("");
-        setNext("");
-        setConfirm("");
-        onChanged();
+        if (!user) {
+            window.alert("로그인 정보가 없어요. 다시 로그인해 주세요.");
+            return;
+        }
+        passwordMutation.mutate();
     }
 
     return (

@@ -1,37 +1,38 @@
 "use client"
 
-// TODO: 백엔드 연결 전 화면 확인용 가짜 데이터
-//       → 마이페이지 "저장한 분석 결과" API가 생기면 useQuery로 바꾸고, 선택값을 글 작성 요청(analysis_id)에 넣기
-const MOCK_SAVED_ANALYSES = [
-    { analysis_id: 1, title: "강남구 신사동 · 신사역 이면 골목  ·  커피 전문점", score: 76, saved_at: "2026-11-04" },
-    { analysis_id: 2, title: "강남구 신사동 · 가로수길 메인  ·  커피 전문점", score: 73, saved_at: "2026-11-02" },
-];
+import { getMyAnalysesApi } from "@/app/(protected)/my-page/_lib/myAnalysis.api";
+import { useQuery } from "@tanstack/react-query";
 
 interface AnalysisAttachSelectProps {
     selectedId: number | null;
     onSelect: (analysisId: number | null) => void;
 }
 
-// 날짜 → "11.04" 형식
-const formatDate = (value: string) => {
-    const d = new Date(value);
-    return `${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-}
-
-// 분석 결과 첨부 (선택) — 마이페이지에 저장한 분석 결과 중 하나 고르기
+// 분석 결과 첨부 (선택) — 내 분석 목록(GET /analyses/me) 중 하나 고르기
+// TODO: 게시글에 분석을 연결할 백엔드 컬럼이 생기면 선택값(input_id)을 글 작성 요청에 넣기
 export default function AnalysisAttachSelect({selectedId, onSelect}: AnalysisAttachSelectProps) {
+    const { data, isLoading } = useQuery({
+        queryKey: ["myAnalyses"],
+        queryFn: getMyAnalysesApi,
+    });
+    const analyses = data?.data ?? [];
+
     return (
         <div>
             <p className="text-base font-bold text-ink-900">분석 결과 첨부 (선택)</p>
 
             <div className="mt-2.75 flex flex-col gap-2.75">
-                {MOCK_SAVED_ANALYSES.map((analysis) => {
-                    const isSelected = selectedId === analysis.analysis_id;
+                {isLoading && <p className="text-base text-ink-300">불러오는 중...</p>}
+                {!isLoading && analyses.length === 0 && (
+                    <p className="text-base text-ink-300">아직 저장한 분석이 없어요.</p>
+                )}
+                {analyses.map((analysis) => {
+                    const isSelected = selectedId === analysis.input_id;
                     return (
                         <button
-                            key={analysis.analysis_id}
+                            key={analysis.input_id}
                             type="button"
-                            onClick={() => onSelect(isSelected ? null : analysis.analysis_id)}
+                            onClick={() => onSelect(isSelected ? null : analysis.input_id)}
                             className={`flex w-full items-center justify-between rounded-xl border bg-white px-5 py-4 text-left ${
                                 isSelected ? "border-[#CFE9E4]" : "border-line-light"
                             }`}
@@ -44,11 +45,9 @@ export default function AnalysisAttachSelect({selectedId, onSelect}: AnalysisAtt
                                 ) : (
                                     <span className="size-5 rounded-full border-[1.5px] border-main" />
                                 )}
-                                <span className="whitespace-pre text-base font-medium text-ink-900">{analysis.title}</span>
+                                <span className="whitespace-pre text-base font-medium text-ink-900">{analysis.label}</span>
                             </span>
-                            <span className="text-base text-ink-300">
-                                {analysis.score}점 · {formatDate(analysis.saved_at)} 저장
-                            </span>
+                            <span className="text-base text-ink-300">{analysis.summary}</span>
                         </button>
                     );
                 })}

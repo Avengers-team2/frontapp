@@ -4,7 +4,8 @@ import { getMyPostsApi } from "@/api/post/post.api";
 import useAuthStore from "@/stores/useAuthStore";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { BUSINESS_STATUS_OPTIONS, MOCK_ANALYSES, MOCK_SUPPORT_BOOKMARKS } from "./mockData";
+import { getMyAnalysesApi } from "../_lib/myAnalysis.api";
+import { BUSINESS_STATUS_OPTIONS, MOCK_SUPPORT_BOOKMARKS } from "./mockData";
 
 // 프로필 + 숫자 요약 (저장한 분석 / 관심 지원사업 / 내가 쓴 글)
 export default function MyPageProfile() {
@@ -25,9 +26,16 @@ export default function MyPageProfile() {
     });
     const myPostCount = myPosts?.data?.total_count ?? 0;
 
-    // 숫자를 누르면 해당 목록으로 이동 (TODO: 저장한 분석·관심 지원사업은 API 연결 전이라 가짜 데이터 개수)
+    // 저장한 분석 개수 (GET /analyses/me, 최근 10개까지만 와서 10이면 "10+")
+    const { data: myAnalyses } = useQuery({
+        queryKey: ["myAnalyses"],
+        queryFn: getMyAnalysesApi,
+    });
+    const analysisCount = myAnalyses?.data?.length ?? 0;
+
+    // 숫자를 누르면 해당 목록으로 이동 (TODO: 관심 지원사업은 API 연결 전이라 가짜 데이터 개수)
     const stats = [
-        { label: "저장한 분석", value: MOCK_ANALYSES.length, href: "/my-page" },
+        { label: "저장한 분석", value: analysisCount >= 10 ? "10+" : analysisCount, href: "/my-page" },
         { label: "관심 지원사업", value: MOCK_SUPPORT_BOOKMARKS.length, href: "/my-page/bookmarks" },
         { label: "내가 쓴 글", value: myPostCount, href: "/my-page/posts" },
     ];

@@ -10,6 +10,16 @@ type BudgetFormProps = { value: BudgetValue; onChange: (v: BudgetValue) => void 
 
 const THUMB = "[&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-main [&::-webkit-slider-thumb]:bg-white [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:size-4 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-main [&::-moz-range-thumb]:bg-white";
 
+const TICKS = [0, 10000, 20000, 30000];
+
+const formatMoney = (manwon: number) => {
+    if (manwon === 0) return "0원";
+    const eok = Math.floor(manwon / 10000);
+    const rest = manwon % 10000;
+    if (eok === 0) return `${rest.toLocaleString()}만원`;
+    return rest === 0 ? `${eok}억원` : `${eok}억 ${rest.toLocaleString()}만원`;
+};
+
 const toNumber = (text: string) => Math.max(0, Number(text.replace(/[^0-9]/g, "")) || 0);
 
 export default function BudgetForm({ value, onChange }: BudgetFormProps) {
@@ -22,7 +32,7 @@ export default function BudgetForm({ value, onChange }: BudgetFormProps) {
             <div className="flex items-end justify-between">
                 <p className="text-[15px] font-semibold text-ink-800">보증금</p>
                 <p className="text-[22px] font-bold text-main">
-                    {value.depositMin.toLocaleString()} ~ {value.depositMax.toLocaleString()}만원
+                    {formatMoney(value.depositMin)} ~ {formatMoney(value.depositMax)}
                 </p>
             </div>
             <div className="mt-3 flex items-center gap-3">
@@ -40,7 +50,7 @@ export default function BudgetForm({ value, onChange }: BudgetFormProps) {
                         type="range"
                         min={0}
                         max={BUDGET_MAX}
-                        step={100}
+                        step={500}
                         value={Math.min(value[key], BUDGET_MAX)}
                         aria-label={key === "depositMin" ? "보증금 최소" : "보증금 최대"}
                         onChange={(e) => {
@@ -52,7 +62,12 @@ export default function BudgetForm({ value, onChange }: BudgetFormProps) {
                     />
                 ))}
             </div>
-            <p className="mt-1 text-[12px] text-ink-300">0만원</p>
+            <div className="mt-1 flex justify-between text-[12px] text-ink-300">
+                {TICKS.map((t) => (
+                    <span key={t}>{t === 0 ? "0원" : `${t / 10000}억`}{t === BUDGET_MAX ? "+" : ""}</span>
+                ))}
+            </div>
+            <p className="mt-2 text-[13px] text-ink-400">단위: 만원 · 3억원이 넘으면 칸에 직접 입력해 주세요</p>
 
             <div className="mt-8 grid grid-cols-2 gap-4">
                 <LaterField
