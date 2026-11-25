@@ -1,10 +1,18 @@
+import { Suspense } from "react";
 import ReportExport from "./ReportExport";
 
-type Props = {
-    searchParams: Promise<{ job?: string; status?: string }>;
-};
+type SearchParams = Promise<{ job?: string; status?: string }>;
 
-export default async function ReportResultPage({ searchParams }: Props) {
+// 주소 값을 읽는 부분만 따로 분리
+async function ResultContent({ searchParams }: { searchParams: SearchParams }) {
     const { job, status } = await searchParams;
     return <ReportExport jobId={job ? Number(job) : null} failed={status === "failed"} />;
+}
+
+export default function ReportResultPage({ searchParams }: { searchParams: SearchParams }) {
+    return (
+        <Suspense fallback={null}>
+            <ResultContent searchParams={searchParams} />
+        </Suspense>
+    );
 }
