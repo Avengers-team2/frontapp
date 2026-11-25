@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { FIT } from "../_lib/fit";
 import { PLAN, formatWon, getMethodLabel } from "../_lib/plan";
 
@@ -6,7 +7,7 @@ type Props = {
     searchParams: Promise<{ method?: string; next?: string }>;
 };
 
-export default async function SubscriptionCompletePage({ searchParams }: Props) {
+async function CompleteContent({ searchParams }: Props) {
     const { method, next } = await searchParams;
 
     const rows = [
@@ -93,5 +94,13 @@ export default async function SubscriptionCompletePage({ searchParams }: Props) 
                 </div>
             </section>
         </div>
+    );
+}
+
+export default function SubscriptionCompletePage({ searchParams }: Props) {
+    return (
+        <Suspense fallback={null}>
+            <CompleteContent searchParams={searchParams} />
+        </Suspense>
     );
 }
