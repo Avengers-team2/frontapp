@@ -7,7 +7,7 @@ export enum PostCategory {
     SUPPORT_QNA = "SUPPORT_QNA",   // 지원사업 Q&A
     FREE = "FREE",                 // 자유
     NOTICE = "NOTICE",             // 공지
-}
+}   
 
 // 분류 한글 라벨 (화면 표시용)
 export const PostCategoryLabel: Record<PostCategory, string> = {
