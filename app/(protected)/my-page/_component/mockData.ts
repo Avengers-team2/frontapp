@@ -1,13 +1,5 @@
 // TODO: 백엔드 API가 생기면 이 가짜 데이터를 API 조회로 바꾸기 (Figma 예시 값)
 
-// 내 분석 (저장한 분석)
-export const MOCK_ANALYSES = [
-    { analysis_id: 1, industry: "커피 전문점", title: "[강남구 신사동] 신사역 이면 골목", score: 76, saved_at: "2026-11-04" },
-    { analysis_id: 2, industry: "커피 전문점", title: "[강남구 신사동] 가로수길 메인", score: 73, saved_at: "2026-11-02" },
-    { analysis_id: 3, industry: "커피 전문점", title: "[강남구 신사동] 압구정로데오 방향", score: 69, saved_at: "2026-10-28" },
-    { analysis_id: 4, industry: "디저트 카페", title: "[강남구 신사동] 가로수길 메인", score: 70, saved_at: "2026-10-25" },
-];
-
 // 관심 지원사업 (지원사업 북마크)
 export const MOCK_SUPPORT_BOOKMARKS = [
     { id: 1, dday: 1, tag: "창업교육", title: "[로컬창업트랙 2기] 기억되는 브랜드가 되는 법", org: "관악구청 · 접수 2026.10.19 – 11.12", url: "https://www.k-startup.go.kr", bookmarked: false },

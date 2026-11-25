@@ -8,6 +8,7 @@ export interface ProfileUpdateRequest {
     user_business_status?: string;
     user_interest_region?: string | null;
     user_interest_industry?: string | null;
+    user_password?: string;
 }
 
 // 회원정보 수정 — 로그인한 본인만 가능
@@ -21,5 +22,17 @@ export const updateProfileApi = async (userId: number, body: ProfileUpdateReques
 
     if (!response.ok) throw new Error("회원정보를 저장하지 못했습니다.");
     const datas: ApiResponseDTO<User> = await response.json();
+    return datas;
+};
+
+// 회원 탈퇴 (DELETE /users/{user_id}) — 로그인한 본인만 가능
+export const withdrawApi = async (userId: number): Promise<ApiResponseDTO> => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${userId}`, {
+        method: "DELETE",
+        credentials: "include",
+    });
+
+    if (!response.ok) throw new Error("회원 탈퇴에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+    const datas: ApiResponseDTO = await response.json();
     return datas;
 };
