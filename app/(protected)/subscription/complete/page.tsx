@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { Suspense } from "react";
+import Link from "next/link";
 import { FIT } from "../_lib/fit";
 import { PLAN, formatWon, getMethodLabel } from "../_lib/plan";
 
