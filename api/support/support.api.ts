@@ -101,3 +101,48 @@ export async function getMyAnalyses(): Promise<MyAnalysisOption[]> {
     const list: MyAnalysisResponse[] = (await res.json()).data ?? [];
     return list.map((a) => ({ inputId: a.input_id, label: a.label, summary: a.summary }));
 }
+
+
+type BookmarkStatusResponse = {
+    source: string;
+    source_id: string;
+    is_bookmarked: boolean;
+};
+
+export class LoginRequiredError extends Error {
+    constructor() {
+        super("로그인이 필요해요.");
+    }
+}
+
+export const SUPPORT_BOOKMARKS_QUERY_KEY = ["support-bookmarks"] as const;
+
+export const bookmarkKey = (source: string, sourceId: string) => `${source}:${sourceId}`;
+
+export async function toggleSupportBookmark(source: string, sourceId: string): Promise<boolean> {
+    let res: Response;
+    try {
+        res = await fetch(`${BASE_URL}/bookmarks/support`, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ source, source_id: sourceId }),
+        });
+    } catch {
+        throw new LoginRequiredError();
+    }
+    if (res.status === 401) throw new LoginRequiredError();
+    if (!res.ok) throw new Error("관심 지원사업을 저장하지 못했어요.");
+    const data: BookmarkStatusResponse = (await res.json()).data;
+    return data.is_bookmarked;
+}
+
+export async function getMyBookmarkKeys(): Promise<string[]> {
+    try {
+        const res = await fetch(`${BASE_URL}/bookmarks/support/keys`, { credentials: "include" });
+        if (!res.ok) return [];
+        return (await res.json()).data ?? [];
+    } catch {
+        return [];
+    }
+}
