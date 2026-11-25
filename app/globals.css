@@ -50,7 +50,7 @@
 
 /* shadcn 컴포넌트(Button 등)가 쓰는 색 → Figma 색으로 연결 */
 :root {
-  --background: #F7F9FC;
+  --background: #FFFFFF;
   --foreground: #111111;
   --card: #FFFFFF;
   --card-foreground: #111111;
