@@ -1,7 +1,13 @@
 "use client"
 
+import { logoutApi } from "@/api/auth/auth.api";
+import useAuthStore from "@/stores/useAuthStore";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { MOCK_ANALYSES, MOCK_SUPPORT_BOOKMARKS } from "../../_component/mockData";
+import { MOCK_SUPPORT_BOOKMARKS } from "../../_component/mockData";
+import { getMyAnalysesApi } from "../../_lib/myAnalysis.api";
+import { withdrawApi } from "../_lib/profile.api";
 
 interface WithdrawModalProps {
     onClose: () => void;
@@ -11,18 +17,48 @@ interface WithdrawModalProps {
 export default function WithdrawModal({onClose}: WithdrawModalProps) {
     const [password, setPassword] = useState("");
     const [agreed, setAgreed] = useState(false);
-    const canWithdraw = password.length > 0 && agreed;
+    const router = useRouter();
+    const user = useAuthStore((state) => state.user);
+    const setUser = useAuthStore((state) => state.setUser);
+    const setIsAuthenticated = useAuthStore((state) => state.setIsAuthenticated);
+
+    // 저장한 분석 개수 (GET /analyses/me, 최근 10개까지만 와서 10이면 "10건 이상")
+    const { data: myAnalyses } = useQuery({
+        queryKey: ["myAnalyses"],
+        queryFn: getMyAnalysesApi,
+    });
+    const analysisCount = myAnalyses?.data?.length ?? 0;
+
+    // 탈퇴 (DELETE /users/{user_id}) → 로그아웃 처리 후 메인으로
+    // TODO: 백엔드가 비밀번호를 확인하지 않음 → 확인 기능이 생기면 password도 같이 보내기
+    const withdrawMutation = useMutation({
+        mutationFn: () => withdrawApi(user!.user_id),
+        onSuccess: async () => {
+            try {
+                await logoutApi(); // 쿠키(토큰) 정리, 실패해도 탈퇴는 끝난 상태라 무시
+            } catch {}
+            setUser(null);
+            setIsAuthenticated(false);
+            window.alert("탈퇴가 완료됐어요. 그동안 이용해 주셔서 감사합니다.");
+            router.replace("/");
+        },
+        onError: (error) => window.alert(error.message),
+    });
+
+    const canWithdraw = password.length > 0 && agreed && !withdrawMutation.isPending;
 
     const removedItems = [
-        `저장한 분석 결과 ${MOCK_ANALYSES.length}건`,
-        `관심 지원사업 ${MOCK_SUPPORT_BOOKMARKS.length}건 · 마감 알림`,
+        `저장한 분석 결과 ${analysisCount >= 10 ? "10건 이상" : `${analysisCount}건`}`,
+        `관심 지원사업 ${MOCK_SUPPORT_BOOKMARKS.length}건 · 마감 알림`, // TODO: 지원사업 북마크 API가 생기면 교체
         "회원정보 (닉네임 · 사업자 상태)",
     ];
 
-    // TODO: 회원 탈퇴 API 연결
     const handleWithdrawClick = () => {
-        window.alert("회원 탈퇴 API 연결 전이에요.");
-        onClose();
+        if (!user) {
+            window.alert("로그인 정보가 없어요. 다시 로그인해 주세요.");
+            return;
+        }
+        withdrawMutation.mutate();
     }
 
     return (
