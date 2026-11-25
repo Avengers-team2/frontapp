@@ -18,10 +18,17 @@ export interface PostListItem {
     user: UserSummary;
 }
 
+// 게시글 첨부 사진 (image_sort_order 순서대로 옴)
+export interface PostImage {
+    image_id: number;
+    image_url: string;
+    image_sort_order: number;
+}
+
 // 게시글 상세 (목록 항목 + 본문, 댓글 등)
 export interface PostDetail extends PostListItem {
     post_content: string;
-    post_image_url: string | null;
+    images: PostImage[];
     post_updated_at: string | null;
     post_deleted_at: string | null;
     is_liked: boolean;
@@ -55,7 +62,7 @@ export interface PostCreateRequest {
     post_category: PostCategory;
     post_title: string;
     post_content: string;
-    post_image_url?: string | null;
+    post_image_urls?: string[]; // 사진 주소 목록 (최대 10장, 수정 때는 남길 사진까지 전체를 보냄)
 }
 
 // 글 수정 요청 (작성 요청과 같은 구조)
