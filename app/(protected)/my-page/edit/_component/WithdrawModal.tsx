@@ -5,8 +5,8 @@ import useAuthStore from "@/stores/useAuthStore";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { MOCK_SUPPORT_BOOKMARKS } from "../../_component/mockData";
 import { getMyAnalysesApi } from "../../_lib/myAnalysis.api";
+import { getMySupportBookmarksApi, MY_SUPPORT_BOOKMARKS_QUERY_KEY } from "../../_lib/myBookmark.api";
 import { withdrawApi } from "../_lib/profile.api";
 
 interface WithdrawModalProps {
@@ -29,6 +29,14 @@ export default function WithdrawModal({onClose}: WithdrawModalProps) {
     });
     const analysisCount = myAnalyses?.data?.length ?? 0;
 
+    // 관심 지원사업 개수 (GET /bookmarks/support/me)
+    const { data: myBookmarks } = useQuery({
+        queryKey: [MY_SUPPORT_BOOKMARKS_QUERY_KEY, ""],
+        queryFn: () => getMySupportBookmarksApi(""),
+        staleTime: 0, // 들어올 때마다 새로 불러오기
+    });
+    const bookmarkCount = myBookmarks?.data?.length ?? 0;
+
     // 탈퇴 (DELETE /users/{user_id}) → 로그아웃 처리 후 메인으로
     // TODO: 백엔드가 비밀번호를 확인하지 않음 → 확인 기능이 생기면 password도 같이 보내기
     const withdrawMutation = useMutation({
@@ -49,7 +57,7 @@ export default function WithdrawModal({onClose}: WithdrawModalProps) {
 
     const removedItems = [
         `저장한 분석 결과 ${analysisCount >= 10 ? "10건 이상" : `${analysisCount}건`}`,
-        `관심 지원사업 ${MOCK_SUPPORT_BOOKMARKS.length}건 · 마감 알림`, // TODO: 지원사업 북마크 API가 생기면 교체
+        `관심 지원사업 ${bookmarkCount}건 · 마감 알림`,
         "회원정보 (닉네임 · 사업자 상태)",
     ];
 

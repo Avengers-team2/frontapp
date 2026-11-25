@@ -1,6 +1,6 @@
 "use client"
 
-import { getMyReportJobsApi } from "@/api/report/report.api";
+import { getMyReportJobsApi, getReportExportUrlApi } from "@/api/report/report.api";
 import ErrorComponent from "@/components/common/ErrorComponent";
 import Loading from "@/components/common/Loading";
 import { ReportJobStatus } from "@/types/report";
@@ -50,9 +50,21 @@ export default function MyReportList() {
     // TODO: /reports/jobs에 keyword가 생기면 검색 연결 (희수에게 요청 예정)
     const handleSearch = () => {}
 
-    // TODO: report_export 다운로드 API 연결
-    const handleDownloadClick = () => {
-        showToast("검토 보고서를 내려받았어요");
+    // PDF 다운로드: 링크 발급(GET /reports/jobs/{id}/export) → 그 주소로 이동하면 바로 내려받기
+    const [downloadingId, setDownloadingId] = useState<number | null>(null);
+    const handleDownloadClick = async (reportJobId: number) => {
+        setDownloadingId(reportJobId);
+        try {
+            const res = await getReportExportUrlApi(reportJobId);
+            const url = res.data?.downloadUrl;
+            if (!url) throw new Error("다운로드 주소를 받지 못했어요.");
+            window.location.href = url; // S3가 attachment로 내려줘서 페이지 이동 없이 파일만 받아짐
+            showToast("검토 보고서를 내려받았어요");
+        } catch (err) {
+            window.alert(err instanceof Error ? err.message : "검토 보고서를 내려받지 못했어요.");
+        } finally {
+            setDownloadingId(null);
+        }
     }
 
     return (
@@ -83,10 +95,11 @@ export default function MyReportList() {
                                     {report.reportJobStatus === "COMPLETED" && (
                                         <button
                                             type="button"
-                                            onClick={handleDownloadClick}
-                                            className="flex h-10 items-center rounded-full border border-line bg-white px-4 text-base font-semibold text-ink-700 shadow-[0px_4px_14px_0px_rgba(11,27,51,0.05)]"
+                                            onClick={() => handleDownloadClick(report.reportJobId)}
+                                            disabled={downloadingId === report.reportJobId}
+                                            className="flex h-10 items-center rounded-full border border-line bg-white px-4 text-base font-semibold text-ink-700 shadow-[0px_4px_14px_0px_rgba(11,27,51,0.05)] disabled:opacity-40"
                                         >
-                                            PDF 다운로드
+                                            {downloadingId === report.reportJobId ? "준비 중..." : "PDF 다운로드"}
                                         </button>
                                     )}
                                     <span className="text-base text-ink-300">{formatDate(report.reportJobCreatedAt)}</span>
