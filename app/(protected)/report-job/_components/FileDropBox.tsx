@@ -85,7 +85,7 @@ export default function FileDropBox({ error, canUpload, onBlocked, onFile }: Pro
             <p className="mt-[14px] text-center text-[16px] leading-[1.4] text-[#6b6b6b]">
                 {error ? "파일을 드래그 하거나 아래 파일 선택하기 버튼을 눌러주세요" : "또는 아래 버튼으로 파일을 선택해 주세요"}
                 <br />
-                (docs, pdf, hwp 등 문서 파일만 가능합니다.)
+                (PDF, DOCX 파일만 · 최대 10MB)
             </p>
 
             <button

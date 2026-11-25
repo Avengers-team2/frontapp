@@ -12,28 +12,33 @@ import ReportError from "../_components/ReportError";
 
 type Props = {
     jobId: number | null;
+    failed?: boolean;
 };
 
 type Tab = "original" | "report";
 
-export default function ReportExport({ jobId }: Props) {
+export default function ReportExport({ jobId, failed = false }: Props) {
     const [state, setState] = useState<"loading" | "done" | "error">("loading");
     const [data, setData] = useState<ReportResult | null>(null);
     const [tab, setTab] = useState<Tab>("report");
 
     useEffect(() => {
-        let alive = true;
-        getReportResult(jobId)
-            .then((res) => {
-                if (!alive) return;
-                setData(res);
-                setState("done");
-            })
-            .catch(() => alive && setState("error"));
-        return () => {
-            alive = false;
-        };
-    }, [jobId]);
+    if (failed) {
+        setState("error");
+        return;
+    }
+    let alive = true;
+    getReportResult(jobId)
+        .then((res) => {
+            if (!alive) return;
+            setData(res);
+            setState("done");
+        })
+        .catch(() => alive && setState("error"));
+    return () => {
+        alive = false;
+    };
+}, [jobId, failed]);
 
     const weakItems = data ? data.items.filter((item) => isWeak(item.score)) : [];
 
@@ -41,7 +46,7 @@ export default function ReportExport({ jobId }: Props) {
         // pt: 헤더 높이 (업로드 화면과 동일)
         <div className="pt-[96px] overflow-x-hidden">
             <section className={FIT}>
-                {state === "error" && <ReportError />}
+                {state === "error" && <ReportError jobId={jobId} />}
 
                 {state === "loading" && (
                     <div className="flex flex-col items-center justify-center h-[800px]">
