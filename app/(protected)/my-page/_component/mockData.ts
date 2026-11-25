@@ -1,15 +1,4 @@
-import { PostCategory } from "@/enums/post.enum";
-
 // TODO: 백엔드 API가 생기면 이 가짜 데이터를 API 조회로 바꾸기 (Figma 예시 값)
-
-// 프로필 (로그인 정보가 없을 때 보여줄 값)
-export const MOCK_PROFILE = {
-    nickname: "홍길동",
-    email: "honghong@startfit.kr",
-    businessStatus: "예비 창업자",
-    region: "강남구 신사동",
-    industry: "커피 전문점",
-};
 
 // 내 분석 (저장한 분석)
 export const MOCK_ANALYSES = [
@@ -28,19 +17,11 @@ export const MOCK_SUPPORT_BOOKMARKS = [
 ];
 
 // 사업자 상태 선택지 (회원정보 수정)
-export const BUSINESS_STATUS_OPTIONS = ["예비 창업자", "운영 중", "폐업 예정", "가게 이전", "미정"];
-
-// 내가 쓴 글 (TODO: 로그인 연결 후 GET /post/me API로 바꾸기 — getMyPostsApi)
-export const MOCK_MY_POSTS: {
-    post_id: number;
-    post_category: PostCategory;
-    post_title: string;
-    post_comment_count: number;
-    post_created_at: string;
-}[] = [
-    { post_id: 3, post_category: PostCategory.MARKET_INFO, post_title: "신사역 이면 vs 가로수길, 직접 다녀와 봤어요 (분석 결과 첨부)", post_comment_count: 18, post_created_at: "2026-11-04" },
-    { post_id: 11, post_category: PostCategory.FREE, post_title: "창업 준비하면서 제일 막막했던 순간", post_comment_count: 4, post_created_at: "2026-11-02" },
-    { post_id: 21, post_category: PostCategory.SUPPORT_QNA, post_title: "예비창업패키지 서류 준비 순서 공유해요", post_comment_count: 0, post_created_at: "2026-10-30" },
-    { post_id: 22, post_category: PostCategory.REVIEW, post_title: "상권 분석 처음 해 본 후기", post_comment_count: 7, post_created_at: "2026-10-27" },
-    { post_id: 23, post_category: PostCategory.MARKET_INFO, post_title: "가로수길 평일 오전 유동인구 직접 세 봤어요", post_comment_count: 2, post_created_at: "2026-10-21" },
+// value는 DB에 저장되는 코드 (회원가입 화면과 같은 값)
+export const BUSINESS_STATUS_OPTIONS = [
+    { value: "PREPARING", label: "예비 창업자" },
+    { value: "OPERATING", label: "운영 중" },
+    { value: "CLOSING", label: "폐업 예정" },
+    { value: "RELOCATING", label: "가게 이전" },
+    { value: "UNDECIDED", label: "미정" },
 ];

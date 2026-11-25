@@ -53,11 +53,9 @@ export default function MemberEditContainer() {
             </section>
 
             <div className="mt-13.5 flex">
-                {/* 스크롤해도 메뉴가 따라 내려옴 (sticky) */}
+                {/* 메뉴는 제자리에 고정 (스크롤해도 따라 내려오지 않음) */}
                 <aside className="w-91.5 shrink-0 pl-6 pt-49">
-                    <div className="sticky top-34">
-                        <MyPageSideNav activeHref={activeHref} />
-                    </div>
+                    <MyPageSideNav activeHref={activeHref} />
                 </aside>
 
                 <div className="min-w-0 flex-1 pl-2">

@@ -1,8 +1,10 @@
 "use client"
 
 import useAuthStore from "@/stores/useAuthStore";
-import { SubmitEvent, useState } from "react";
-import { BUSINESS_STATUS_OPTIONS, MOCK_PROFILE } from "../../_component/mockData";
+import { useMutation } from "@tanstack/react-query";
+import { SubmitEvent, useEffect, useRef, useState } from "react";
+import { BUSINESS_STATUS_OPTIONS } from "../../_component/mockData";
+import { updateProfileApi } from "../_lib/profile.api";
 import { helperClass, inputClass, labelClass, secondaryButtonClass, sectionTitleClass } from "./fieldStyle";
 
 interface ProfileEditFormProps {
@@ -12,17 +14,52 @@ interface ProfileEditFormProps {
 // 기본 정보 (사진 / 닉네임 / 이메일 / 사업자 상태 / 관심 지역 · 업종)
 export default function ProfileEditForm({onSaved}: ProfileEditFormProps) {
     const user = useAuthStore((state) => state.user);
+    const setUser = useAuthStore((state) => state.setUser);
 
-    const [nickname, setNickname] = useState(user?.user_nickname || MOCK_PROFILE.nickname);
-    const [businessStatus, setBusinessStatus] = useState(MOCK_PROFILE.businessStatus);
-    const [region, setRegion] = useState(`서울 ${MOCK_PROFILE.region}`);
-    const [industry, setIndustry] = useState(MOCK_PROFILE.industry);
-    const email = user?.user_email || "gildong@startfit.kr";
+    // 입력칸 처음 값 = 로그인 정보 (없으면 빈 칸)
+    const [nickname, setNickname] = useState(user?.user_nickname || "");
+    const [businessStatus, setBusinessStatus] = useState(user?.user_business_status || "");
+    const [region, setRegion] = useState(user?.user_interest_region || "");
+    const [industry, setIndustry] = useState(user?.user_interest_industry || "");
+    const email = user?.user_email || "";
 
-    // TODO: 회원정보 수정 API 연결
+    // 로그인 정보는 화면이 처음 그려진 뒤에 불러와지므로, 불러와지면 입력칸을 한 번만 채운다
+    const filled = useRef(false);
+    useEffect(() => {
+        if (!user || filled.current) return;
+        filled.current = true;
+        setNickname(user.user_nickname || "");
+        setBusinessStatus(user.user_business_status || "");
+        setRegion(user.user_interest_region || "");
+        setIndustry(user.user_interest_industry || "");
+    }, [user]);
+
+    // 회원정보 수정 저장 (PUT /users/{user_id}) → 성공하면 로그인 정보도 새 값으로 바꿈
+    const saveMutation = useMutation({
+        mutationFn: () => updateProfileApi(user!.user_id, {
+            user_nickname: nickname.trim(),
+            user_business_status: businessStatus || undefined,
+            user_interest_region: region.trim() || null,
+            user_interest_industry: industry.trim() || null,
+        }),
+        onSuccess: (res) => {
+            if (res.data) setUser({ ...user!, ...res.data });
+            onSaved();
+        },
+        onError: (error) => window.alert(error.message),
+    });
+
     const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
-        onSaved();
+        if (!user) {
+            window.alert("로그인 정보가 없어요. 다시 로그인해 주세요.");
+            return;
+        }
+        if (!nickname.trim()) {
+            window.alert("닉네임을 입력해 주세요.");
+            return;
+        }
+        saveMutation.mutate();
     }
 
     // TODO: 프로필 사진 업로드 (user.api.ts의 updateProfileApi) 연결
@@ -59,19 +96,19 @@ export default function ProfileEditForm({onSaved}: ProfileEditFormProps) {
                 <p className={labelClass}>사업자 상태</p>
                 <div className="mt-3 flex flex-wrap gap-2.5">
                     {BUSINESS_STATUS_OPTIONS.map((status) => {
-                        const isActive = businessStatus === status;
+                        const isActive = businessStatus === status.value;
                         return (
                             <button
-                                key={status}
+                                key={status.value}
                                 type="button"
-                                onClick={() => setBusinessStatus(status)}
+                                onClick={() => setBusinessStatus(status.value)}
                                 className={`flex h-13 items-center rounded-full px-5 text-xl ${
                                     isActive
                                         ? "bg-main-dark font-bold text-white shadow-[0px_6px_16px_0px_rgba(19,40,74,0.25)]"
                                         : "border border-line bg-white font-normal text-ink-700 shadow-[0px_4px_14px_0px_rgba(11,27,51,0.05)]"
                                 }`}
                             >
-                                {status}
+                                {status.label}
                             </button>
                         );
                     })}
@@ -90,8 +127,8 @@ export default function ProfileEditForm({onSaved}: ProfileEditFormProps) {
                 </label>
             </div>
 
-            <button type="submit" className="mt-11.5 flex h-14 items-center rounded-full bg-main-dark px-7.5 text-xl font-bold text-white">
-                저장하기
+            <button type="submit" disabled={saveMutation.isPending} className="mt-11.5 flex h-14 items-center rounded-full bg-main-dark px-7.5 text-xl font-bold text-white disabled:opacity-60">
+                {saveMutation.isPending ? "저장 중" : "저장하기"}
             </button>
         </form>
     );

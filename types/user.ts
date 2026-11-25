@@ -12,6 +12,8 @@ export interface User {
   user_provider_id: string | null;
   user_status: string;
   user_business_status: string;
+  user_interest_region: string | null;   // 관심 지역
+  user_interest_industry: string | null; // 관심 업종
   user_created_at: string;
   user_updated_at: string | null;
   user_deleted_at: string | null;
