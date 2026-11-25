@@ -43,20 +43,19 @@ export default function MyBookmarkList() {
     const { data, isLoading, error } = useQuery({
         queryKey: [MY_SUPPORT_BOOKMARKS_QUERY_KEY, keyword],
         queryFn: () => getMySupportBookmarksApi(keyword),
+        staleTime: 0, // 들어올 때마다 새로 불러오기 (지원사업 페이지에서 등록한 것도 바로 보이게)
     });
     const list = data?.data ?? [];
 
-    // 별표로 해제한 공고 (목록에서 바로 빼지 않고 ☆로 바꿔 두기 → 다시 누르면 재등록)
-    const [unbookmarked, setUnbookmarked] = useState<string[]>([]);
     const [pendingKey, setPendingKey] = useState<string | null>(null);
 
-    // 관심 등록/해제 토글 (POST /bookmarks/support)
+    // 관심 해제 (POST /bookmarks/support 토글) → 목록·개수 바로 새로 불러와서 목록에서 빠짐
     const toggleBookmark = async (item: MySupportBookmarkItem) => {
         const key = bookmarkKey(item.source, item.source_id);
         setPendingKey(key);
         try {
-            const isBookmarked = await toggleSupportBookmark(item.source, item.source_id);
-            setUnbookmarked((prev) => isBookmarked ? prev.filter((k) => k !== key) : [...prev, key]);
+            await toggleSupportBookmark(item.source, item.source_id);
+            await queryClient.invalidateQueries({ queryKey: [MY_SUPPORT_BOOKMARKS_QUERY_KEY] }); // 목록·프로필 개수
             queryClient.invalidateQueries({ queryKey: SUPPORT_BOOKMARKS_QUERY_KEY }); // 지원사업 페이지 별표도 맞추기
         } catch (err) {
             window.alert(err instanceof Error ? err.message : "관심 지원사업을 저장하지 못했어요.");
@@ -83,7 +82,6 @@ export default function MyBookmarkList() {
             <ul>
                 {list.map((item) => {
                     const key = bookmarkKey(item.source, item.source_id);
-                    const bookmarked = !unbookmarked.includes(key);
                     const ddayLabel = toDdayLabel(item);
                     const isUrgent = item.is_available && item.dday !== null && item.dday >= 0 && item.dday <= 3;
                     const isClosed = ddayLabel === "마감";
@@ -109,14 +107,10 @@ export default function MyBookmarkList() {
                                     type="button"
                                     onClick={() => toggleBookmark(item)}
                                     disabled={pendingKey === key}
-                                    aria-label={bookmarked ? "관심 해제" : "관심 등록"}
-                                    className={`${buttonBase} w-15 text-[22px] font-bold disabled:opacity-40 ${
-                                        bookmarked
-                                            ? "bg-main-dark text-white shadow-[0px_6px_16px_0px_rgba(19,40,74,0.25)]"
-                                            : "border border-line bg-white text-ink-300 shadow-[0px_4px_14px_0px_rgba(11,27,51,0.05)]"
-                                    }`}
+                                    aria-label="관심 해제"
+                                    className={`${buttonBase} w-15 bg-main-dark text-[22px] font-bold text-white shadow-[0px_6px_16px_0px_rgba(19,40,74,0.25)] disabled:opacity-40`}
                                 >
-                                    {bookmarked ? "★" : "☆"}
+                                    ★
                                 </button>
                                 {item.detail_url ? (
                                     <a

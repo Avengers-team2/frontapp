@@ -38,6 +38,7 @@ export default function MyPageProfile() {
     const { data: myBookmarks } = useQuery({
         queryKey: [MY_SUPPORT_BOOKMARKS_QUERY_KEY, ""],
         queryFn: () => getMySupportBookmarksApi(""),
+        staleTime: 0, // 들어올 때마다 새로 불러오기
     });
     const bookmarkCount = myBookmarks?.data?.length ?? 0;
 
