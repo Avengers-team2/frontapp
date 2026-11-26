@@ -44,7 +44,7 @@ export default function MemberEditContainer() {
     }, []);
 
     return (
-        <main className="mx-auto w-full max-w-372 px-6 pb-20 pt-43">
+        <main className="mx-auto w-[90%] max-w-[1440px] pb-20 pt-43">
             <MyPageToast message={message} />
 
             <section className="border-b border-ink-900 pb-17.5">
