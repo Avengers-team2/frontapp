@@ -1,6 +1,7 @@
 "use client"
 
 import { PostSort, PostSortLabel } from "@/enums/post.enum";
+import useAuthStore from "@/stores/useAuthStore";
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { SubmitEvent, useState } from "react";
@@ -16,6 +17,7 @@ interface PostSearchBarProps {
 export default function PostSearchBar({keyword, sort, onKeywordChange, onSortChange}: PostSearchBarProps) {
 
     const router = useRouter()
+    const user = useAuthStore((state) => state.user);
 
     // 입력 중인 검색어 (엔터 전까지는 목록에 반영 안 함)
     const [input, setInput] = useState(keyword);
@@ -26,8 +28,9 @@ export default function PostSearchBar({keyword, sort, onKeywordChange, onSortCha
         onKeywordChange(input.trim());
     }
 
-    // 글쓰기 버튼 클릭 → 작성 페이지 이동
+    // 글쓰기 버튼 클릭 → 로그인했으면 작성 페이지, 안 했으면 로그인 화면
     const handleWriteClick = () => {
+        if (!user) return router.push("/login");
         router.push("/posts/write")
     }
 
