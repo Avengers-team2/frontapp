@@ -3,8 +3,6 @@ import { BUDGET_MAX } from "./analysis.data";
 type BudgetValue = {
     depositMin: number;
     depositMax: number;
-    monthlyRentMax: number | null;
-    interiorBudgetMax: number | null;
 };
 type BudgetFormProps = { value: BudgetValue; onChange: (v: BudgetValue) => void };
 
@@ -29,8 +27,7 @@ export default function BudgetForm({ value, onChange }: BudgetFormProps) {
 
     return (
         <div>
-            <div className="flex items-end justify-between">
-                <p className="text-[15px] font-semibold text-ink-800">보증금</p>
+            <div className="flex items-end justify-end">
                 <p className="text-[22px] font-bold text-main">
                     {formatMoney(value.depositMin)} ~ {formatMoney(value.depositMax)}
                 </p>
@@ -68,61 +65,20 @@ export default function BudgetForm({ value, onChange }: BudgetFormProps) {
                 ))}
             </div>
             <p className="mt-2 text-[13px] text-ink-400">단위: 만원 · 3억원이 넘으면 칸에 직접 입력해 주세요</p>
-
-            <div className="mt-8 grid grid-cols-2 gap-4">
-                <LaterField
-                    label="월 임대료 상한"
-                    value={value.monthlyRentMax}
-                    onChange={(n) => set({ monthlyRentMax: n })}
-                    placeholder={300}
-                />
-                <LaterField
-                    label="인테리어 · 설비"
-                    value={value.interiorBudgetMax}
-                    onChange={(n) => set({ interiorBudgetMax: n })}
-                    placeholder={500}
-                />
-            </div>
         </div>
     );
 }
 
-function MoneyInput({ value, onChange, disabled, placeholder, emptyWhenZero }: {
-    value: number | null; onChange: (n: number) => void; disabled?: boolean; placeholder?: number;
-    emptyWhenZero?: boolean;
-}) {
+function MoneyInput({ value, onChange }: { value: number; onChange: (n: number) => void }) {
     return (
-        <label className={`flex flex-1 items-center gap-2 rounded-lg border border-line px-4 py-3 ${disabled ? "bg-surface" : "bg-white"}`}>
+        <label className="flex flex-1 items-center gap-2 rounded-lg border border-line bg-white px-4 py-3">
             <input
                 inputMode="numeric"
-                disabled={disabled}
-                value={value === null || (emptyWhenZero && value === 0) ? "" : value.toLocaleString()}
-                placeholder={placeholder?.toLocaleString()}
+                value={value.toLocaleString()}
                 onChange={(e) => onChange(toNumber(e.target.value))}
-                className="w-full bg-transparent text-right text-[16px] font-semibold text-ink-900 outline-none placeholder:font-normal placeholder:text-ink-200"
+                className="w-full bg-transparent text-right text-[16px] font-semibold text-ink-900 outline-none"
             />
             <span className="shrink-0 text-[14px] text-ink-300">만원</span>
         </label>
-    );
-}
-
-function LaterField({ label, value, onChange, placeholder }: {
-    label: string; value: number | null; onChange: (n: number | null) => void; placeholder: number;
-}) {
-    const later = value === null;
-    return (
-        <div>
-            <p className="mb-2 text-[15px] font-semibold text-ink-800">{label}</p>
-            <MoneyInput value={value} onChange={onChange} disabled={later} placeholder={placeholder} emptyWhenZero />
-            <label className="mt-2 flex w-fit cursor-pointer items-center gap-2 text-[14px] text-ink-500">
-                <input
-                    type="checkbox"
-                    checked={later}
-                    onChange={(e) => onChange(e.target.checked ? null : 0)}
-                    className="size-4 accent-main"
-                />
-                나중에 정할게요
-            </label>
-        </div>
     );
 }

@@ -30,6 +30,24 @@ function countRequiredDone(v: AnalysisFormValues) {
     ].filter(Boolean).length;
 }
 
+function toGender(genders: string[]) {
+    if (genders.length === 0) return null;
+    return genders.length === 1 ? genders[0] : "상관없음";
+}
+
+function restoreDraft(saved: Partial<AnalysisFormValues> & { targetGender?: string }): AnalysisFormValues {
+    const { targetGender, ...rest } = saved;
+    const merged = { ...DEFAULT_VALUES, ...rest };
+    const genders = merged.targetGenders.length > 0 ? merged.targetGenders
+        : targetGender === "상관없음" ? [...TARGET_GENDERS]
+        : targetGender && TARGET_GENDERS.includes(targetGender) ? [targetGender] : [];
+    return {
+        ...merged,
+        targetGenders: genders,
+        businessStatus: BUSINESS_STATUSES.includes(merged.businessStatus) ? merged.businessStatus : "",
+    };
+}
+
 export default function AnalysisFormContainer() {
     const { control, register, handleSubmit, setValue, reset } = useForm<AnalysisFormValues>({ defaultValues: DEFAULT_VALUES });
 
@@ -42,7 +60,7 @@ export default function AnalysisFormContainer() {
             if (!sessionStorage.getItem(FORM_RESTORE_KEY)) return;
             sessionStorage.removeItem(FORM_RESTORE_KEY);
             const saved = sessionStorage.getItem(FORM_DRAFT_KEY);
-            if (saved) reset({ ...DEFAULT_VALUES, ...(JSON.parse(saved) as Partial<AnalysisFormValues>) });
+            if (saved) reset(restoreDraft(JSON.parse(saved) as Partial<AnalysisFormValues>));
         } catch {
             // 저장된 값이 없거나 깨졌으면 빈 입력창으로 둔다
         }
@@ -90,12 +108,12 @@ export default function AnalysisFormContainer() {
                 industry_small: data.industrySmall,
                 deposit_min: data.depositMin,
                 deposit_max: data.depositMax,
-                monthly_rent_max: data.monthlyRentMax,
-                interior_budget_max: data.interiorBudgetMax,
+                monthly_rent_max: null,
+                interior_budget_max: null,
                 store_size: data.storeSize || null,
                 operating_times: data.operatingTimes,
                 target_ages: data.targetAges,
-                target_gender: data.targetGender || null,
+                target_gender: toGender(data.targetGenders),
                 business_status: data.businessStatus,
                 is_franchise: data.isFranchise || null,
                 franchise_brand: data.franchiseBrand || null,
@@ -155,6 +173,11 @@ export default function AnalysisFormContainer() {
                     <SectionNav />
 
                     <form onSubmit={handleSubmit(onSubmit)} className="min-w-0 flex-1 pt-10">
+                        <FormSection id="status" title="분석 목적" required>
+                            <ChipGroup options={BUSINESS_STATUSES} value={values.businessStatus}
+                                onChange={(v) => set({ businessStatus: v })} />
+                        </FormSection>
+
                         <FormSection id="area" title="희망 지역" required>
                             <AreaSearch
                                 areaName={values.areaName}
@@ -172,14 +195,19 @@ export default function AnalysisFormContainer() {
                             />
                         </FormSection>
 
+                        <FormSection id="franchise" title="프랜차이즈 여부">
+                            <FranchiseField
+                                isFranchise={values.isFranchise}
+                                brand={values.franchiseBrand}
+                                brandCategory={values.franchiseCategory}
+                                onChangeIsFranchise={(v) => set({ isFranchise: v })}
+                                onChangeBrand={(b) => set({ franchiseBrand: b.name, franchiseCategory: b.category })}
+                            />
+                        </FormSection>
+
                         <FormSection id="budget" title="창업 예산" required>
                             <BudgetForm
-                                value={{
-                                    depositMin: values.depositMin,
-                                    depositMax: values.depositMax,
-                                    monthlyRentMax: values.monthlyRentMax,
-                                    interiorBudgetMax: values.interiorBudgetMax,
-                                }}
+                                value={{ depositMin: values.depositMin, depositMax: values.depositMax }}
                                 onChange={(v) => set(v)}
                             />
                         </FormSection>
@@ -189,34 +217,19 @@ export default function AnalysisFormContainer() {
                         </FormSection>
 
                         <FormSection id="time" title="운영 시간" hint="복수 선택">
-                            <ChipGroup multiple options={OPERATING_TIMES} value={values.operatingTimes}
-                                onChange={(v) => set({ operatingTimes: v })} />
+                            <ChipGroup multiple allLabel="전체" allExclude={["미정"]} options={OPERATING_TIMES}
+                                value={values.operatingTimes} onChange={(v) => set({ operatingTimes: v })} />
                         </FormSection>
 
                         <FormSection id="target" title="주요 타깃 고객층">
                             <p className="mb-3 text-[15px] font-semibold text-ink-800">
                                 연령대 <span className="ml-1 text-[13px] font-normal text-ink-300">복수 선택</span>
                             </p>
-                            <ChipGroup multiple options={TARGET_AGES} value={values.targetAges}
+                            <ChipGroup multiple allLabel="전체" options={TARGET_AGES} value={values.targetAges}
                                 onChange={(v) => set({ targetAges: v })} />
                             <p className="mb-3 mt-8 text-[15px] font-semibold text-ink-800">성별</p>
-                            <ChipGroup options={TARGET_GENDERS} value={values.targetGender}
-                                onChange={(v) => set({ targetGender: v })} />
-                        </FormSection>
-
-                        <FormSection id="status" title="사업자 상태" required>
-                            <ChipGroup options={BUSINESS_STATUSES} value={values.businessStatus}
-                                onChange={(v) => set({ businessStatus: v })} />
-                        </FormSection>
-
-                        <FormSection id="franchise" title="프랜차이즈 여부">
-                            <FranchiseField
-                                isFranchise={values.isFranchise}
-                                brand={values.franchiseBrand}
-                                brandCategory={values.franchiseCategory}
-                                onChangeIsFranchise={(v) => set({ isFranchise: v })}
-                                onChangeBrand={(b) => set({ franchiseBrand: b.name, franchiseCategory: b.category })}
-                            />
+                            <ChipGroup multiple allLabel="전체" options={TARGET_GENDERS} value={values.targetGenders}
+                                onChange={(v) => set({ targetGenders: v })} />
                         </FormSection>
 
                         <FormSection id="note" title="추가 의견" hint="선택"
