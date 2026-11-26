@@ -20,6 +20,14 @@ export default function SearchSelect<T>({
     placeholder, disabled, search, getKey, getLabel, renderItem, onSelect, renderEmpty, onKeywordChange, defaultKeyword = "",
 }: SearchSelectProps<T>) {
     const [keyword, setKeyword] = useState(defaultKeyword);
+
+    // 밖에서 defaultKeyword 가 새 값으로 바뀌면(예: 저장된 입력값 복원) 입력칸 글자도 따라간다.
+    // 비워지는 경우는 무시한다 (글자를 지워 가며 입력하는 중일 수 있어서).
+    const [prevDefaultKeyword, setPrevDefaultKeyword] = useState(defaultKeyword);
+    if (defaultKeyword !== prevDefaultKeyword) {
+        setPrevDefaultKeyword(defaultKeyword);
+        if (defaultKeyword) setKeyword(defaultKeyword);
+    }
     const [results, setResults] = useState<T[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -119,38 +127,44 @@ export default function SearchSelect<T>({
                 {loading && <span className="size-4 shrink-0 animate-spin rounded-full border-2 border-line border-t-sub" />}
             </label>
 
-            {showList && (
-                <ul role="listbox" className="mt-2 overflow-hidden rounded-xl border border-line bg-white">
-                    {results.map((item, i) => (
-                        <li
-                            key={getKey(item)}
-                            role="option"
-                            aria-selected={i === activeIndex}
-                            onMouseEnter={() => setActiveIndex(i)}
-                            onMouseDown={(e) => {
-                                e.preventDefault();
-                                choose(item);
-                            }}
-                            className={`cursor-pointer border-b border-line px-5 py-4 last:border-b-0 ${
-                                i === activeIndex ? "bg-surface" : "bg-white"
-                            }`}
-                        >
-                            {renderItem(item, debouncedKeyword)}
-                        </li>
-                    ))}
-                </ul>
-            )}
-
-            {showError && (
-                <div className="mt-2 rounded-xl border border-danger/40 bg-danger-bg px-6 py-5">
-                    <p className="text-[17px] font-semibold text-danger-strong">검색 중 문제가 생겼어요</p>
-                    <p className="mt-1 text-[15px] text-ink-500">{error}</p>
+            {/* 결과 영역: 아래로 부드럽게 펼쳐지고 접힌다. 접히는 동안에도 내용이 남도록 내용은 상태에서 그대로 그린다 */}
+            <div
+                inert={!(showList || showEmpty || showError)}
+                className={`grid transition-[grid-template-rows,opacity] duration-400 ease-[cubic-bezier(0.3,1,0.4,1)] motion-reduce:transition-none ${
+                    showList || showEmpty || showError ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                }`}
+            >
+                <div className="min-h-0 overflow-hidden">
+                    {results.length > 0 ? (
+                        <ul role="listbox" className="mt-2 overflow-hidden rounded-xl border border-line bg-white">
+                            {results.map((item, i) => (
+                                <li
+                                    key={getKey(item)}
+                                    role="option"
+                                    aria-selected={i === activeIndex}
+                                    onMouseEnter={() => setActiveIndex(i)}
+                                    onMouseDown={(e) => {
+                                        e.preventDefault();
+                                        choose(item);
+                                    }}
+                                    className={`cursor-pointer border-b border-line px-5 py-4 last:border-b-0 ${
+                                        i === activeIndex ? "bg-surface" : "bg-white"
+                                    }`}
+                                >
+                                    {renderItem(item, debouncedKeyword)}
+                                </li>
+                            ))}
+                        </ul>
+                    ) : error ? (
+                        <div className="mt-2 rounded-xl border border-danger/40 bg-danger-bg px-6 py-5">
+                            <p className="text-[17px] font-semibold text-danger-strong">검색 중 문제가 생겼어요</p>
+                            <p className="mt-1 text-[15px] text-ink-500">{error}</p>
+                        </div>
+                    ) : debouncedKeyword !== "" ? (
+                        <div className="mt-2 rounded-xl border border-line bg-white px-6 py-5">{renderEmpty(debouncedKeyword)}</div>
+                    ) : null}
                 </div>
-            )}
-
-            {showEmpty && (
-                <div className="mt-2 rounded-xl border border-line bg-white px-6 py-5">{renderEmpty(debouncedKeyword)}</div>
-            )}
+            </div>
         </div>
     );
 }

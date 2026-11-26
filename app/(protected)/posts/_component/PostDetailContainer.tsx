@@ -4,6 +4,7 @@ import { deletePostApi, getPostDetailApi, togglePostBookmarkApi, togglePostLikeA
 import ErrorComponent from "@/components/common/ErrorComponent";
 import Loading from "@/components/common/Loading";
 import { PostCategoryLabel } from "@/enums/post.enum";
+import { toLoginHref } from "@/lib/loginRedirect";
 import useAuthStore from "@/stores/useAuthStore";
 import { ApiResponseDTO } from "@/types/common/common.type";
 import { PostDetail } from "@/types/post/post.type";
@@ -94,13 +95,13 @@ export default function PostDetailContainer({params}: PostDetailContainerProps) 
 
     // 공감(좋아요) 버튼 클릭 (비로그인이면 로그인 페이지로)
     const handleLikeClick = () => {
-        if (!user) return router.push("/login");
+        if (!user) return router.push(toLoginHref());
         likeMutation.mutate();
     }
 
     // 북마크 버튼 클릭 (비로그인이면 로그인 페이지로)
     const handleBookmarkClick = () => {
-        if (!user) return router.push("/login");
+        if (!user) return router.push(toLoginHref());
         bookmarkMutation.mutate();
     }
 

@@ -1,3 +1,4 @@
+import "@/keyframes/form-motion.keyframe.css";
 import SelectedBrandCard from "@/components/analysis/SelectedBrandCard";
 import { BrandSearchItem } from "@/api/analysis/analysis.api";
 import BrandSearch from "./BrandSearch";
@@ -45,12 +46,18 @@ export default function FranchiseField({
                 </p>
 
                 {enabled && brand ? (
-                    <SelectedBrandCard
-                        brandName={brand}
-                        category={`${brandCategory} · 정보공개서 등록 브랜드`}
-                        disclosureUrl={FTC_URL}
-                        onChange={() => onChangeBrand({ name: "", category: "" })}
-                    />
+                    // 브랜드를 고르면 선택 카드가 왼쪽에서 미끄러져 채워진다
+                    <div
+                        key={brand}
+                        className="animate-[form-slide-in_0.45s_cubic-bezier(0.3,1.3,0.5,1)_backwards] motion-reduce:animate-none"
+                    >
+                        <SelectedBrandCard
+                            brandName={brand}
+                            category={`${brandCategory} · 정보공개서 등록 브랜드`}
+                            disclosureUrl={FTC_URL}
+                            onChange={() => onChangeBrand({ name: "", category: "" })}
+                        />
+                    </div>
                 ) : (
                     <BrandSearch disabled={!enabled} onSelect={handleSelect} />
                 )}

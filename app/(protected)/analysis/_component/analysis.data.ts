@@ -40,6 +40,17 @@ export const DEFAULT_VALUES: AnalysisFormValues = {
     extraNote: "",
 };
 
+// 업종 상태 문구. 막지는 않고 선택할 수 있으며, 점수가 안 나오는 경우엔 참고 정보(정보판)를 보여준다
+export const INDUSTRY_STATUS_TEXT = {
+    analyzed: { short: "분석 가능", full: "점수 분석 가능" },
+    noRecord: { short: "기록 없음", full: "이 상권엔 기록 없음 (참고 정보 제공)" },
+    unsupported: { short: "점수 미지원", full: "점수 미지원 (참고 정보 제공)" },
+} as const;
+
+// 결과 화면의 "조건 수정"으로 돌아올 때 입력값을 되살리기 위한 sessionStorage 키
+export const FORM_DRAFT_KEY = "analysis:form-draft"; // 마지막으로 제출한 입력값
+export const FORM_RESTORE_KEY = "analysis:form-restore"; // 있으면 다음 입력 화면 진입 때 draft 를 채운다
+
 export const SECTIONS = [
     { id: "area", label: "희망 지역", required: true },
     { id: "industry", label: "업종", required: true },

@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { toLoginHref } from "@/lib/loginRedirect";
 import { useForm, useWatch } from "react-hook-form";
-import { ApiError, createAnalysisInput } from "@/api/analysis/analysis.api";
+import { ApiError, createAnalysisInput, getAreaIndustries, type IndustryStatus } from "@/api/analysis/analysis.api";
 import {
-    AnalysisFormValues, BUSINESS_STATUSES, DEFAULT_VALUES, NOTE_MAX,
+    AnalysisFormValues, BUSINESS_STATUSES, DEFAULT_VALUES, FORM_DRAFT_KEY, FORM_RESTORE_KEY, NOTE_MAX,
     OPERATING_TIMES, SECTIONS, TARGET_AGES, TARGET_GENDERS,
 } from "./analysis.data";
 import BudgetForm from "./BudgetForm";
@@ -29,20 +31,54 @@ function countRequiredDone(v: AnalysisFormValues) {
 }
 
 export default function AnalysisFormContainer() {
-    const { control, register, handleSubmit, setValue } = useForm<AnalysisFormValues>({ defaultValues: DEFAULT_VALUES });
+    const { control, register, handleSubmit, setValue, reset } = useForm<AnalysisFormValues>({ defaultValues: DEFAULT_VALUES });
 
     const values = useWatch({ control }) as AnalysisFormValues;
+
+    // 결과 화면에서 "조건 수정"으로 들어왔으면 직전에 제출한 입력값을 채워 둔다.
+    // useWatch 가 구독을 시작한 뒤에 reset 해야 values 가 따라 바뀐다 (그래서 이 위치).
+    useEffect(() => {
+        try {
+            if (!sessionStorage.getItem(FORM_RESTORE_KEY)) return;
+            sessionStorage.removeItem(FORM_RESTORE_KEY);
+            const saved = sessionStorage.getItem(FORM_DRAFT_KEY);
+            if (saved) reset({ ...DEFAULT_VALUES, ...(JSON.parse(saved) as Partial<AnalysisFormValues>) });
+        } catch {
+            // 저장된 값이 없거나 깨졌으면 빈 입력창으로 둔다
+        }
+    }, [reset]);
 
     const set = (patch: Partial<AnalysisFormValues>) => {
         (Object.keys(patch) as (keyof AnalysisFormValues)[]).forEach((key) =>
             setValue(key, patch[key] as never, { shouldDirty: true }),
         );
     };
+    // 선택한 상권 기준으로 업종마다 분석 가능 여부를 받아 온다. 실패해도 선택·분석에는 영향이 없다 (표시만 빠진다)
+    const { data: areaIndustries } = useQuery({
+        queryKey: ["areaIndustries", values.areaCode],
+        queryFn: () => getAreaIndustries(values.areaCode),
+        enabled: values.areaCode !== "",
+        staleTime: 5 * 60 * 1000,
+        retry: false,
+    });
+    const statusMap = useMemo(() => {
+        const map = new Map<string, IndustryStatus>();
+        for (const item of areaIndustries ?? []) {
+            for (const f of item.frontIndustries) map.set(`${f.large}|${f.mid}|${f.small ?? ""}`, item.status);
+        }
+        return map;
+    }, [areaIndustries]);
+    // 서버 매핑과 같은 순서로 찾는다: (대, 중, 소) 먼저, 없으면 (대, 중, 중분류 전체)
+    const statusOf = (large: string, mid: string, small: string) =>
+        values.areaCode === "" ? undefined : (statusMap.get(`${large}|${mid}|${small}`) ?? statusMap.get(`${large}|${mid}|`));
+
     const done = countRequiredDone(values);
     const canSubmit = done === REQUIRED_TOTAL;
 
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
+    const [isNavigating, startNavigation] = useTransition();
+    const busy = submitting || isNavigating;
 
     const onSubmit = async (data: AnalysisFormValues) => {
         setSubmitting(true);
@@ -65,11 +101,28 @@ export default function AnalysisFormContainer() {
                 franchise_brand: data.franchiseBrand || null,
                 extra_note: data.extraNote.trim() || null,
             });
-            router.push(`/analysis/result/${input_id}`);
+            // "조건 수정"으로 돌아올 때 되살릴 수 있게 입력값을 남긴다
+            try {
+                sessionStorage.setItem(FORM_DRAFT_KEY, JSON.stringify(data));
+            } catch {
+                // 저장소를 못 써도 분석 진행에는 영향 없음
+            }
+            // 선택한 상권 코드·업종을 URL 에 남긴다 (새로고침해도 결과 페이지가 같은 상권을 그린다)
+            const query = new URLSearchParams({
+                area: data.areaCode,
+                areaName: data.areaName,
+                industry: data.industrySmall,
+            });
+            // 프랜차이즈 브랜드를 골랐으면 결과 화면이 같은 브랜드 점포를 강조할 수 있게 함께 남긴다
+            if (data.isFranchise === "예" && data.franchiseBrand) query.set("brand", data.franchiseBrand);
+            // 요청은 끝났으니 submitting 은 풀고, 화면 이동이 끝날 때까지는 isNavigating 이 버튼을 막는다.
+            // (이동 뒤 입력 화면으로 돌아와도 "요청 중" 상태가 남지 않게 하려고)
+            setSubmitting(false);
+            startNavigation(() => router.push(`/analysis/result/${input_id}?${query}`));
         } catch (e) {
             if (e instanceof ApiError && e.status === 401) {
                 alert("로그인이 필요해요. 로그인 후 다시 시도해 주세요.");
-                router.push("/login");
+                router.push(toLoginHref());
             } else {
                 alert(e instanceof Error ? e.message : "분석 요청에 실패했어요. 잠시 후 다시 시도해 주세요.");
             }
@@ -115,6 +168,7 @@ export default function AnalysisFormContainer() {
                             <IndustrySelect
                                 value={{ large: values.industryLarge, mid: values.industryMid, small: values.industrySmall }}
                                 onChange={(v) => set({ industryLarge: v.large, industryMid: v.mid, industrySmall: v.small })}
+                                statusOf={statusOf}
                             />
                         </FormSection>
 
@@ -185,10 +239,10 @@ export default function AnalysisFormContainer() {
 
                         <button
                             type="submit"
-                            disabled={!canSubmit || submitting || values.extraNote.length > NOTE_MAX}
+                            disabled={!canSubmit || busy || values.extraNote.length > NOTE_MAX}
                             className="mt-6 w-full rounded-full bg-linear-to-r from-main to-sub py-5 text-[18px] font-bold text-white shadow-lg transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
                         >
-                            {submitting ? "분석 요청 중..." : "분석 시작하기 →"}
+                            {busy ? "분석 요청 중..." : "분석 시작하기 →"}
                         </button>
                         {!canSubmit && (
                             <p className="mt-3 text-center text-[13px] text-ink-300">필수 항목 4개를 모두 입력하면 분석을 시작할 수 있어요.</p>
