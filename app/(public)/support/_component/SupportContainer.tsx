@@ -66,7 +66,7 @@ export default function SupportContainer() {
     return (
         <div className="relative min-h-screen overflow-hidden bg-white">
             <div className="pointer-events-none absolute left-1/2 top-20 h-150 w-225 -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(94,240,220,0.14),transparent)]" />
-            <main className="relative mx-auto w-full max-w-372 px-6 pb-50 pt-50">
+            <main className="relative mx-auto w-full max-w-[1440px] px-6 pb-50 pt-50">
                 <h1 className="text-center text-5xl font-bold leading-[1.3] text-main">내 사업에 맞는 지원사업을 찾아보세요</h1>
 
                 <div className="mt-15 flex justify-center">
