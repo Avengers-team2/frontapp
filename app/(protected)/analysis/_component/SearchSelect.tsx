@@ -15,10 +15,11 @@ type SearchSelectProps<T> = {
     renderEmpty: (keyword: string) => React.ReactNode;
     onKeywordChange?: (keyword: string) => void;
     defaultKeyword?: string;
+    openRequest?: { text: string } | null; // 밖에서 검색어를 넣고 목록을 열어 달라는 요청
 };
 
 export default function SearchSelect<T>({
-    placeholder, disabled, invalid, search, getKey, getLabel, renderItem, onSelect, renderEmpty, onKeywordChange, defaultKeyword = "",
+    placeholder, disabled, invalid, search, getKey, getLabel, renderItem, onSelect, renderEmpty, onKeywordChange, defaultKeyword = "", openRequest = null,
 }: SearchSelectProps<T>) {
     const [keyword, setKeyword] = useState(defaultKeyword);
 
@@ -34,6 +35,15 @@ export default function SearchSelect<T>({
     const [error, setError] = useState("");
     const [open, setOpen] = useState(false);
     const [activeIndex, setActiveIndex] = useState(0);
+    // 다른 화면에서 주소를 들고 오면 그 글자를 넣고 자동완성 목록을 연다
+    const [prevRequest, setPrevRequest] = useState(openRequest);
+    if (openRequest !== prevRequest) {
+        setPrevRequest(openRequest);
+        if (openRequest) {
+            setKeyword(openRequest.text);
+            setOpen(true);
+        }
+    }
     const wrapperRef = useRef<HTMLDivElement>(null);
     const chosenLabelRef = useRef<string | null>(null);
     const debouncedKeyword = useDebounce(keyword.trim());

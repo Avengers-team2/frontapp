@@ -69,6 +69,23 @@ export default function AnalysisFormContainer() {
             setValue(key, patch[key] as never, { shouldDirty: true }),
         );
     };
+    // 메인·서비스 소개의 "체크 시작"으로 온 주소(?address=)는 희망 지역 검색창에 넣고 목록을 연다.
+    // 상권은 자동으로 고르지 않는다(맞는 상권이 없을 수 있어서). 다른 입력값은 그대로 둔다.
+    const [areaRequest, setAreaRequest] = useState<{ text: string } | null>(null);
+    useEffect(() => {
+        const address = new URLSearchParams(window.location.search).get("address")?.trim();
+        if (!address) return;
+        // 화면 이동 뒤의 스크롤이 끝난 다음에 처리한다
+        const timer = window.setTimeout(() => {
+            window.history.replaceState(null, "", window.location.pathname); // 새로고침해도 다시 덮어쓰지 않게
+            setValue("areaCode", "");
+            setValue("areaName", "");
+            setAreaRequest({ text: address });
+            goToField(fieldId("area"));
+        }, 300);
+        return () => window.clearTimeout(timer);
+    }, [setValue]);
+
     // 선택한 상권 기준으로 업종마다 분석 가능 여부를 받아 온다. 실패해도 선택·분석에는 영향이 없다 (표시만 빠진다)
     const { data: areaIndustries } = useQuery({
         queryKey: ["areaIndustries", values.areaCode],
@@ -237,6 +254,7 @@ export default function AnalysisFormContainer() {
                                     areaName={values.areaName}
                                     selected={values.areaCode !== ""}
                                     invalid={errorOf("area")}
+                                    openRequest={areaRequest}
                                     onSelect={(a) => set({ areaCode: a.code, areaName: a.name })}
                                     onClear={() => set({ areaCode: "", areaName: "" })}
                                 />

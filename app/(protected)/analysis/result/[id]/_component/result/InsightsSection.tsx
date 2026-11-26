@@ -294,7 +294,7 @@ function Recommendations({
                   <button
                     type="button"
                     onClick={() => onPick(item.front_industry!, areaCode, areaName)}
-                    className="cursor-pointer rounded-lg border border-line bg-white px-3 py-1.5 text-xs font-medium text-ink-900 hover:bg-surface"
+                    className="cursor-pointer rounded-lg border border-line bg-white px-3 py-1.5 text-xs font-medium text-ink-900 hover:bg-surface print:hidden"
                   >
                     이 업종으로 다시 분석하기
                   </button>

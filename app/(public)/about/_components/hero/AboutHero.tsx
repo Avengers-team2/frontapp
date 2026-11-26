@@ -5,9 +5,13 @@ import HeroStats from "./HeroStats";
 import HeroTitle from "./HeroTitle";
 import { HeroSpotProvider } from "./HeroSpotContext";
 
+// 첫 화면 내용의 양끝을 헤더(좌우 5% 여백, 최대 1440px)에 맞춘다
+// 배경은 헤더 뒤까지 채우고, 내용만 헤더 높이(72px)만큼 내려서 둔다
+const CONTAINER = "relative top-[72px] mx-auto h-[calc(100%-72px)] w-[90%] max-w-[1440px]";
+
 export default function AboutHero() {
     return (
-        <section className="relative w-full h-[901px] overflow-hidden bg-[#070d1a] pt-">
+        <section className="relative w-full h-[973px] overflow-hidden bg-[#070d1a]">
             {/* 배경 이미지 */}
             <Image
                 src="/assets/images/about/hero-street.jpg"
@@ -21,13 +25,14 @@ export default function AboutHero() {
                 className="absolute inset-0"
                 style={{
                     backgroundImage:
-                        "linear-gradient(to right, rgba(255,255,255,0.665) 0%, rgba(255,255,255,0.384) 42%, rgba(255,255,255,0.036) 70%), linear-gradient(to bottom, rgba(7,13,26,0) 70%, rgba(7,13,26,0.2) 100%)",
+                        "linear-gradient(to right, rgba(255,255,255,0.93) 0%, rgba(255,255,255,0.78) 42%, rgba(255,255,255,0.08) 70%), linear-gradient(to bottom, rgba(7,13,26,0) 70%, rgba(7,13,26,0.2) 100%)",
                 }}
             />
 
+            <div className={CONTAINER}>
             {/* 왼쪽 카피 */}
-            <div className="absolute top-[173px] left-[max(24px,calc(50%_-_772px))] w-[560px]">
-                <p className="flex items-center gap-[10px] h-[16px] font-(family-name:--font-jetbrains-mono) font-medium text-[12px] tracking-[0.12em] text-[#333333]">
+            <div className="absolute top-[173px] left-0 w-[560px]">
+                <p className="flex items-center gap-[10px] h-[20px] font-(family-name:--font-jetbrains-mono) font-medium text-[14px] tracking-[0.12em] text-[#333333]">
                     <span className="w-[8px] h-[8px] rounded-full bg-[#333333]" />
                     BEFORE YOU SIGN · 계약 전 5분
                 </p>
@@ -46,15 +51,16 @@ export default function AboutHero() {
 
             <HeroSpotProvider>
              {/* 오른쪽 점수 카드 */}
-            <div className="absolute top-[72px] right-[max(24px,calc(50%_-_721px))]">
+            <div className="absolute top-[72px] right-0">
                 <HeroScoreCard />
             </div>
 
              {/* 하단 수치 바 */}
-             <div className="absolute bottom-[53px] left-[max(24px,calc(50%_-_772px))]">
+             <div className="absolute bottom-[53px] inset-x-0">
                  <HeroStats />
              </div>
             </HeroSpotProvider>
+            </div>
         </section>
     );
 }

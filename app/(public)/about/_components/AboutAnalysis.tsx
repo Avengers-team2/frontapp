@@ -7,13 +7,13 @@ export default function AboutAnalysis() {
     return (
         <section className="relative w-full h-[1077px] overflow-hidden bg-linear-to-r from-[#13284a] to-[#0e3a4a]">
             {/* 오른쪽 지도 그래픽: 서서히 나타남 */}
-            <Reveal from="fade" delay={300} className="absolute top-0 left-1/2 -translate-x-1/2 w-[1922px] h-[1077px]">
+            <Reveal from="fade" delay={300} className="absolute top-[135px] left-1/2 -translate-x-1/2 w-[1440px] h-[807px]">
                 <Image
                     src="/assets/images/about/analysis-illust-v2.png"
                     alt="상권 분석 화면 예시"
                     width={1922}
                     height={1077}
-                    className="max-w-none w-[1922px] h-[1077px]"
+                    className="max-w-none w-[1440px] h-[807px]"
                 />
             </Reveal>
 
@@ -27,7 +27,7 @@ export default function AboutAnalysis() {
                 </Reveal>
 
                 <Reveal delay={100}>
-                    <p className="mt-[18px] text-[15px] leading-[23px] text-[#a9c0d8]">
+                    <p className="mt-[18px] text-[17px] leading-[26px] text-[#a9c0d8]">
                         선택한 위치를 중심으로 주변 점포부터 경쟁 현황, 고객과 매출까지 한눈에 확인하세요.
                     </p>
                 </Reveal>
@@ -36,7 +36,7 @@ export default function AboutAnalysis() {
                     {analysisPoints.map((point, i) => (
                         <li key={point}>
                             <Reveal delay={200 + i * 100}>
-                                <span className="flex items-center gap-[12px] font-medium text-[16px] leading-[24px] text-[#e8eef6]">
+                                <span className="flex items-center gap-[12px] font-medium text-[17px] leading-[26px] text-[#e8eef6]">
                                     <span className="flex items-center justify-center w-[20px] h-[20px] rounded-full bg-[#2bb3a3]">
                                         <svg width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M1 4L3.8 6.8L9 1.2" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
