@@ -29,7 +29,8 @@ function ProfileMenu({ user, variant }: { user: User; variant: "dark" | "white" 
 
     // 프로필 사진이 있으면 사진, 없으면 닉네임 첫 글자
     const initial = user.user_nickname?.trim().charAt(0) ?? "";
-    const profileImage = user.user_profile_image;
+    // 기본값("/users/default.jpg")처럼 S3 주소가 아니면 사진이 없는 것으로 보고 첫 글자 표시
+    const profileImage = user.user_profile?.startsWith("http") ? user.user_profile : null;
     const avatarClass = variant === "dark"
         ? "bg-[#5EF0DC] text-[#050B17]"
         : "bg-[#1F3A5F] text-white";

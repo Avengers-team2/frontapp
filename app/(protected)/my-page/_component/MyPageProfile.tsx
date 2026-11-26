@@ -19,6 +19,8 @@ export default function MyPageProfile() {
     const businessStatus = BUSINESS_STATUS_OPTIONS.find((s) => s.value === user?.user_business_status)?.label ?? "";
     const region = user?.user_interest_region || "미설정";
     const industry = user?.user_interest_industry || "미설정";
+    // 프로필 사진 (S3 주소일 때만 사진, 아니면 닉네임 첫 글자)
+    const profileImage = user?.user_profile?.startsWith("http") ? user.user_profile : null;
 
     // 내가 쓴 글 개수: 목록 1개만 요청해서 total_count만 사용 (GET /post/me)
     const { data: myPosts } = useQuery({
@@ -52,8 +54,12 @@ export default function MyPageProfile() {
     return (
         <section className="mt-11.75 flex items-center justify-between">
             <div className="flex items-start gap-8">
-                <div className="flex size-19.25 shrink-0 items-center justify-center rounded-full bg-linear-to-b from-sub to-main-dark text-[34px] font-bold leading-none text-white">
-                    {nickname.slice(0, 1) || "?"}
+                <div className="flex size-19.25 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-b from-sub to-main-dark text-[34px] font-bold leading-none text-white">
+                    {profileImage ? (
+                        <img src={profileImage} alt="" className="size-full object-cover" />
+                    ) : (
+                        nickname.slice(0, 1) || "?"
+                    )}
                 </div>
                 <div>
                     <div className="flex items-center gap-3">
