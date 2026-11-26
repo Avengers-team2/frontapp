@@ -46,6 +46,13 @@ interface ScoreBarProps {
 
 const FILL_MS = 900;
 
+// 점수대별 막대 색과 배지. 주의(50점 미만) 기준은 mapper 의 tone 을 따른다
+const GRADE = {
+  strong: { name: "강점", badge: "bg-point-blue-50 text-point-blue", bar: "bg-linear-to-r from-point-blue to-point-blue-light" },
+  normal: { name: "보통", badge: "bg-sub-50 text-sub-700", bar: "bg-point-mint" },
+  weak: { name: "보완 필요", badge: "bg-warning/20 text-warning-text", bar: "bg-warning" },
+} as const;
+
 // 0%에서 시작해 go 가 되면 score% 까지 차오르는 막대. key 가 바뀌면 처음부터 다시 채운다.
 function BarFill({ score, go, colorClass, delayClass }: { score: number; go: boolean; colorClass: string; delayClass: string }) {
   const [grown, setGrown] = useState(false);
@@ -99,20 +106,20 @@ export default function ScoreBar({
   if (excluded) {
     return (
       // 점수가 없는 항목: 점수 자리에 "?"를 두고, 아래에 사유를 보여준다
-      <div className="px-2 py-1">
-        <div className="flex items-center gap-3">
-          <span className="w-40 shrink-0 text-sm text-ink-300">{label}</span>
-          <div className="h-2 flex-1 rounded-full bg-line" />
-          <span className="w-10 text-right text-sm font-bold text-ink-300">?</span>
+      <div className="space-y-2 px-2 py-3">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm font-bold text-ink-300">{label}</span>
+          <span className="text-2xl font-bold text-ink-300">?</span>
         </div>
-        <p className="mt-1.5 text-xs leading-relaxed text-ink-300">{detail || "입력하지 않아 제외"}</p>
+        <div className="h-2.5 rounded-full bg-line-light" />
+        <p className="text-xs leading-relaxed text-ink-300">{detail || "입력하지 않아 제외"}</p>
       </div>
     );
   }
 
   const clamped = Math.min(100, Math.max(0, score));
   const rounded = Math.round(clamped);
-  const barColor = tone === "warn" ? "bg-warning" : "bg-sub-700";
+  const grade = tone === "warn" ? GRADE.weak : rounded >= 70 ? GRADE.strong : GRADE.normal;
 
   return (
     <div
@@ -121,24 +128,28 @@ export default function ScoreBar({
       onPointerLeave={onDeactivate}
       onFocus={handleActivate}
       onBlur={onDeactivate}
-      className={`rounded-lg px-2 py-1 outline-none transition-[opacity,background-color] duration-200 focus-visible:ring-2 focus-visible:ring-sub-700 ${
-        active ? "bg-sub-50 opacity-100" : dimmed ? "opacity-40" : "opacity-100"
+      className={`space-y-2 rounded-xl px-2 py-3 outline-none transition-[opacity,background-color] duration-200 focus-visible:ring-2 focus-visible:ring-sub-700 ${
+        active ? "bg-point-blue-50 opacity-100" : dimmed ? "opacity-40" : "opacity-100"
       }`}
     >
-      <div className="flex items-center gap-3">
-        <span className="w-40 shrink-0 text-sm text-ink-700">{label}</span>
-        <div className="h-2 flex-1 overflow-hidden rounded-full bg-line">
-          <BarFill
-            key={replay}
-            score={rounded}
-            go={inView}
-            colorClass={barColor}
-            delayClass={replay === 0 ? BAR_DELAY[Math.min(index, BAR_DELAY.length - 1)] : "delay-0"}
-          />
-        </div>
-        <span className="w-10 text-right text-sm font-bold tabular-nums text-ink-900">{rounded}점</span>
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-bold text-main-dark">{label}</span>
+        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${grade.badge}`}>{grade.name}</span>
+        <span className="ml-auto shrink-0 text-2xl font-bold tabular-nums leading-none text-main-dark">
+          {rounded}
+          <i className="ml-0.5 text-xs font-medium not-italic text-ink-300">점</i>
+        </span>
       </div>
-      {detail && <p className="mt-1.5 text-xs leading-relaxed text-ink-500">{detail}</p>}
+      <div className="h-2.5 overflow-hidden rounded-full bg-line-light">
+        <BarFill
+          key={replay}
+          score={rounded}
+          go={inView}
+          colorClass={grade.bar}
+          delayClass={replay === 0 ? BAR_DELAY[Math.min(index, BAR_DELAY.length - 1)] : "delay-0"}
+        />
+      </div>
+      {detail && <p className="text-xs leading-relaxed text-ink-500">{detail}</p>}
     </div>
   );
 }

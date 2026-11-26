@@ -38,48 +38,86 @@ const FILL_MOTION =
   "duration-900 ease-[cubic-bezier(0.34,1.45,0.64,1)] motion-reduce:transition-none";
 const pick = <T,>(table: T[], index: number) => table[Math.min(index, table.length - 1)];
 
+// 매출·손님은 밝은 파랑, 유동인구는 민트. 가장 큰 항목만 진하게
+const TONE = {
+  sales: { top: "bg-main-dark", rest: "bg-point-blue", text: "text-point-blue", glow: "from-point-blue-50" },
+  foot: { top: "bg-sub-600", rest: "bg-point-mint", text: "text-sub-700", glow: "from-sub-50" },
+} as const;
+type Tone = keyof typeof TONE;
+
 // 가로 막대 목록 (요일별 매출, 연령대별 손님 등). 가장 큰 항목을 진하게 강조한다.
-export function BarList({ items }: { items: ChartItem[] }) {
+export function BarList({ items, tone = "sales" }: { items: ChartItem[]; tone?: Tone }) {
   const { ref, inView } = useInView<HTMLUListElement>(0.3);
   const max = Math.max(...items.map((i) => i.value), 1);
   const top = items.reduce((a, b) => (b.value > a.value ? b : a), items[0]);
+  const color = TONE[tone];
 
   return (
-    <ul ref={ref} className="space-y-2">
+    <ul ref={ref} className="space-y-2.5">
       {items.map((item, index) => (
         <li key={item.label} className="flex items-center gap-3 text-sm">
           <span className="w-14 shrink-0 text-ink-700">{item.label}</span>
-          <div className="h-2 flex-1 overflow-hidden rounded-full bg-line">
+          <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-line-light">
             <div
-              className={`h-full rounded-full transition-[width] ${FILL_MOTION} ${item === top ? "bg-sub-700" : "bg-sub-300"} ${
+              className={`h-full rounded-full transition-[width] ${FILL_MOTION} ${item === top ? color.top : color.rest} ${
                 BAR_WIDTH[inView ? clampPercent((item.value / max) * 100) : 0]
               } ${pick(BAR_DELAY, index)}`}
             />
           </div>
-          <span className="w-10 text-right font-bold text-ink-900">{pct(item.value)}</span>
+          <span className={`w-10 text-right font-bold ${color.text}`}>{pct(item.value)}</span>
         </li>
       ))}
     </ul>
   );
 }
 
+// 두 항목의 비중을 한 줄로 이어 붙인 막대 (성별). 항목이 둘이 아니면 가로 막대 목록으로 보여준다
+export function SplitBar({ items }: { items: ChartItem[] }) {
+  const { ref, inView } = useInView<HTMLDivElement>(0.3);
+  if (items.length !== 2) return <BarList items={items} />;
+  const first = clampPercent(items[0].value);
+
+  return (
+    <div ref={ref} className="flex h-10 overflow-hidden rounded-xl bg-line-light text-sm font-bold text-white">
+      {items.map((item, index) => (
+        <div
+          key={item.label}
+          className={`flex items-center overflow-hidden whitespace-nowrap transition-[width] delay-[250ms] ${FILL_MOTION} ${
+            index === 0 ? "bg-point-blue" : "justify-end bg-point-mint text-main-dark"
+          } ${BAR_WIDTH[inView ? (index === 0 ? first : 100 - first) : 0]}`}
+        >
+          <span className="px-3">
+            {item.label} {pct(item.value)}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // 세로 막대 (시간대별 매출·유동인구처럼 칸이 많을 때)
-export function ColumnChart({ items }: { items: ChartItem[] }) {
+export function ColumnChart({ items, tone = "sales" }: { items: ChartItem[]; tone?: Tone }) {
   const { ref, inView } = useInView<HTMLDivElement>(0.3);
   const max = Math.max(...items.map((i) => i.value), 1);
   const top = items.reduce((a, b) => (b.value > a.value ? b : a), items[0]);
+  const color = TONE[tone];
 
   return (
-    <div ref={ref} className="flex h-36 items-end gap-1.5">
+    <div ref={ref} className="flex h-40 items-end">
       {items.map((item, index) => (
-        <div key={item.label} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1">
-          <span className="text-[11px] font-bold text-ink-900">{pct(item.value)}</span>
+        <div
+          key={item.label}
+          className={`flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1 rounded-t-md ${
+            item === top ? `bg-linear-to-t to-transparent ${color.glow}` : ""
+          }`}
+        >
+          <span className={`text-[11px] font-bold ${color.text}`}>{pct(item.value)}</span>
           <div
-            className={`w-full rounded-t transition-[height] ${FILL_MOTION} ${item === top ? "bg-sub-700" : "bg-sub-300"} ${
-              BAR_HEIGHT[inView ? clampPercent((item.value / max) * 80) : 0]
+            className={`w-3/5 max-w-7 rounded-t-[3px] transition-[height] ${FILL_MOTION} ${item === top ? color.top : color.rest} ${
+              BAR_HEIGHT[inView ? clampPercent((item.value / max) * 76) : 0]
             } ${pick(COLUMN_DELAY, index)}`}
           />
-          <span className="w-full truncate text-center text-[11px] text-ink-500">{item.label}</span>
+          <span className="w-full truncate border-t border-line pt-1 text-center text-[11px] text-ink-500">{item.label}</span>
         </div>
       ))}
     </div>
@@ -93,33 +131,33 @@ export function OpenCloseChart({ points }: { points: TrendPoint[] }) {
 
   return (
     <div>
-      <div className="mb-3 flex gap-4 text-xs text-ink-500">
+      <div className="mb-3 flex justify-end gap-4 text-xs text-ink-500">
         <span className="flex items-center gap-1.5">
-          <i className="size-2 rounded-full bg-sub-700" /> 개업
+          <i className="size-2.5 rounded-[3px] bg-point-mint" /> 개업
         </span>
         <span className="flex items-center gap-1.5">
-          <i className="size-2 rounded-full bg-danger" /> 폐업
+          <i className="size-2.5 rounded-[3px] bg-danger" /> 폐업
         </span>
       </div>
-      <div ref={ref} className="flex h-36 items-end gap-4">
+      <div ref={ref} className="flex h-40 items-end">
         {points.map((p, index) => (
           <div key={p.quarter} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1">
-            <div className="flex h-full w-full items-end justify-center gap-1">
+            <div className="flex min-h-0 w-full flex-1 items-end justify-center gap-1.5">
               {[
-                { v: p.open, color: "bg-sub-700" },
-                { v: p.close, color: "bg-danger" },
-              ].map(({ v, color }) => (
-                <div key={color} className="flex h-full w-1/2 flex-col items-center justify-end gap-1">
-                  <span className="text-[11px] font-bold text-ink-900">{v}</span>
+                { v: p.open, color: "bg-point-mint", text: "text-sub-700" },
+                { v: p.close, color: "bg-danger", text: "text-danger-strong" },
+              ].map(({ v, color, text }) => (
+                <div key={color} className="flex h-full w-6 flex-col items-center justify-end gap-1">
+                  <span className={`text-[11px] font-bold ${text}`}>{v}</span>
                   <div
-                    className={`w-full rounded-t transition-[height] ${FILL_MOTION} ${color} ${
-                      BAR_HEIGHT[inView ? clampPercent((v / max) * 80) : 0]
+                    className={`w-full rounded-t-[3px] transition-[height] ${FILL_MOTION} ${color} ${
+                      BAR_HEIGHT[inView ? clampPercent((v / max) * 76) : 0]
                     } ${pick(BAR_DELAY, index)}`}
                   />
                 </div>
               ))}
             </div>
-            <span className="text-[11px] text-ink-500">{p.quarter}</span>
+            <span className="w-full border-t border-line pt-1 text-center text-[11px] text-ink-500">{p.quarter}</span>
           </div>
         ))}
       </div>
@@ -127,24 +165,63 @@ export function OpenCloseChart({ points }: { points: TrendPoint[] }) {
   );
 }
 
+export interface MetricSeries {
+  name: string;
+  value: number | null;
+  text: string; // 화면에 쓰는 값
+  color: string; // 막대 색 클래스
+}
+
+// 항목 하나를 여러 대상(이 상권, 평균 등)의 가로 막대로 비교한다. 가장 큰 값이 막대 끝까지 간다
+export function MetricBars({ label, note, warn, series }: { label: string; note?: string; warn?: boolean; series: MetricSeries[] }) {
+  const { ref, inView } = useInView<HTMLDivElement>(0.3);
+  const max = Math.max(...series.map((s) => s.value ?? 0), 0);
+
+  return (
+    <div ref={ref} className="space-y-2 py-3">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm font-bold text-main-dark">{label}</p>
+        {note && (
+          <span
+            className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${warn ? "bg-danger-bg text-danger-strong" : "bg-point-blue-50 text-point-blue"}`}
+          >
+            {note}
+          </span>
+        )}
+      </div>
+      {series.map((s, index) => (
+        <div key={s.name} className="flex items-center gap-3 text-xs">
+          <span className={`w-20 shrink-0 truncate ${index === 0 ? "font-bold text-point-blue" : "text-ink-500"}`}>{s.name}</span>
+          <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-line-light">
+            <div
+              className={`h-full rounded-full transition-[width] ${FILL_MOTION} ${s.color} ${
+                BAR_WIDTH[inView && max > 0 ? clampPercent(((s.value ?? 0) / max) * 100) : 0]
+              } ${pick(BAR_DELAY, index)}`}
+            />
+          </div>
+          <span className={`w-24 shrink-0 text-right ${index === 0 ? "font-bold text-ink-900" : "text-ink-500"}`}>{s.text}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // 같은 구·업종 평균과 비교
 export function CompareTable({ rows }: { rows: CompareRow[] }) {
   return (
-    <div className="grid grid-cols-[1.2fr_1fr_1fr] gap-x-4 text-sm text-ink-800">
-      <div className="col-span-full grid grid-cols-subgrid border-b border-line py-2 text-xs font-medium text-ink-500">
-        <div>항목</div>
-        <div>이 상권</div>
-        <div>같은 구·업종 평균</div>
-      </div>
+    <div className="divide-y divide-line-light">
       {rows.map((row) => (
-        <div key={row.label} className="col-span-full grid grid-cols-subgrid items-start border-b border-line py-3">
-          <div className="font-bold text-ink-900">{row.label}</div>
-          <div>
-            {row.mine}
-            {row.note && <p className="mt-0.5 text-xs text-sub-700">{row.note}</p>}
-          </div>
-          <div className="text-ink-500">{row.average}</div>
-        </div>
+        <MetricBars
+          key={row.label}
+          label={row.label}
+          note={row.note}
+          // 폐업 관련 항목이 평균보다 높으면 주의 색
+          warn={row.label.includes("폐업") && row.mineValue > row.averageValue}
+          series={[
+            { name: "이 상권", value: row.mineValue, text: row.mine, color: "bg-point-blue" },
+            { name: "평균", value: row.averageValue, text: row.average, color: "bg-ink-300/60" },
+          ]}
+        />
       ))}
     </div>
   );

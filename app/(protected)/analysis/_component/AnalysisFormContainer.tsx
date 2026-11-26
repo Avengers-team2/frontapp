@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { FieldMessage, goToField, shakeClass } from "@/components/form/FormMotion";
 import { toLoginHref } from "@/lib/loginRedirect";
 import { useForm, useWatch } from "react-hook-form";
 import { ApiError, createAnalysisInput, getAreaIndustries, type IndustryStatus } from "@/api/analysis/analysis.api";
@@ -15,20 +16,35 @@ import ChipGroup from "./ChipGroup";
 import FormSection from "./FormSection";
 import FranchiseField from "./FranchiseField";
 import IndustrySelect from "./IndustrySelect";
+import LiquidSubmitButton from "./LiquidSubmitButton";
 import ProgressCard from "./ProgressCard";
 import SectionNav from "./SectionNav";
 import StoreSizeSelect from "./StoreSizeSelect";
 import AreaSearch from "./AreaSearch";
 
 const REQUIRED_TOTAL = SECTIONS.filter((s) => s.required).length;
-function countRequiredDone(v: AnalysisFormValues) {
+// 채워야 하는 칸들 (화면 순서대로). missing 이면 버튼을 눌렀을 때 흔들리고 그 칸으로 이동한다
+function getFields(v: AnalysisFormValues) {
     return [
-        v.areaCode !== "",
-        v.industrySmall !== "",
-        v.depositMax > 0,
-        v.businessStatus !== "",
-    ].filter(Boolean).length;
+        { name: "area", section: "area", message: "상권을 검색해서 선택해 주세요.", missing: v.areaCode === "" },
+        { name: "industry", section: "industry", message: "업종을 소분류까지 선택해 주세요.", missing: v.industrySmall === "" },
+        { name: "deposit", section: "budget", message: "보증금을 입력해 주세요.", missing: !(v.depositMax > 0) },
+        // 월 임대료·인테리어는 금액을 넣거나 "나중에 정할게요"(null)
+        { name: "rent", section: "budget", message: "금액을 입력하거나 '나중에 정하겠습니다'를 선택해 주세요.", missing: v.monthlyRentMax === 0 },
+        { name: "interior", section: "budget", message: "금액을 입력하거나 '나중에 정하겠습니다'를 선택해 주세요.", missing: v.interiorBudgetMax === 0 },
+        { name: "size", section: "size", message: "매장 규모를 선택해 주세요.", missing: v.storeSize === "" },
+        { name: "time", section: "time", message: "운영 시간을 선택해 주세요.", missing: v.operatingTimes.length === 0 },
+        { name: "ages", section: "target", message: "연령대를 선택해 주세요.", missing: v.targetAges.length === 0 },
+        { name: "gender", section: "target", message: "성별을 선택해 주세요.", missing: v.targetGender === "" },
+        { name: "status", section: "status", message: "사업자 상태를 선택해 주세요.", missing: v.businessStatus === "" },
+        { name: "franchise", section: "franchise", message: "프랜차이즈 여부를 선택해 주세요.", missing: v.isFranchise === "" },
+        // 프랜차이즈가 "예"면 브랜드까지 골라야 한다
+        { name: "brand", section: "franchise", message: "브랜드를 검색해서 선택해 주세요.", missing: v.isFranchise === "예" && v.franchiseBrand === "" },
+        { name: "note", section: "note", message: `${NOTE_MAX}자 이하로 줄여 주세요.`, missing: v.extraNote.length > NOTE_MAX },
+    ] as const;
 }
+type FieldName = ReturnType<typeof getFields>[number]["name"];
+const fieldId = (name: string) => `analysis-field-${name}`;
 
 export default function AnalysisFormContainer() {
     const { control, register, handleSubmit, setValue, reset } = useForm<AnalysisFormValues>({ defaultValues: DEFAULT_VALUES });
@@ -72,15 +88,54 @@ export default function AnalysisFormContainer() {
     const statusOf = (large: string, mid: string, small: string) =>
         values.areaCode === "" ? undefined : (statusMap.get(`${large}|${mid}|${small}`) ?? statusMap.get(`${large}|${mid}|`));
 
-    const done = countRequiredDone(values);
-    const canSubmit = done === REQUIRED_TOTAL;
+    const fields = getFields(values);
+    const missing = fields.filter((f) => f.missing);
+    // 입력 현황: 필수 구역 중 빠진 칸이 없는 구역 수
+    const done = SECTIONS.filter((s) => s.required && !missing.some((f) => f.section === s.id)).length;
+
+    // 빈 칸이 있는 채로 버튼을 누른 횟수(흔들림)와, 그때 비어 있던 칸들(빨간 표시 대상)
+    const [shakeKey, setShakeKey] = useState(0);
+    const [markedNames, setMarkedNames] = useState<FieldName[]>([]);
+    // 표시한 칸만 빨갛게 하고, 채우는 즉시 풀린다
+    const errorOf = (name: FieldName) => markedNames.includes(name) && missing.some((f) => f.name === name);
+    const messageOf = (name: FieldName) => (errorOf(name) ? fields.find((f) => f.name === name)?.message : null);
+    const shake = (name: FieldName) => shakeClass(shakeKey, errorOf(name));
+    // 벗어났다 돌아오면 오류 표시는 지운다 (입력한 값은 그대로 남는다)
+    useEffect(() => {
+        return () => {
+            setShakeKey(0);
+            setMarkedNames([]);
+        };
+    }, []);
+
+    // 버튼이 원래 자리(폼 끝)에 도착하면 가로로 꽉 채운다.
+    // 아래 56px 은 버튼의 bottom-14 와 같고, 위는 크게 잡아 화면 위로 지나간 경우도 도착으로 본다
+    const dockRef = useRef<HTMLDivElement>(null);
+    const [docked, setDocked] = useState(false);
+    useEffect(() => {
+        const el = dockRef.current;
+        if (!el) return;
+        const observer = new IntersectionObserver(([entry]) => setDocked(entry.isIntersecting), {
+            rootMargin: "100000px 0px -56px 0px",
+        });
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
 
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
+    const [sent, setSent] = useState(false);
     const [isNavigating, startNavigation] = useTransition();
     const busy = submitting || isNavigating;
 
     const onSubmit = async (data: AnalysisFormValues) => {
+        // 빈 칸이 있으면 흔들고 첫 번째 빈 칸으로 부드럽게 이동한다
+        if (missing.length > 0) {
+            setMarkedNames(missing.map((f) => f.name));
+            setShakeKey((k) => k + 1);
+            window.setTimeout(() => goToField(fieldId(missing[0].name)), 200);
+            return;
+        }
         setSubmitting(true);
         try {
             const { input_id } = await createAnalysisInput({
@@ -118,13 +173,26 @@ export default function AnalysisFormContainer() {
             // 요청은 끝났으니 submitting 은 풀고, 화면 이동이 끝날 때까지는 isNavigating 이 버튼을 막는다.
             // (이동 뒤 입력 화면으로 돌아와도 "요청 중" 상태가 남지 않게 하려고)
             setSubmitting(false);
-            startNavigation(() => router.push(`/analysis/result/${input_id}?${query}`));
+            // 버튼의 완료 체크가 보이도록 잠깐 기다렸다가 이동한다
+            setSent(true);
+            const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+            await new Promise((resolve) => setTimeout(resolve, reduced ? 100 : 400));
+            // 기다리는 사이에 다른 페이지로 나갔으면 결과 화면으로 끌고 가지 않는다
+            if (window.location.pathname !== "/analysis") {
+                setSent(false);
+                return;
+            }
+            startNavigation(() => {
+                router.push(`/analysis/result/${input_id}?${query}`);
+                // 전환과 함께 반영되므로, 화면이 바뀌기 전까지는 완료 모양이 유지된다
+                setSent(false);
+            });
         } catch (e) {
             if (e instanceof ApiError && e.status === 401) {
-                alert("로그인이 필요해요. 로그인 후 다시 시도해 주세요.");
+                alert("로그인이 필요합니다. 로그인 후 다시 시도해 주세요.");
                 router.push(toLoginHref());
             } else {
-                alert(e instanceof Error ? e.message : "분석 요청에 실패했어요. 잠시 후 다시 시도해 주세요.");
+                alert(e instanceof Error ? e.message : "분석 요청에 실패했습니다. 잠시 후 다시 시도해 주세요.");
             }
             setSubmitting(false);
         }
@@ -144,7 +212,7 @@ export default function AnalysisFormContainer() {
                         <h1 className="mt-5 text-[52px] font-bold tracking-tight text-white">
                             어디에서, 어떤 가게를 <span className="text-mint">열고 싶으세요?</span>
                         </h1>
-                        <p className="mt-6 text-[18px] text-mist-100">5분이면 상권 분석과 지원사업 매칭 결과를 받아볼 수 있어요.</p>
+                        <p className="mt-6 text-[18px] text-mist-100">5분이면 상권 분석과 지원사업 매칭 결과를 받아볼 수 있습니다.</p>
                     </div>
                     <ProgressCard done={done} total={REQUIRED_TOTAL} />
                 </div>
@@ -154,22 +222,38 @@ export default function AnalysisFormContainer() {
                 <div className="mx-auto flex w-full max-w-[1440px] gap-16 pb-24">
                     <SectionNav />
 
-                    <form onSubmit={handleSubmit(onSubmit)} className="min-w-0 flex-1 pt-10">
+                    <form
+                        onSubmit={handleSubmit(onSubmit)}
+                        // 다 채우기 전에는 입력칸에서 Enter 를 눌러도 제출되지 않게 한다
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter" && e.target instanceof HTMLInputElement && missing.length > 0) e.preventDefault();
+                        }}
+                        noValidate
+                        className="min-w-0 flex-1 pt-10"
+                    >
                         <FormSection id="area" title="희망 지역" required>
-                            <AreaSearch
-                                areaName={values.areaName}
-                                selected={values.areaCode !== ""}
-                                onSelect={(a) => set({ areaCode: a.code, areaName: a.name })}
-                                onClear={() => set({ areaCode: "", areaName: "" })}
-                            />
+                            <div id={fieldId("area")} className={shake("area")}>
+                                <AreaSearch
+                                    areaName={values.areaName}
+                                    selected={values.areaCode !== ""}
+                                    invalid={errorOf("area")}
+                                    onSelect={(a) => set({ areaCode: a.code, areaName: a.name })}
+                                    onClear={() => set({ areaCode: "", areaName: "" })}
+                                />
+                            </div>
+                            <FieldMessage message={messageOf("area")} />
                         </FormSection>
 
                         <FormSection id="industry" title="업종" required>
-                            <IndustrySelect
-                                value={{ large: values.industryLarge, mid: values.industryMid, small: values.industrySmall }}
-                                onChange={(v) => set({ industryLarge: v.large, industryMid: v.mid, industrySmall: v.small })}
-                                statusOf={statusOf}
-                            />
+                            <div id={fieldId("industry")} className={shake("industry")}>
+                                <IndustrySelect
+                                    value={{ large: values.industryLarge, mid: values.industryMid, small: values.industrySmall }}
+                                    invalid={errorOf("industry")}
+                                    onChange={(v) => set({ industryLarge: v.large, industryMid: v.mid, industrySmall: v.small })}
+                                    statusOf={statusOf}
+                                />
+                            </div>
+                            <FieldMessage message={messageOf("industry")} />
                         </FormSection>
 
                         <FormSection id="budget" title="창업 예산" required>
@@ -181,47 +265,74 @@ export default function AnalysisFormContainer() {
                                     interiorBudgetMax: values.interiorBudgetMax,
                                 }}
                                 onChange={(v) => set(v)}
+                                fieldId={fieldId}
+                                shake={shake}
+                                messageOf={messageOf}
                             />
                         </FormSection>
 
-                        <FormSection id="size" title="매장 규모">
-                            <StoreSizeSelect value={values.storeSize} onChange={(v) => set({ storeSize: v })} />
+                        <FormSection id="size" title="매장 규모" required>
+                            <div id={fieldId("size")} className={shake("size")}>
+                                <StoreSizeSelect value={values.storeSize} invalid={errorOf("size")}
+                                    onChange={(v) => set({ storeSize: v })} />
+                            </div>
+                            <FieldMessage message={messageOf("size")} />
                         </FormSection>
 
-                        <FormSection id="time" title="운영 시간" hint="복수 선택">
-                            <ChipGroup multiple options={OPERATING_TIMES} value={values.operatingTimes}
-                                onChange={(v) => set({ operatingTimes: v })} />
+                        <FormSection id="time" title="운영 시간" hint="복수 선택" required>
+                            <div id={fieldId("time")} className={shake("time")}>
+                                <ChipGroup multiple options={OPERATING_TIMES} value={values.operatingTimes}
+                                    invalid={errorOf("time")} onChange={(v) => set({ operatingTimes: v })} />
+                            </div>
+                            <FieldMessage message={messageOf("time")} />
                         </FormSection>
 
-                        <FormSection id="target" title="주요 타깃 고객층">
-                            <p className="mb-3 text-[15px] font-semibold text-ink-800">
-                                연령대 <span className="ml-1 text-[13px] font-normal text-ink-300">복수 선택</span>
-                            </p>
-                            <ChipGroup multiple options={TARGET_AGES} value={values.targetAges}
-                                onChange={(v) => set({ targetAges: v })} />
-                            <p className="mb-3 mt-8 text-[15px] font-semibold text-ink-800">성별</p>
-                            <ChipGroup options={TARGET_GENDERS} value={values.targetGender}
-                                onChange={(v) => set({ targetGender: v })} />
+                        <FormSection id="target" title="주요 타깃 고객층" required>
+                            <div id={fieldId("ages")}>
+                                <p className="mb-3 text-[15px] font-semibold text-ink-800">
+                                    연령대 <span className="ml-1 text-[13px] font-normal text-ink-300">복수 선택</span>
+                                </p>
+                                <div className={shake("ages")}>
+                                    <ChipGroup multiple options={TARGET_AGES} value={values.targetAges}
+                                        invalid={errorOf("ages")} onChange={(v) => set({ targetAges: v })} />
+                                </div>
+                                <FieldMessage message={messageOf("ages")} />
+                            </div>
+                            <div id={fieldId("gender")} className="mt-8">
+                                <p className="mb-3 text-[15px] font-semibold text-ink-800">성별</p>
+                                <div className={shake("gender")}>
+                                    <ChipGroup options={TARGET_GENDERS} value={values.targetGender}
+                                        invalid={errorOf("gender")} onChange={(v) => set({ targetGender: v })} />
+                                </div>
+                                <FieldMessage message={messageOf("gender")} />
+                            </div>
                         </FormSection>
 
                         <FormSection id="status" title="사업자 상태" required>
-                            <ChipGroup options={BUSINESS_STATUSES} value={values.businessStatus}
-                                onChange={(v) => set({ businessStatus: v })} />
+                            <div id={fieldId("status")} className={shake("status")}>
+                                <ChipGroup options={BUSINESS_STATUSES} value={values.businessStatus}
+                                    invalid={errorOf("status")} onChange={(v) => set({ businessStatus: v })} />
+                            </div>
+                            <FieldMessage message={messageOf("status")} />
                         </FormSection>
 
-                        <FormSection id="franchise" title="프랜차이즈 여부">
+                        <FormSection id="franchise" title="프랜차이즈 여부" required>
                             <FranchiseField
                                 isFranchise={values.isFranchise}
                                 brand={values.franchiseBrand}
                                 brandCategory={values.franchiseCategory}
                                 onChangeIsFranchise={(v) => set({ isFranchise: v })}
                                 onChangeBrand={(b) => set({ franchiseBrand: b.name, franchiseCategory: b.category })}
+                                fieldId={fieldId}
+                                shake={shake}
+                                errorOf={errorOf}
+                                messageOf={messageOf}
                             />
                         </FormSection>
 
                         <FormSection id="note" title="추가 의견" hint="선택"
-                            description="분석할 때 함께 참고할 내용을 자유롭게 적어 주세요. 입력한 의견은 분석 요청과 함께 저장돼요.">
-                            <div className={`rounded-lg border p-4 ${values.extraNote.length > NOTE_MAX ? "border-danger" : "border-line focus-within:border-sub"}`}>
+                            description="분석할 때 함께 참고할 내용을 자유롭게 적어 주세요. 입력한 의견은 분석 요청과 함께 저장됩니다.">
+                            <div id={fieldId("note")} className={`${shake("note")} rounded-lg border p-4 ${values.extraNote.length > NOTE_MAX ? "border-danger" : "border-line focus-within:border-sub"}`}>
                                 <textarea
                                     {...register("extraNote")}
                                     rows={4}
@@ -233,20 +344,22 @@ export default function AnalysisFormContainer() {
                                 </p>
                             </div>
                             {values.extraNote.length > NOTE_MAX && (
-                                <p className="mt-2 text-[13px] text-danger">{NOTE_MAX}자까지 입력할 수 있어요. {values.extraNote.length - NOTE_MAX}자를 줄여 주세요.</p>
+                                <p className="mt-2 text-[13px] text-danger">{NOTE_MAX}자까지 입력할 수 있습니다. {values.extraNote.length - NOTE_MAX}자를 줄여 주세요.</p>
                             )}
                         </FormSection>
 
-                        <button
-                            type="submit"
-                            disabled={!canSubmit || busy || values.extraNote.length > NOTE_MAX}
-                            className="mt-6 w-full rounded-full bg-linear-to-r from-main to-sub py-5 text-[18px] font-bold text-white shadow-lg transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                            {busy ? "분석 요청 중..." : "분석 시작하기 →"}
-                        </button>
-                        {!canSubmit && (
-                            <p className="mt-3 text-center text-[13px] text-ink-300">필수 항목 4개를 모두 입력하면 분석을 시작할 수 있어요.</p>
-                        )}
+                        {/* 스크롤하는 동안 화면 오른쪽 아래에 붙어 따라다니고, 폼 끝에서는 제자리에 멈춘다 (푸터를 덮지 않는다) */}
+                        <div className="pointer-events-none sticky bottom-14 z-20 mt-6">
+                            <LiquidSubmitButton
+                                state={sent ? "ok" : busy ? "load" : "idle"}
+                                disabled={busy || sent}
+                                label="분석 시작하기 →"
+                                doneLabel="분석 요청 완료"
+                                expanded={docked}
+                            />
+                        </div>
+                        {/* 버튼의 원래 자리 표시 */}
+                        <div ref={dockRef} aria-hidden className="h-px" />
                     </form>
                 </div>
             </div>

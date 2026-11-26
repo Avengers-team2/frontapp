@@ -29,7 +29,7 @@ type Props = {
   onEdit?: () => void; // 입력을 다시 시작할 때 (바깥 오류 해제용)
 };
 
-const NOT_FOUND = "검색 결과가 없어요";
+const NOT_FOUND = "검색 결과가 없습니다";
 
 // 주소/장소 검색 → 좌표 → 백엔드 상권 조회. 지도 그리기는 KakaoMap 이 담당한다.
 // 입력 중에는 입력폼과 같은 상권 자동완성(searchAreas)이 뜨고, 고르면 그 상권 폴리곤을 바로 보여준다.
@@ -84,7 +84,7 @@ export default function AreaLocator({ value, onChange, error = null, onEdit }: P
       setStatus("noPlace");
       return;
     }
-    setErrorMsg(err instanceof Error ? err.message : "문제가 발생했어요.");
+    setErrorMsg(err instanceof Error ? err.message : "문제가 발생했습니다.");
     setStatus("error");
   };
 
@@ -213,10 +213,10 @@ export default function AreaLocator({ value, onChange, error = null, onEdit }: P
       {status === "done" && result && (
         <div className="space-y-2">
           {result.matched === "none" && (
-            <Notice>분석 가능한 상권은 아니에요. 검색한 위치 주변을 표시했어요</Notice>
+            <Notice>분석 가능한 상권은 아닙니다. 검색한 위치 주변을 표시했습니다</Notice>
           )}
           {result.matched === "nearby" && (
-            <Notice>검색한 위치는 상권 안이 아니에요. 가까운 상권을 함께 보여드려요</Notice>
+            <Notice>검색한 위치는 상권 안이 아닙니다. 가까운 상권을 함께 보여드립니다</Notice>
           )}
 
           {/* inside 는 겹칠 때(2개 이상)만 목록, nearby 는 항상 목록 */}

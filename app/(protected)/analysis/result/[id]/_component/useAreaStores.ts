@@ -12,12 +12,12 @@ export type StoresState = {
 // 상태코드별 안내 문구 (401 은 결과 화면 자체가 로그인이 필요해서 따로 처리하지 않는다)
 function toMessage(error: unknown): string {
   if (error instanceof ApiError) {
-    if (error.status === 401) return "점포 정보는 로그인 후에 볼 수 있어요.";
-    if (error.status === 404) return "점포 정보를 찾을 수 없는 상권이에요.";
-    if (error.status === 422) return "이 업종은 점포 정보를 확인할 수 없어요.";
-    if (error.status === 503) return "점포 정보를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.";
+    if (error.status === 401) return "점포 정보는 로그인 후에 볼 수 있습니다.";
+    if (error.status === 404) return "점포 정보를 찾을 수 없는 상권입니다.";
+    if (error.status === 422) return "이 업종은 점포 정보를 확인할 수 없습니다.";
+    if (error.status === 503) return "점포 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.";
   }
-  return "점포 정보를 불러오지 못했어요.";
+  return "점포 정보를 불러오지 못했습니다.";
 }
 
 // 선택한 상권·업종(·브랜드)의 점포를 불러온다. 같은 상권은 서버가 캐시해서 두 번째부터 빠르다.

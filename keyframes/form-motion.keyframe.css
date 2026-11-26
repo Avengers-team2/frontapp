@@ -23,6 +23,36 @@
   }
 }
 
+/* 유리 버튼(LiquidSubmitButton): 뒤의 색 번짐, 둥실거림, 로딩 원호 */
+@keyframes liquid-drift {
+  from {
+    transform: translate3d(-10px, -6px, 0) scale(1);
+  }
+  to {
+    transform: translate3d(12px, 8px, 0) scale(1.12);
+  }
+}
+
+@keyframes liquid-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes liquid-arc {
+  0%,
+  100% {
+    stroke-dasharray: 1 63;
+  }
+  50% {
+    stroke-dasharray: 42 22;
+  }
+}
+
 /* 선택한 줄이 왼쪽에서 미끄러져 채워진다 */
 @keyframes form-slide-in {
   from {

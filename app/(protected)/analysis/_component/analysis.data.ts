@@ -55,11 +55,11 @@ export const SECTIONS = [
     { id: "area", label: "희망 지역", required: true },
     { id: "industry", label: "업종", required: true },
     { id: "budget", label: "창업 예산", required: true },
-    { id: "size", label: "매장 규모", required: false },
-    { id: "time", label: "운영 시간", required: false },
-    { id: "target", label: "주요 타깃 고객층", required: false },
+    { id: "size", label: "매장 규모", required: true },
+    { id: "time", label: "운영 시간", required: true },
+    { id: "target", label: "주요 타깃 고객층", required: true },
     { id: "status", label: "사업자 상태", required: true },
-    { id: "franchise", label: "프랜차이즈 여부", required: false },
+    { id: "franchise", label: "프랜차이즈 여부", required: true },
     { id: "note", label: "추가 의견", required: false },
 ] as const;
 

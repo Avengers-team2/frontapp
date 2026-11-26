@@ -1,5 +1,6 @@
 import type { InfoPanel as InfoPanelData, ReferenceSales, SimilarAreas } from "@/types/analysis";
 import { formatKRW } from "../analysisResult.mapper";
+import Card from "./Card";
 
 // 점수를 낼 수 없는 조합(noData)에서 점수 대신 보여주는 정보판.
 // 값은 모델 예측이 아니라 최근 분기의 실제 데이터이거나 비슷한 상권 요약이다. 값이 null 이면 그 섹션은 숨긴다.
@@ -7,32 +8,17 @@ import { formatKRW } from "../analysisResult.mapper";
 const percent = (ratio: number) => `${Math.round(ratio * 100)}%`;
 const rate = (v: number | null | undefined) => (v == null ? "-" : `${v}%`);
 
-function Section({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) {
-  return (
-    <section className="space-y-3">
-      <div className="flex items-baseline justify-between gap-2">
-        <h3 className="text-base font-bold text-ink-900">{title}</h3>
-        {sub && <span className="text-xs text-ink-400">{sub}</span>}
-      </div>
-      {children}
-    </section>
-  );
-}
-
 type Tile = { label: string; value: string };
 
-// 칸 사이를 얇은 선으로 나누는 3열 표 (빈 칸은 흰색으로 채운다)
+// 옅은 색 타일 3열
 function TileGrid({ tiles }: { tiles: Tile[] }) {
   return (
-    <div className="grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-line bg-line text-xs text-ink-500">
+    <div className="grid grid-cols-3 gap-2.5 text-xs text-ink-500">
       {tiles.map((t) => (
-        <div key={t.label} className="space-y-1 bg-white p-4">
+        <div key={t.label} className="space-y-1 rounded-2xl bg-point-blue-50 p-3.5">
           <p>{t.label}</p>
-          <p className="text-base font-bold text-ink-900">{t.value}</p>
+          <p className="text-base font-bold text-main-dark">{t.value}</p>
         </div>
-      ))}
-      {Array.from({ length: (3 - (tiles.length % 3)) % 3 }).map((_, i) => (
-        <div key={`empty-${i}`} className="bg-white" />
       ))}
     </div>
   );
@@ -54,8 +40,8 @@ function AreaProfileSection({ profile }: { profile: NonNullable<InfoPanelData["a
   const change = profile.changeIndicator;
 
   return (
-    <Section title="상권 프로필">
-      <div className="space-y-1 rounded-xl border border-line p-4 text-sm">
+    <Card title="상권 프로필">
+      <div className="space-y-1 rounded-2xl border border-line-light p-4 text-sm">
         <p className="font-bold text-ink-900">
           {[profile.areaName, profile.areaType].filter(Boolean).join(" · ")}
         </p>
@@ -67,15 +53,15 @@ function AreaProfileSection({ profile }: { profile: NonNullable<InfoPanelData["a
         )}
       </div>
       {tiles.length > 0 && <TileGrid tiles={tiles} />}
-    </Section>
+    </Card>
   );
 }
 
 function OtherIndustriesSection({ data }: { data: NonNullable<InfoPanelData["otherIndustries"]> }) {
   if (data.items.length === 0) return null;
   return (
-    <Section title="이 상권의 다른 업종" sub={data.basis === "sales" ? "매출 순" : "점포 수 순"}>
-      <ol className="divide-y divide-line rounded-xl border border-line text-sm">
+    <Card title="이 상권의 다른 업종" sub={data.basis === "sales" ? "매출 순" : "점포 수 순"}>
+      <ol className="divide-y divide-line rounded-2xl border border-line-light text-sm">
         {data.items.map((item, i) => (
           <li key={item.industryCode} className="flex items-center gap-3 px-4 py-2.5">
             <span className="w-5 shrink-0 text-xs font-bold text-ink-300">{i + 1}</span>
@@ -86,7 +72,7 @@ function OtherIndustriesSection({ data }: { data: NonNullable<InfoPanelData["oth
           </li>
         ))}
       </ol>
-    </Section>
+    </Card>
   );
 }
 
@@ -103,14 +89,14 @@ function SimilarAreasSection({ data }: { data: SimilarAreas }) {
   if (s.femaleShare != null) tiles.push({ label: "여성 고객 비중", value: percent(s.femaleShare) });
 
   return (
-    <Section title="비슷한 상권" sub={`${s.count}곳 기준`}>
+    <Card title="비슷한 상권" sub={`${s.count}곳 기준`}>
       {tiles.length > 0 && <TileGrid tiles={tiles} />}
       {data.top5.length > 0 && (
         <div className="space-y-2">
           <p className="text-xs font-medium text-ink-500">가장 비슷한 상권 {data.top5.length}곳</p>
           <ul className="space-y-2">
             {data.top5.map((area) => (
-              <li key={area.areaCode} className="rounded-xl border border-line p-3 text-sm">
+              <li key={area.areaCode} className="rounded-2xl border border-line-light p-3 text-sm">
                 <p className="font-bold text-ink-900">{area.areaName ?? area.areaCode}</p>
                 <p className="mt-1 text-xs text-ink-500">
                   점포 {area.storeCount ?? "-"}개 · 폐업률 {rate(area.closeRate)}
@@ -124,23 +110,23 @@ function SimilarAreasSection({ data }: { data: SimilarAreas }) {
           </ul>
         </div>
       )}
-    </Section>
+    </Card>
   );
 }
 
 function ReferenceSalesSection({ data }: { data: ReferenceSales }) {
   if (data.median == null) return null;
   return (
-    <Section title="참고 매출">
-      <div className="space-y-2 rounded-xl border border-line p-4 text-sm">
+    <Card title="참고 매출">
+      <div className="space-y-2 rounded-2xl border border-line-light p-4 text-sm">
         <p className="font-bold text-ink-900">
           비슷한 상권의 같은 업종 분기 매출 합계 중앙값 약 {formatKRW(data.median)}
           {data.low != null && data.high != null && ` (범위 ${formatKRW(data.low)}~${formatKRW(data.high)})`}
         </p>
         <p className="text-xs text-ink-500">{data.basis}</p>
-        <p className="text-xs font-bold text-danger-strong">이 상권의 예측 매출이 아닙니다. 금액은 분기(3개월) 매출 합계 기준이에요.</p>
+        <p className="text-xs font-bold text-danger-strong">이 상권의 예측 매출이 아닙니다. 금액은 분기(3개월) 매출 합계 기준입니다.</p>
       </div>
-    </Section>
+    </Card>
   );
 }
 
@@ -155,13 +141,13 @@ export default function InfoPanel({ infoPanel, referenceSales, dataQuarterLabel 
   if (!hasAny) return null;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       {infoPanel?.areaProfile && <AreaProfileSection profile={infoPanel.areaProfile} />}
       {infoPanel?.otherIndustries && <OtherIndustriesSection data={infoPanel.otherIndustries} />}
       {infoPanel?.similarAreas && <SimilarAreasSection data={infoPanel.similarAreas} />}
       {referenceSales && <ReferenceSalesSection data={referenceSales} />}
       <p className="text-[11px] leading-relaxed text-ink-400">
-        이 정보판의 값은 모델 예측이 아니라 최근 분기({dataQuarterLabel})의 실제 데이터 또는 비슷한 상권 요약이에요.
+        이 정보판의 값은 모델 예측이 아니라 최근 분기({dataQuarterLabel})의 실제 데이터 또는 비슷한 상권 요약입니다.
       </p>
     </div>
   );

@@ -86,7 +86,7 @@ function toCompareRows(rows: AnalysisResultDetail["compare_average"]): CompareRo
           ? `평균의 ${ratio.toFixed(1)}배`
           : `평균보다 ${Math.abs((ratio - 1) * 100).toFixed(0)}% ${ratio >= 1 ? "높음" : "낮음"}`;
     }
-    return { label: salesLabel(r.label), mine: formatCompare(r.mine, r.unit), average: formatCompare(r.average, r.unit), note };
+    return { label: salesLabel(r.label), mine: formatCompare(r.mine, r.unit), average: formatCompare(r.average, r.unit), note, mineValue: r.mine, averageValue: r.average };
   });
 }
 
@@ -119,30 +119,20 @@ export function toPreStartupView(a: Analysis, ctx: ResultContext = {}): PreStart
   });
 
   // 요약 문장: 가장 높은 항목과 가장 낮은 항목 (입력한 항목끼리만)
-  let headline = "분석 결과를 정리했어요";
+  let headline = "분석 결과를 정리했습니다";
   if (isNoData) {
-    headline = "이 조합은 점수를 낼 수 없어요";
+    headline = "이 조합은 점수를 낼 수 없습니다";
   } else if (entered.length >= 2) {
     const sorted = [...entered].sort((x, y) => y.score - x.score);
     const best = sorted[0];
     const worst = sorted[sorted.length - 1];
     headline =
       worst.score >= 70
-        ? "모든 항목이 고르게 양호해요"
-        : `${best.def.short} 항목이 가장 좋고,\n${worst.def.short} 항목은 보완이 필요해요`;
+        ? "모든 항목이 고르게 양호합니다"
+        : `${best.def.short} 항목이 가장 좋고,\n${worst.def.short} 항목은 보완이 필요합니다`;
   }
 
   const grade = a.analysis_closure_grade;
-
-  // 입력한 조건 요약 (모델이 실제로 쓴 타깃 연령·운영 시간)
-  const ages = Object.keys(d.scoring_user?.target_age ?? {}).sort();
-  const hours = (d.scoring_user?.hours ?? []).map(([s, e]) => `${s}~${e}시`);
-  const conditionSummary = [
-    ages.length > 0 ? `타깃 ${ages.join("·")}대` : "",
-    hours.length > 0 ? `운영 ${hours.join(", ")}` : "",
-  ]
-    .filter(Boolean)
-    .join(" · ");
 
   // 참고용 예측 매출. 오차가 커서 보조 정보로만 작게 보여준다 (금액은 "분기 매출 합계"로 표기한다)
   const prediction =
@@ -191,10 +181,9 @@ export function toPreStartupView(a: Analysis, ctx: ResultContext = {}): PreStart
     kind: isNoData ? "noData" : "normal",
     industryCode: d.industry_code,
     title: [ctx.areaName, ctx.industry].filter(Boolean).join(" · ") || "분석 결과",
-    conditionSummary,
     caveat: isNoData
       ? `${dataQuarterLabel} 실제 데이터 기준 · 모델 예측 아님`
-      : `${dataQuarterLabel} 데이터 기준 · 모델 추정 · 결과 보장 아님`,
+      : "이 결과 분석의 점수, 예측값은 이전 데이터를 이용한 예측값일 뿐이며, 실제 결과를 보장하지 않습니다.",
     notice: isNoData ? (d.data_notice ?? undefined) : undefined,
     staleNotice: d.data_not_latest ? "최신 데이터가 아닐 수 있습니다" : undefined,
     totalScore: a.analysis_total_score ?? null, // null 이면 화면에서 "?"
@@ -205,11 +194,12 @@ export function toPreStartupView(a: Analysis, ctx: ResultContext = {}): PreStart
     prediction,
     dataQuarterLabel,
     rankLabel: d.rank_percent != null ? `이 업종에서 점수 상위 ${d.rank_percent}%` : undefined,
+    rankPercent: d.rank_percent ?? undefined,
     referenceSales: isNoData ? (d.reference_sales ?? undefined) : undefined,
     infoPanel: isNoData ? (d.info_panel ?? undefined) : undefined,
     headline,
     description: isNoData
-      ? "종합 점수와 항목별 점수는 ?로 표시돼요"
+      ? "종합 점수와 항목별 점수는 ?로 표시됩니다"
       : `${entered.map((s) => s.def.short).join(" · ")} ${entered.length}개 항목 종합`,
     scoreItems,
     evidence: { title: "매출 · 폐업 근거", stats },

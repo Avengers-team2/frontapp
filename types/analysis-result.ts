@@ -41,6 +41,8 @@ export interface CompareRow {
   mine: string;
   average: string;
   note?: string; // 예: "평균보다 12% 높음"
+  mineValue: number; // 비교 막대 길이에 쓰는 원래 숫자
+  averageValue: number;
 }
 
 export interface ResultStat {
@@ -61,7 +63,6 @@ export interface PreStartupResultView {
   kind: "normal" | "noData"; // noData 는 점수 대신 "?"와 정보판
   industryCode?: string; // 모델 업종 코드. 점포 조회(지도 마커·경쟁 현황)에 쓴다
   title: string;
-  conditionSummary: string;
   caveat: string;
   notice?: string; // 상단 안내 배너 (noData 의 dataNotice)
   staleNotice?: string; // "최신 데이터가 아닐 수 있습니다"
@@ -76,6 +77,7 @@ export interface PreStartupResultView {
   prediction?: PredictionNote;
   dataQuarterLabel: string; // 정보판·예측의 기준 분기 "2025년 4분기"
   rankLabel?: string; // "이 업종에서 점수 상위 12%"
+  rankPercent?: number; // 순위 막대 위치에 쓰는 숫자 (12 = 상위 12%)
   referenceSales?: ReferenceSales; // noData: 비슷한 상권의 같은 업종 매출
   infoPanel?: InfoPanel; // noData: 정보판 (값이 null 인 섹션은 화면에서 숨긴다)
   evidence: {
