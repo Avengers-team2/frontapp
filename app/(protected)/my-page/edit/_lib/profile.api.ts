@@ -25,6 +25,23 @@ export const updateProfileApi = async (userId: number, body: ProfileUpdateReques
     return datas;
 };
 
+// 프로필 사진 변경 (PUT /users/{user_id}/profile) — S3에 올리고 users.user_profile에 주소 저장, 로그인한 본인만 가능
+export const updateProfileImageApi = async (userId: number, file: File): Promise<ApiResponseDTO<User>> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("folder", "profile");
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${userId}/profile`, {
+        method: "PUT",
+        credentials: "include",
+        body: formData,
+    });
+
+    if (!response.ok) throw new Error("프로필 사진을 바꾸지 못했어요. 잠시 후 다시 시도해 주세요.");
+    const datas: ApiResponseDTO<User> = await response.json();
+    return datas;
+};
+
 // 회원 탈퇴 (DELETE /users/{user_id}) — 로그인한 본인만 가능
 export const withdrawApi = async (userId: number): Promise<ApiResponseDTO> => {
     const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${userId}`, {
