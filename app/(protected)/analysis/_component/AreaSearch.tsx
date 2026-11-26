@@ -8,15 +8,17 @@ import SearchSelect from "./SearchSelect";
 type AreaSearchProps = {
     areaName: string;
     selected: boolean;
+    invalid?: boolean;
     onSelect: (area: AreaSearchItem) => void;
     onClear: () => void;
 };
 
-export default function AreaSearch({ areaName, selected, onSelect, onClear }: AreaSearchProps) {
+export default function AreaSearch({ areaName, selected, invalid, onSelect, onClear }: AreaSearchProps) {
     return (
         <div>
             <SearchSelect<AreaSearchItem>
                 placeholder="주소를 검색해 주세요."
+                invalid={invalid}
                 defaultKeyword={areaName}
                 search={searchAreas}
                 getKey={(a) => a.code}
@@ -40,9 +42,9 @@ export default function AreaSearch({ areaName, selected, onSelect, onClear }: Ar
                 )}
                 renderEmpty={(keyword) => (
                     <>
-                        <p className="text-[17px] font-semibold text-ink-800">&lsquo;{keyword}&rsquo;와 맞는 상권이 없어요</p>
+                        <p className="text-[17px] font-semibold text-ink-800">&lsquo;{keyword}&rsquo;와 맞는 상권이 없습니다</p>
                         <p className="mt-1 text-[15px] text-ink-400">
-                            동 이름이나 역 이름으로 검색해 보세요. 서울시 상권분석서비스에 등록된 상권만 분석할 수 있어요.
+                            동 이름이나 역 이름으로 검색해 보세요. 서울시 상권분석서비스에 등록된 상권만 분석할 수 있습니다.
                         </p>
                     </>
                 )}
@@ -58,7 +60,7 @@ export default function AreaSearch({ areaName, selected, onSelect, onClear }: Ar
                         key={areaName}
                         className="mt-3 flex items-center gap-2 text-[15px] text-sub-700 animate-[form-slide-in_0.45s_cubic-bezier(0.3,1.3,0.5,1)_backwards] motion-reduce:animate-none"
                     >
-                        ✓ 선택한 상권으로 분석해요
+                        ✓ 선택한 상권으로 분석합니다
                     </p>
                 </div>
             </div>

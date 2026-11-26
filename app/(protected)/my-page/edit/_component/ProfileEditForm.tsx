@@ -4,7 +4,7 @@ import useAuthStore from "@/stores/useAuthStore";
 import { useMutation } from "@tanstack/react-query";
 import { SubmitEvent, useEffect, useRef, useState } from "react";
 import { BUSINESS_STATUS_OPTIONS } from "../../_component/mockData";
-import { updateProfileApi } from "../_lib/profile.api";
+import { updateProfileApi, updateProfileImageApi } from "../_lib/profile.api";
 import { helperClass, inputClass, labelClass, secondaryButtonClass, sectionTitleClass } from "./fieldStyle";
 
 interface ProfileEditFormProps {
@@ -62,9 +62,40 @@ export default function ProfileEditForm({onSaved}: ProfileEditFormProps) {
         saveMutation.mutate();
     }
 
-    // TODO: 프로필 사진 업로드 (user.api.ts의 updateProfileApi) 연결
+    // 프로필 사진 (S3 주소일 때만 사진, 아니면 닉네임 첫 글자)
+    const profileImage = user?.user_profile?.startsWith("http") ? user.user_profile : null;
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // 사진 변경 (PUT /users/{user_id}/profile) → 성공하면 로그인 정보의 사진 주소도 바꿈 (바로 저장됨)
+    const photoMutation = useMutation({
+        mutationFn: (file: File) => updateProfileImageApi(user!.user_id, file),
+        onSuccess: (res) => {
+            if (res.data) setUser({ ...user!, user_profile: res.data.user_profile });
+        },
+        onError: (error) => window.alert(error.message),
+    });
+
     const handlePhotoClick = () => {
-        window.alert("사진 변경은 준비 중이에요.");
+        if (!user) {
+            window.alert("로그인 정보가 없어요. 다시 로그인해 주세요.");
+            return;
+        }
+        fileInputRef.current?.click();
+    }
+
+    const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        e.target.value = ""; // 같은 파일을 다시 골라도 동작하게
+        if (!file) return;
+        if (!file.type.startsWith("image/")) {
+            window.alert("이미지 파일만 올릴 수 있어요.");
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            window.alert("사진은 5MB 이하만 올릴 수 있어요.");
+            return;
+        }
+        photoMutation.mutate(file);
     }
 
     return (
@@ -72,10 +103,17 @@ export default function ProfileEditForm({onSaved}: ProfileEditFormProps) {
             <h2 className={sectionTitleClass}>기본 정보</h2>
 
             <div className="mt-9 flex items-center gap-7">
-                <div className="flex size-19.25 items-center justify-center rounded-full bg-linear-to-b from-sub-600 to-sub-700 text-[34px] font-bold leading-none text-white">
-                    {nickname.slice(0, 1) || "?"}
+                <div className="flex size-19.25 items-center justify-center overflow-hidden rounded-full bg-linear-to-b from-sub-600 to-sub-700 text-[34px] font-bold leading-none text-white">
+                    {profileImage ? (
+                        <img src={profileImage} alt="" className="size-full object-cover" />
+                    ) : (
+                        nickname.slice(0, 1) || "?"
+                    )}
                 </div>
-                <button type="button" onClick={handlePhotoClick} className={secondaryButtonClass}>사진 변경</button>
+                <button type="button" onClick={handlePhotoClick} disabled={photoMutation.isPending} className={`${secondaryButtonClass} disabled:opacity-60`}>
+                    {photoMutation.isPending ? "올리는 중" : "사진 변경"}
+                </button>
+                <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
             </div>
 
             <label className="mt-13.5 block">

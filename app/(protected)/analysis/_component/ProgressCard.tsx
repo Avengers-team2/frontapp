@@ -27,7 +27,7 @@ export default function ProgressCard({ done, total }: ProgressCardProps) {
                     style={{ width: `${percent}%` }}
                 />
             </div>
-            <p className="mt-4 text-[14px] text-mist-500">항목을 채울수록 실시간으로 올라가요</p>
+            <p className="mt-4 text-[14px] text-mist-500">항목을 채울수록 실시간으로 올라갑니다</p>
         </div>
     );
 }

@@ -15,12 +15,12 @@ const signed = (n: number) => (n > 0 ? `+${n}` : String(n));
 export default function StoreCompetitionCard({ stores }: { stores: StoresState }) {
   if (stores.isLoading) {
     return (
-      <div role="status" className="space-y-3 rounded-xl border border-line p-4">
+      <div role="status" className="space-y-3">
         <p className="flex items-center gap-2 text-sm text-ink-500">
           <span className="size-4 shrink-0 animate-spin rounded-full border-2 border-line border-t-sub" />
-          점포 정보를 불러오는 중이에요
+          점포 정보를 불러오는 중입니다
         </p>
-        <p className="text-xs text-ink-400">처음 보는 상권은 몇 초 걸릴 수 있어요.</p>
+        <p className="text-xs text-ink-400">처음 보는 상권은 몇 초 걸릴 수 있습니다.</p>
         <div className="space-y-2">
           <div className="h-4 w-3/4 rounded bg-surface" />
           <div className="h-4 w-1/2 rounded bg-surface" />
@@ -31,7 +31,7 @@ export default function StoreCompetitionCard({ stores }: { stores: StoresState }
 
   if (stores.errorMessage) {
     return (
-      <p role="status" className="rounded-xl border border-dashed border-line px-4 py-6 text-center text-sm text-ink-400">
+      <p role="status" className="text-sm text-ink-400">
         {stores.errorMessage}
       </p>
     );
@@ -42,7 +42,7 @@ export default function StoreCompetitionCard({ stores }: { stores: StoresState }
   const s = data.summary;
 
   return (
-    <div className="space-y-3 rounded-xl border border-line p-4 text-sm text-ink-800">
+    <div className="space-y-3 text-sm text-ink-800">
       <p className="font-bold text-ink-900">
         현재 {data.industry_name} {s.same_industry_count}곳
         <span className="ml-1 font-normal text-ink-500">

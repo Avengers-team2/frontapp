@@ -38,13 +38,13 @@ export default function ScoreRing({ score, label, tone = "default" }: ScoreRingP
   const hasScore = score != null;
   const clamped = Math.min(100, Math.max(0, score ?? 0));
   const offset = CIRCUMFERENCE * (1 - clamped / 100);
-  const stroke = tone === "warn" ? "#F5A524" : "#2BB3A3";
+  const stroke = tone === "warn" ? "#F5A524" : "#3DD1AC";
   const shown = useCountUp(clamped, inView && hasScore);
 
   return (
-    <div ref={ref} className="relative size-24 shrink-0">
+    <div ref={ref} className="relative size-28 shrink-0">
       <svg viewBox="0 0 100 100" className="size-full -rotate-90" aria-hidden>
-        <circle cx="50" cy="50" r={RADIUS} fill="none" strokeWidth="8" className="stroke-line" />
+        <circle cx="50" cy="50" r={RADIUS} fill="none" strokeWidth="8" className="stroke-line-light" />
         <circle
           cx="50"
           cy="50"
@@ -62,7 +62,7 @@ export default function ScoreRing({ score, label, tone = "default" }: ScoreRingP
         <span className="sr-only">{hasScore ? Math.round(clamped) : "점수 없음"}</span>
         <span
           aria-hidden="true"
-          className={`text-2xl font-bold tabular-nums ${hasScore ? "text-main" : "text-ink-300"}`}
+          className={`text-4xl font-bold tabular-nums ${hasScore ? "text-main-dark" : "text-ink-300"}`}
         >
           {hasScore ? Math.round(shown) : "?"}
         </span>

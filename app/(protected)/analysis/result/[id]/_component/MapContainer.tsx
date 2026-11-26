@@ -42,7 +42,7 @@ export default function MapContainer({ stores }: { stores?: StoresState }) {
       .catch((err) => {
         if (!alive) return;
         // 없는 상권(404)은 검색 결과 없음과 같은 문구로 보여준다
-        setAreaError(err instanceof ApiError && err.status === 404 ? "검색 결과가 없어요" : "상권 정보를 불러오지 못했어요");
+        setAreaError(err instanceof ApiError && err.status === 404 ? "검색 결과가 없습니다" : "상권 정보를 불러오지 못했습니다");
       });
     return () => {
       alive = false;
@@ -105,8 +105,8 @@ export default function MapContainer({ stores }: { stores?: StoresState }) {
           {stores.isLoading ? (
             <p role="status" className="flex items-center gap-2">
               <span className="size-3 shrink-0 animate-spin rounded-full border-2 border-line border-t-sub" />
-              점포 정보를 불러오는 중이에요
-              <span className="text-ink-400">(처음엔 몇 초 걸려요)</span>
+              점포 정보를 불러오는 중입니다
+              <span className="text-ink-400">(처음엔 몇 초 걸립니다)</span>
             </p>
           ) : stores.errorMessage ? (
             <p role="status" className="text-ink-500">

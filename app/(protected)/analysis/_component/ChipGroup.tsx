@@ -1,6 +1,7 @@
-type SingleProps = { options: string[]; multiple?: false; value: string; onChange: (v: string) => void };
+type SingleProps = { options: string[]; invalid?: boolean; multiple?: false; value: string; onChange: (v: string) => void };
 type MultiProps = {
     options: string[];
+    invalid?: boolean;
     multiple: true;
     value: string[];
     onChange: (v: string[]) => void;
@@ -8,11 +9,11 @@ type MultiProps = {
     allExclude?: string[];
 };
 
-const chipClass = (selected: boolean) =>
+const chipClass = (selected: boolean, invalid?: boolean) =>
     `rounded-xl border px-5 py-2.5 text-[17px] transition-colors ${
         selected
             ? "border-main bg-main font-semibold text-white"
-            : "border-line bg-white text-ink-600 hover:border-main/40"
+            : `${invalid ? "border-danger" : "border-line hover:border-main/40"} bg-white text-ink-600`
     }`;
 
 export default function ChipGroup(props: SingleProps | MultiProps) {
@@ -43,7 +44,7 @@ export default function ChipGroup(props: SingleProps | MultiProps) {
     return (
         <div className="flex flex-wrap gap-2">
             {props.multiple && props.allLabel && (
-                <button type="button" aria-pressed={allSelected} onClick={handleAll} className={chipClass(allSelected)}>
+                <button type="button" aria-pressed={allSelected} onClick={handleAll} className={chipClass(allSelected, props.invalid)}>
                     {props.allLabel}
                 </button>
             )}
@@ -53,7 +54,7 @@ export default function ChipGroup(props: SingleProps | MultiProps) {
                     type="button"
                     aria-pressed={isSelected(option)}
                     onClick={() => handleClick(option)}
-                    className={chipClass(isSelected(option))}
+                    className={chipClass(isSelected(option), props.invalid)}
                 >
                     {option}
                 </button>

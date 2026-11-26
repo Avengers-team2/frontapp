@@ -87,10 +87,10 @@ export class ApiError extends Error {
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-    if (!BASE_URL) throw new ApiError(0, "NEXT_PUBLIC_BACKEND_URL 이 설정되지 않았어요.");
+    if (!BASE_URL) throw new ApiError(0, "NEXT_PUBLIC_BACKEND_URL 이 설정되지 않았습니다.");
     const res = await fetch(`${BASE_URL}${path}`, init);
     const body = await res.json().catch(() => null);
-    if (!res.ok) throw new ApiError(res.status, body?.detail ?? body?.message ?? "요청에 실패했어요.");
+    if (!res.ok) throw new ApiError(res.status, body?.detail ?? body?.message ?? "요청에 실패했습니다.");
     return body.data as T;
 }
 

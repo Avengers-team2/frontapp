@@ -8,7 +8,7 @@ import type { Analysis } from "@/types/analysis";
 import type { AnalysisStep } from "@/types/analysis-result";
 import { toPreStartupView } from "./analysisResult.mapper";
 
-const UNSUPPORTED_MSG = "지원하지 않는 업종이거나 예측 데이터가 없는 조합이에요";
+const UNSUPPORTED_MSG = "지원하지 않는 업종이거나 예측 데이터가 없는 조합입니다";
 
 // 개발 모드(strict mode)에서 같은 id 로 두 번 실행되지 않게 진행 중인 요청을 공유한다
 const inflight = new Map<string, Promise<Analysis>>();
@@ -35,9 +35,9 @@ function toMessage(err: unknown): string {
         ? err.message
         : UNSUPPORTED_MSG;
     }
-    return err.message || "분석 결과를 불러오지 못했어요.";
+    return err.message || "분석 결과를 불러오지 못했습니다.";
   }
-  return err instanceof Error ? err.message : "분석 결과를 불러오지 못했어요.";
+  return err instanceof Error ? err.message : "분석 결과를 불러오지 못했습니다.";
 }
 
 // 열릴 때 분석을 실행하고(저장된 결과가 있으면 서버가 재사용), 응답을 화면용으로 바꿔 돌려준다.
@@ -76,17 +76,17 @@ export function useAnalysisResult(id: string) {
   }, [id, router]);
 
   const steps: AnalysisStep[] = [
-    { id: "input", title: "입력 조건 확인", description: "입력한 조건을 확인했어요.", status: "done" },
+    { id: "input", title: "입력 조건 확인", description: "입력한 조건을 확인했습니다.", status: "done" },
     {
       id: "data",
       title: "상권 데이터 확인 및 분석",
-      description: "선택한 지역과 업종의 데이터를 분석하고 있어요.",
+      description: "선택한 지역과 업종의 데이터를 분석하고 있습니다.",
       status: isPending ? "running" : "done",
     },
     {
       id: "result",
       title: "결과 정리",
-      description: "분석이 끝나면 결과를 보여드려요.",
+      description: "분석이 끝나면 결과를 보여드립니다.",
       status: isPending ? "waiting" : "done",
     },
   ];

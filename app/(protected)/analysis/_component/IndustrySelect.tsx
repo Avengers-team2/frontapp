@@ -4,6 +4,7 @@ import { INDUSTRIES, INDUSTRY_STATUS_TEXT } from "./analysis.data";
 type IndustryValue = { large: string; mid: string; small: string };
 type IndustrySelectProps = {
     value: IndustryValue;
+    invalid?: boolean;
     onChange: (v: IndustryValue) => void;
     // 선택한 상권 기준으로 업종의 분석 가능 여부를 알려 준다 (모르면 undefined → 표시 안 함)
     statusOf?: (large: string, mid: string, small: string) => IndustryStatus | undefined;
@@ -15,7 +16,7 @@ const STATUS_BADGE: Record<IndustryStatus, string> = {
     unsupported: "bg-surface text-ink-400",
 };
 
-export default function IndustrySelect({ value, onChange, statusOf }: IndustrySelectProps) {
+export default function IndustrySelect({ value, invalid, onChange, statusOf }: IndustrySelectProps) {
     const larges = Object.keys(INDUSTRIES);
     const mids = value.large ? Object.keys(INDUSTRIES[value.large]) : [];
     const smalls = value.large && value.mid ? INDUSTRIES[value.large][value.mid] : [];
@@ -33,7 +34,7 @@ export default function IndustrySelect({ value, onChange, statusOf }: IndustrySe
 
     return (
         <div>
-            <div className="grid grid-cols-3 overflow-hidden rounded-xl border border-line">
+            <div className={`grid grid-cols-3 overflow-hidden rounded-xl border transition-colors ${invalid ? "border-danger" : "border-line"}`}>
                 {columns.map((col, i) => (
                     <div key={col.title} className={`min-h-[260px] ${i > 0 ? "border-l border-line" : ""}`}>
                         <p className="border-b border-line px-6 py-4 text-[14px] font-semibold text-ink-700">{col.title}</p>
