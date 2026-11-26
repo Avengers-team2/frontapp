@@ -46,7 +46,7 @@ export default function MyPageProfile() {
 
     // 숫자를 누르면 해당 목록으로 이동
     const stats = [
-        { label: "저장한 분석", value: analysisCount >= 10 ? "10+" : analysisCount, href: "/my-page" },
+        { label: "저장한 분석", value: analysisCount >= 10 ? "10+" : analysisCount, href: "/my-page/analyses" },
         { label: "관심 지원사업", value: bookmarkCount, href: "/my-page/bookmarks" },
         { label: "내가 쓴 글", value: myPostCount, href: "/my-page/posts" },
     ];

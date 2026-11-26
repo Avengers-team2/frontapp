@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation";
 
 // 마이페이지 왼쪽 메뉴
 const MENUS = [
-    { label: "내 분석", href: "/my-page" },
+    { label: "내 정보", href: "/my-page" },
+    { label: "내 분석", href: "/my-page/analyses" },
     { label: "관심 지원사업", href: "/my-page/bookmarks" },
     { label: "내가 쓴 글", href: "/my-page/posts" },
     { label: "기획서 검토", href: "/my-page/reports" },

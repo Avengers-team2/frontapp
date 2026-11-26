@@ -78,7 +78,7 @@ export default function MemberEditContainer() {
                             <button
                                 type="button"
                                 onClick={() => setIsWithdrawOpen(true)}
-                                className="flex h-13 shrink-0 items-center rounded-full border border-danger bg-white px-7.5 text-xl font-bold text-danger"
+                                className="flex h-13 shrink-0 items-center rounded-full border border-danger bg-white px-7.5 text-xl font-bold text-danger transition-colors hover:bg-danger hover:text-white"
                             >
                                 탈퇴하기
                             </button>
