@@ -57,6 +57,14 @@ export default function Slide() {
     const router = useRouter();
     const swiperRef = useRef<SwiperType | null>(null);
     const [mounted, setMounted] = useState(false);
+    const [address, setAddress] = useState("");
+
+    // 체크시작 → 상권분석 입력 화면으로. 주소를 적었으면 검색창에 넣을 수 있게 함께 보낸다
+    const handleCheck = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const value = address.trim();
+        router.push(value ? `/analysis?address=${encodeURIComponent(value)}` : "/analysis");
+    };
 
     useEffect(() => {
         setMounted(true);
@@ -103,14 +111,15 @@ export default function Slide() {
                                     </div>
                                     <p className="text-[#C9D3E1] font-regular">{slide.sub}</p>
 
-                                    <div className="flex items-stretch border-1 border-white/14 rounded-[14px] bg-[#0A1424]/55 px-2 py-2 h-[64px] w-[560px]">
-                                        <input type="text" className="text-[#8FA3BC] w-full px-2 py-1 outline-none" placeholder="분석할 주소를 입력하세요"/>
+                                    <form
+                                        onSubmit={handleCheck}
+                                        className="flex items-stretch border-1 border-white/14 rounded-[14px] bg-[#0A1424]/55 px-2 py-2 h-[64px] w-[560px]">
+                                        <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} aria-label="분석할 주소" className="text-[#8FA3BC] w-full px-2 py-1 outline-none" placeholder="분석할 주소를 입력하세요"/>
                                         <button
-                                            type="button"
-                                            onClick={() => router.push("/analysis")}
+                                            type="submit"
                                             className="flex justify-center items-center bg-[#ffc875] rounded-[12px] font-bold w-[140px] h-[full] text-[16px] text-[#1a1206] cursor-pointer transition-colors duration-300 hover:bg-[#ffb547] active:scale-[0.97] ml-4"
                                         >체크시작</button>
-                                    </div>
+                                    </form>
                                 </div>
                             </div>
                         </SwiperSlide>

@@ -1,6 +1,7 @@
 "use client"
 
 import { createCommentApi, deleteCommentApi, updateCommentApi } from "@/api/comment/comment.api";
+import { toLoginHref } from "@/lib/loginRedirect";
 import useAuthStore from "@/stores/useAuthStore";
 import { CommentItem as CommentType } from "@/types/post/post.type";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -58,7 +59,7 @@ export default function CommentItem({comment, postId, postAuthorId}: CommentItem
 
     // 답글 버튼 (비로그인이면 로그인 페이지로)
     const handleReplyClick = () => {
-        if (!user) return router.push("/login");
+        if (!user) return router.push(toLoginHref());
         setMode(mode === "reply" ? "none" : "reply");
     }
 

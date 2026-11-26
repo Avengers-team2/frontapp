@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import {
-    getMyAnalyses, MyAnalysisOption, searchPrograms, SearchScope, SupportProgram,
+    bookmarkKey, getMyAnalyses, getMyBookmarkKeys, LoginRequiredError, MyAnalysisOption,
+    searchPrograms, SearchScope, SUPPORT_BOOKMARKS_QUERY_KEY, SupportProgram, toggleSupportBookmark,
 } from "@/api/support/support.api";
+import { useQueryClient } from "@tanstack/react-query";
 import AnalysisFilter from "./AnalysisFilter";
 import ProgramCard from "./ProgramCard";
 import SearchBar from "./SearchBar";
@@ -17,9 +19,11 @@ export default function SupportContainer() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
+    const queryClient = useQueryClient();
 
     useEffect(() => {
         getMyAnalyses().then(setAnalyses).catch(() => setAnalyses([]));
+        getMyBookmarkKeys().then((keys) => setBookmarks(new Set(keys)));
     }, []);
 
     useEffect(() => {
@@ -35,7 +39,7 @@ export default function SupportContainer() {
         };
     }, [keyword, scope, selected]);
 
-    const toggleBookmark = (key: string) => {
+    const flipBookmark = (key: string) => {
         setBookmarks((prev) => {
             const next = new Set(prev);
             if (next.has(key)) next.delete(key);
@@ -44,13 +48,25 @@ export default function SupportContainer() {
         });
     };
 
+    const toggleBookmark = async (program: SupportProgram) => {
+        const key = bookmarkKey(program.source, program.sourceId);
+        flipBookmark(key);
+        try {
+            await toggleSupportBookmark(program.source, program.sourceId);
+            queryClient.invalidateQueries({ queryKey: SUPPORT_BOOKMARKS_QUERY_KEY });
+        } catch (e) {
+            flipBookmark(key);
+            alert(e instanceof LoginRequiredError ? "로그인하면 관심 지원사업으로 저장할 수 있어요." : "관심 지원사업을 저장하지 못했어요. 잠시 후 다시 시도해 주세요.");
+        }
+    };
+
     const columns: SupportProgram[][] = [[], [], []];
     programs.forEach((p, i) => columns[i % 3].push(p));
 
     return (
         <div className="relative min-h-screen overflow-hidden bg-white">
             <div className="pointer-events-none absolute left-1/2 top-20 h-150 w-225 -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(94,240,220,0.14),transparent)]" />
-            <main className="relative mx-auto w-full max-w-372 px-6 pb-50 pt-50">
+            <main className="relative mx-auto w-full max-w-[1440px] px-6 pb-50 pt-50">
                 <h1 className="text-center text-5xl font-bold leading-[1.3] text-main">내 사업에 맞는 지원사업을 찾아보세요</h1>
 
                 <div className="mt-15 flex justify-center">
@@ -81,13 +97,13 @@ export default function SupportContainer() {
                             {columns.map((col, c) => (
                                 <div key={c} className={`flex flex-col gap-20 ${c === 1 ? "pt-40" : ""}`}>
                                     {col.map((p) => {
-                                        const key = `${p.source}:${p.sourceId}`;
+                                        const key = bookmarkKey(p.source, p.sourceId);
                                         return (
                                             <ProgramCard
                                                 key={key}
                                                 program={p}
                                                 bookmarked={bookmarks.has(key)}
-                                                onToggleBookmark={() => toggleBookmark(key)}
+                                                onToggleBookmark={() => toggleBookmark(p)}
                                             />
                                         );
                                     })}

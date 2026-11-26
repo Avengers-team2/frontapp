@@ -6,12 +6,10 @@ export type AnalysisFormValues = {
     industrySmall: string;
     depositMin: number;
     depositMax: number;
-    monthlyRentMax: number | null;
-    interiorBudgetMax: number | null;
     storeSize: string;
     operatingTimes: string[];
     targetAges: string[];
-    targetGender: string;
+    targetGenders: string[];
     businessStatus: string;
     isFranchise: string;
     franchiseBrand: string;
@@ -27,12 +25,10 @@ export const DEFAULT_VALUES: AnalysisFormValues = {
     industrySmall: "",
     depositMin: 0,
     depositMax: 0,
-    monthlyRentMax: 0,
-    interiorBudgetMax: 0,
     storeSize: "",
     operatingTimes: [],
     targetAges: [],
-    targetGender: "",
+    targetGenders: [],
     businessStatus: "",
     isFranchise: "",
     franchiseBrand: "",
@@ -40,15 +36,26 @@ export const DEFAULT_VALUES: AnalysisFormValues = {
     extraNote: "",
 };
 
+// 업종 상태 문구. 막지는 않고 선택할 수 있으며, 점수가 안 나오는 경우엔 참고 정보(정보판)를 보여준다
+export const INDUSTRY_STATUS_TEXT = {
+    analyzed: { short: "분석 가능", full: "점수 분석 가능" },
+    noRecord: { short: "기록 없음", full: "이 상권엔 기록 없음 (참고 정보 제공)" },
+    unsupported: { short: "점수 미지원", full: "점수 미지원 (참고 정보 제공)" },
+} as const;
+
+// 결과 화면의 "조건 수정"으로 돌아올 때 입력값을 되살리기 위한 sessionStorage 키
+export const FORM_DRAFT_KEY = "analysis:form-draft"; // 마지막으로 제출한 입력값
+export const FORM_RESTORE_KEY = "analysis:form-restore"; // 있으면 다음 입력 화면 진입 때 draft 를 채운다
+
 export const SECTIONS = [
+    { id: "status", label: "분석 목적", required: true },
     { id: "area", label: "희망 지역", required: true },
     { id: "industry", label: "업종", required: true },
+    { id: "franchise", label: "프랜차이즈 여부", required: true },
     { id: "budget", label: "창업 예산", required: true },
-    { id: "size", label: "매장 규모", required: false },
-    { id: "time", label: "운영 시간", required: false },
-    { id: "target", label: "주요 타깃 고객층", required: false },
-    { id: "status", label: "사업자 상태", required: true },
-    { id: "franchise", label: "프랜차이즈 여부", required: false },
+    { id: "size", label: "매장 규모", required: true },
+    { id: "time", label: "운영 시간", required: true },
+    { id: "target", label: "주요 타깃 고객층", required: true },
     { id: "note", label: "추가 의견", required: false },
 ] as const;
 
@@ -63,8 +70,8 @@ export const STORE_SIZES = [
 
 export const OPERATING_TIMES = ["아침 07~11시", "점심 11~15시", "오후 15~22시", "저녁 22~02시", "새벽 02~07시", "미정"];
 export const TARGET_AGES = ["10대", "20대", "30대", "40대", "50대", "60대 이상"];
-export const TARGET_GENDERS = ["상관없음", "여성", "남성"];
-export const BUSINESS_STATUSES = ["예비 창업자", "운영 중", "폐업 예정", "가게 이전", "미정"];
+export const TARGET_GENDERS = ["여성", "남성"];
+export const BUSINESS_STATUSES = ["창업 예정", "운영 중"];
 export const FRANCHISE_OPTIONS = ["예", "아니요", "미정"];
 
 export const INDUSTRIES: Record<string, Record<string, string[]>> = {

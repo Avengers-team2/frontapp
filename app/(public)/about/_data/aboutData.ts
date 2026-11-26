@@ -83,13 +83,6 @@ export const inputPoints = [
     "내 창업 조건에 맞는 지원사업 추천",
 ];
 
-export const inputChips = [
-    { label: "신사동", active: true },
-    { label: "커피 전문점", active: true },
-    { label: "보증금 5,000", active: true },
-    { label: "미정", active: false },
-];
-
 // [Situation] 상황별 카드
 export const situations = [
     {

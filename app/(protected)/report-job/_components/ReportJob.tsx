@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { FIT } from "../_lib/fit";
 import {
@@ -15,12 +15,23 @@ import {
     type ReportJobStatus,
 } from "../_lib/reportJob";
 import FileDropBox from "./FileDropBox";
+import GridBeams from "./GridBeams";
 import FileItem from "./FileItem";
 import ReviewProgressModal from "./modals/ReviewProgressModal";
 import LoginRequiredModal from "./modals/LoginRequiredModals";
 import PremiumModal from "./modals/PremiumModal";
+import LiquidSubmitButton from "@/app/(protected)/analysis/_component/LiquidSubmitButton";
+import { shakeClass } from "@/components/form/FormMotion";
 
 type ModalType = null | "progress" | "login" | "premium";
+
+// 페이지 축소(FIT)를 되돌려, 버튼이 상권분석 입력 화면과 같은 크기로 보이게 한다 (FIT 값의 역수)
+const UNFIT =
+    "min-[1680px]:max-[1919px]:[zoom:1.1429] " +
+    "min-[1536px]:max-[1679px]:[zoom:1.25] " +
+    "min-[1440px]:max-[1535px]:[zoom:1.3333] " +
+    "min-[1280px]:max-[1439px]:[zoom:1.5] " +
+    "max-[1279px]:[zoom:1.6667]";
 
 type Props = {
     resumeJobId: number | null; // 다시 검토하기로 돌아온 경우
@@ -138,15 +149,30 @@ export default function ReportJob({ resumeJobId }: Props) {
         setUploadError(false);
     };
 
+    // 파일 없이 누르면 업로드 칸으로 올라가 흔들어 알려준다
+    const dropRef = useRef<HTMLDivElement>(null);
+    const [shakeKey, setShakeKey] = useState(0);
+    const [sent, setSent] = useState(false); // 버튼에 "분석 요청 완료"를 잠깐 보여준다
+
     // 분석 시작하기
     const handleStart = async () => {
-        if (!job || uploading || uploadError || starting) return;
+        if (uploading || starting || sent) return;
+        if (!job || uploadError) {
+            setShakeKey((k) => k + 1);
+            dropRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+            return;
+        }
+        if (job.status !== "PENDING") return;
         if (!isLoggedIn) return setModal("login");
         if (!isPremium) return setModal("premium");
 
         setStarting(true);
         try {
             const started = await startReportJob(job.id);
+            setStarting(false);
+            setSent(true);
+            await new Promise((resolve) => setTimeout(resolve, 400));
+            setSent(false);
             setStatus(started.status);
             setModal("progress");
             setPolling(true);
@@ -196,21 +222,24 @@ export default function ReportJob({ resumeJobId }: Props) {
             ? { name: pendingFile.name, size: pendingFile.size, pageCount: null }
             : null;
     const fileState = uploadError ? "error" : uploading ? "uploading" : "done";
-    const canStart = !!job && job.status === "PENDING" && !uploading && !uploadError && !starting;
 
     return (
         // pt: 헤더 높이 (소개 페이지에서 맞춘 숫자와 동일하게)
         <div className="pt-[96px] overflow-x-hidden">
             <section className={FIT}>
                 <div className="w-[1358px] mx-auto pt-[120px] pb-[175px]">
-                    <h1 className="text-center text-[48px] font-bold leading-[1.3] text-[#111]">
-                        기획서 AI 분석
-                    </h1>
-                    <p className="mt-[19px] text-center text-[24px] leading-[1.3] text-[#666]">
-                        사업계획서를 올리면 AI가 검토해 드려요
-                    </p>
+                    {/* 제목 뒤 격자 배경. 배경은 위아래로 넓게 퍼지고 아래 칸의 클릭은 막지 않는다 */}
+                    <div className="relative isolate">
+                        <GridBeams className="absolute -top-[150px] -bottom-[110px] left-0 -z-10 h-[calc(100%+260px)] w-full" />
+                        <h1 className="text-center text-[48px] font-bold leading-[1.3] text-[#111]">
+                            기획서 AI 분석
+                        </h1>
+                        <p className="mt-[19px] text-center text-[24px] leading-[1.3] text-[#666]">
+                            사업계획서를 올리면 AI가 검토해 드려요
+                        </p>
+                    </div>
 
-                    <div className="mt-[129px]">
+                    <div ref={dropRef} className={`mt-[129px] ${shakeClass(shakeKey, !job || uploadError)}`}>
                         <FileDropBox
                             error={uploadError}
                             canUpload={isLoggedIn}
@@ -231,18 +260,22 @@ export default function ReportJob({ resumeJobId }: Props) {
                         </div>
                     )}
 
-                    <button
-                        type="button"
-                        onClick={handleStart}
-                        disabled={!canStart}
-                        className={`mt-[30px] w-full h-[88px] rounded-full text-[24px] font-bold text-white transition-all duration-300 ${
-                            canStart
-                                ? "bg-linear-to-r from-[#13284a] via-[#1d5466] via-55% to-[#2bb3a3] cursor-pointer hover:brightness-110 active:scale-[0.99]"
-                                : "bg-[#ddd] cursor-not-allowed"
-                        }`}
+                    {/* 상권분석 입력 화면의 유리 버튼과 같은 디자인·모션. 화면에 붙어 따라오지 않고 제자리에 둔다 */}
+                    <form
+                        className={`mt-[30px] ${UNFIT}`}
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            handleStart();
+                        }}
                     >
-                        {starting ? "검토 시작 중..." : "분석 시작하기"}
-                    </button>
+                        <LiquidSubmitButton
+                            state={sent ? "ok" : starting ? "load" : "idle"}
+                            disabled={uploading || starting || sent}
+                            label="분석 시작하기 →"
+                            doneLabel="분석 요청 완료"
+                            expanded
+                        />
+                    </form>
                 </div>
             </section>
 

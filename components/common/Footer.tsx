@@ -37,7 +37,7 @@ export default function Footer() {
                     </li>
                 </ul>
 
-                <span className="pointer-events-none absolute left-0 bottom-[30px] block select-none text-[220px] leading-none text-white opacity-20 font-outfit font-bold">
+                <span className="pointer-events-none absolute left-0 bottom-[30px] block select-none text-[min(220px,12.5vw)] leading-none text-white opacity-20 font-outfit font-bold">
                     Start 
                     <span className="text-[#5EF0DC]">Fit</span>
                 </span>

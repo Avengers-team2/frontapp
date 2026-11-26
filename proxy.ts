@@ -20,7 +20,10 @@ export function proxy(request: NextRequest) {
     }
 
     if (!refreshToken && isProtected(pathname)) {
-        return NextResponse.redirect(new URL("/login", request.url));
+        // 로그인하고 나면 원래 가려던 페이지로 돌아오도록 주소를 next 에 실어 보낸다
+        const loginUrl = new URL("/login", request.url);
+        loginUrl.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
+        return NextResponse.redirect(loginUrl);
     }
 
     if (refreshToken && GUEST_ONLY.some((p) => pathname.startsWith(p))) {

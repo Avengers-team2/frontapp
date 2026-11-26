@@ -1,5 +1,6 @@
 import Reveal from "../shared/Reveal";
 import SupportCarousel from "./SupportCarousel";
+import { Rise, RiseTitle } from "../shared/Rise";
 
 export default function AboutSupport() {
     return (
@@ -8,19 +9,18 @@ export default function AboutSupport() {
             <div className="absolute top-[237px] left-1/2 -translate-x-1/2 w-[520px] h-[520px] rounded-full bg-[#d3fff9]/50 blur-[120px]" />
 
             <div className="relative text-center">
-                <Reveal>
-                    <h2 className="font-bold text-[40px] leading-[1.5]">
-                        <span className="text-[#0b7468]">내 조건에 맞는 지원사업</span><br />
-                        <span className="text-[#0b1b33]">놓치지 않도록</span>
-                    </h2>
-                </Reveal>
+                <h2 className="font-bold text-[40px] leading-[1.5]">
+                    <RiseTitle
+                        lines={[[{ text: "내 조건에 맞는 지원사업", className: "text-[#0b7468]" }], [{ text: "놓치지 않도록", className: "text-[#0b1b33]" }]]}
+                    />
+                </h2>
 
-                <Reveal delay={100}>
+                <Rise delay={600}>
                     <p className="mt-[28px] text-[17px] leading-[26px] text-[#333333]">
                         내 조건으로 신청할 수 있는 공고를 마감일 순으로 모아보고,<br />
                         지원금, 조건, 자부담금과 같은 조건도 미리 확인하세요.
                     </p>
-                </Reveal>
+                </Rise>
             </div>
 
             <Reveal delay={250} className="relative mt-[50px]">

@@ -15,3 +15,24 @@ export const getMyReportJobsApi = async (page: number, size: number): Promise<Ap
     const datas: ApiResponseDTO<PageResponse<ReportJobItem>> = await response.json();
     return datas;
 };
+
+// 검토 보고서 PDF 다운로드 링크 (백엔드 응답이 카멜 표기)
+export interface ReportExportDownload {
+    downloadUrl: string; // S3 임시 다운로드 주소 (열면 바로 내려받기)
+    fileName: string;
+    expiresIn: number;   // 링크 유효 시간(초)
+}
+
+// 검토 보고서 PDF 다운로드 링크 발급 — GET /reports/jobs/{report_job_id}/export (완료된 요청만)
+export const getReportExportUrlApi = async (reportJobId: number): Promise<ApiResponseDTO<ReportExportDownload>> => {
+    const response = await fetch(`${BASE_URL}/jobs/${reportJobId}/export`, {
+        credentials: "include"
+    });
+
+    if (!response.ok) {
+        const error = await response.json().catch(() => null);
+        throw new Error(error?.detail ?? "검토 보고서를 내려받지 못했어요. 잠시 후 다시 시도해 주세요.");
+    }
+    const datas: ApiResponseDTO<ReportExportDownload> = await response.json();
+    return datas;
+};

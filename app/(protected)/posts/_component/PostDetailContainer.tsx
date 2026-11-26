@@ -4,6 +4,7 @@ import { deletePostApi, getPostDetailApi, togglePostBookmarkApi, togglePostLikeA
 import ErrorComponent from "@/components/common/ErrorComponent";
 import Loading from "@/components/common/Loading";
 import { PostCategoryLabel } from "@/enums/post.enum";
+import { toLoginHref } from "@/lib/loginRedirect";
 import useAuthStore from "@/stores/useAuthStore";
 import { ApiResponseDTO } from "@/types/common/common.type";
 import { PostDetail } from "@/types/post/post.type";
@@ -94,13 +95,13 @@ export default function PostDetailContainer({params}: PostDetailContainerProps) 
 
     // 공감(좋아요) 버튼 클릭 (비로그인이면 로그인 페이지로)
     const handleLikeClick = () => {
-        if (!user) return router.push("/login");
+        if (!user) return router.push(toLoginHref());
         likeMutation.mutate();
     }
 
     // 북마크 버튼 클릭 (비로그인이면 로그인 페이지로)
     const handleBookmarkClick = () => {
-        if (!user) return router.push("/login");
+        if (!user) return router.push(toLoginHref());
         bookmarkMutation.mutate();
     }
 
@@ -118,7 +119,7 @@ export default function PostDetailContainer({params}: PostDetailContainerProps) 
     const pillClass = "whitespace-pre rounded-full border border-line bg-white px-5 py-3 text-[15px] font-semibold text-ink-700 shadow-[0px_4px_14px_0px_rgba(11,27,51,0.05)]";
 
     return (
-        <main className="mx-auto w-full max-w-372 px-6 pb-50 pt-43">
+        <main className="mx-auto w-[90%] max-w-[1440px] pb-50 pt-43">
             <section className="border-b border-ink-900 pb-6.5">
                 <p className="text-lg leading-[1.6] text-ink-400">홈 › 게시판 › {PostCategoryLabel[post.post_category]}</p>
             </section>
