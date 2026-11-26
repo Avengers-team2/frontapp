@@ -220,7 +220,7 @@ export default function PostForm({mode, params}: PostFormProps) {
     const errorClass = "mt-1.5 text-sm text-[#E5533D]";
 
     return (
-        <main className="mx-auto w-full max-w-372 px-6 pb-50 pt-43">
+        <main className="mx-auto w-[90%] max-w-[1440px] pb-50 pt-43">
             <section className="border-b border-ink-900 pb-14">
                 <p className="text-lg leading-[1.6] text-ink-400">홈 › 게시판 › {isEdit ? "글 수정" : "글쓰기"}</p>
                 <h1 className="mt-3 text-5xl font-bold leading-[1.3] text-ink-900">{isEdit ? "글 수정" : "글쓰기"}</h1>
