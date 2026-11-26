@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { toLoginHref } from "@/lib/loginRedirect";
 import ModalShell from "./ModalShell";
 
 type Props = {
@@ -32,8 +33,9 @@ export default function LoginRequiredModal({ onClose }: Props) {
                 </p>
 
                 {/* TODO: 팀 로그인/회원가입 경로로 맞춰 주세요 */}
+                {/* 로그인하고 나면 지금 보던 페이지로 돌아오도록 주소를 함께 보낸다 (이 모달은 눌러서 열린 뒤에만 그려져서 브라우저 주소를 쓸 수 있다) */}
                 <Link
-                    href="/login"
+                    href={toLoginHref()}
                     className="mt-[27px] flex items-center justify-center h-[54px] rounded-[10px] bg-[#1a3b71] text-[20px] font-bold text-white transition-colors hover:bg-[#23498a]"
                 >
                     로그인

@@ -1,5 +1,6 @@
 "use client";
 
+import "@/keyframes/form-motion.keyframe.css";
 import { AreaSearchItem, searchAreas } from "@/api/analysis/analysis.api";
 import HighlightText from "./HighlightText";
 import SearchSelect from "./SearchSelect";
@@ -24,8 +25,13 @@ export default function AreaSearch({ areaName, selected, onSelect, onClear }: Ar
                 onKeywordChange={() => selected && onClear()}
                 renderItem={(a, keyword) => (
                     <div className="flex items-center justify-between text-[17px]">
-                        <span className="text-ink-600">
+                        <span className="flex items-center gap-2 text-ink-600">
                             <HighlightText text={a.name} keyword={keyword} />
+                            {a.has_sales_data === false && (
+                                <span className="shrink-0 rounded bg-surface px-1.5 py-0.5 text-[12px] font-medium text-ink-400">
+                                    매출 데이터 없음
+                                </span>
+                            )}
                         </span>
                         <span className="text-[15px] text-ink-300">
                             {a.gu} · {a.dong}
@@ -41,7 +47,21 @@ export default function AreaSearch({ areaName, selected, onSelect, onClear }: Ar
                     </>
                 )}
             />
-            {selected && <p className="mt-3 text-[15px] text-sub-700">✓ 선택한 상권으로 분석해요</p>}
+            {/* 상권을 고르면 선택 줄이 펼쳐지며 왼쪽에서 미끄러져 채워진다 (다른 상권을 고르면 다시 미끄러진다) */}
+            <div
+                className={`grid transition-[grid-template-rows] duration-450 ease-[cubic-bezier(0.3,1,0.4,1)] motion-reduce:transition-none ${
+                    selected ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                }`}
+            >
+                <div className="min-h-0 overflow-hidden">
+                    <p
+                        key={areaName}
+                        className="mt-3 flex items-center gap-2 text-[15px] text-sub-700 animate-[form-slide-in_0.45s_cubic-bezier(0.3,1.3,0.5,1)_backwards] motion-reduce:animate-none"
+                    >
+                        ✓ 선택한 상권으로 분석해요
+                    </p>
+                </div>
+            </div>
         </div>
     );
 }

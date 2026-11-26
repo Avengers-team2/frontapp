@@ -1,0 +1,32 @@
+/* 폼 모션 전용: 로그인·회원가입 검증 흔들림, 검색 결과를 고르면 선택 줄이 왼쪽에서 미끄러져 들어오는 효과 */
+
+/* 흔들림. 같은 칸이 연달아 틀려도 다시 흔들리도록 a/b 두 이름을 번갈아 쓴다 (같은 내용) */
+@keyframes form-shake-a {
+  20%,
+  60% {
+    transform: translateX(-5px);
+  }
+  40%,
+  80% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes form-shake-b {
+  20%,
+  60% {
+    transform: translateX(-5px);
+  }
+  40%,
+  80% {
+    transform: translateX(5px);
+  }
+}
+
+/* 선택한 줄이 왼쪽에서 미끄러져 채워진다 */
+@keyframes form-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+}

@@ -1,6 +1,7 @@
 "use client"
 
 import { createCommentApi } from "@/api/comment/comment.api";
+import { toLoginHref } from "@/lib/loginRedirect";
 import useAuthStore from "@/stores/useAuthStore";
 import { CommentItem as CommentType } from "@/types/post/post.type";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -41,7 +42,7 @@ export default function CommentSection({postId, postAuthorId, comments, commentC
 
     const handleCreate = async (content: string) => {
         if (!user) {
-            router.push("/login");
+            router.push(toLoginHref());
             throw new Error("로그인이 필요합니다.");
         }
         await createMutation.mutateAsync(content);

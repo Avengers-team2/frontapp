@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { FieldErrors, useForm, useWatch } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { checkEmailApi, signUpApi } from "@/api/auth/auth.api";
+import { ErrorSummary, FieldCheck, FieldMessage, goToField, shakeClass } from "@/components/form/FormMotion";
 import { SignUpRequestDTO } from "@/types/auth/auth.type";
 import { ApiResponseDTO } from "@/types/common/common.type";
 
@@ -67,6 +68,20 @@ interface JoinFormValues {
     agree_marketing: boolean;
 }
 
+// 틀린 항목 요약에 나오는 칸들 (화면 순서대로). 소셜 가입에서는 비밀번호 칸이 없다.
+const SUMMARY_FIELDS: { name: keyof JoinFormValues; label: string; passwordOnly?: boolean }[] = [
+    { name: "user_email", label: "이메일" },
+    { name: "user_password", label: "비밀번호", passwordOnly: true },
+    { name: "passwordConfirm", label: "비밀번호 확인", passwordOnly: true },
+    { name: "user_nickname", label: "닉네임" },
+    { name: "user_name", label: "이름" },
+    { name: "user_sex", label: "성별" },
+    { name: "user_birth", label: "생년월일" },
+    { name: "user_phone", label: "휴대폰 번호" },
+    { name: "agree_terms", label: "서비스 이용약관" },
+    { name: "agree_privacy", label: "개인정보 수집 · 이용" },
+];
+
 // 회원가입 페이지
 export default function JoinSignUp() {
     const router = useRouter();
@@ -85,24 +100,48 @@ export default function JoinSignUp() {
     const [emailCheckMessage, setEmailCheckMessage] = useState("");
     // 비밀번호 표시/숨김
     const [showPassword, setShowPassword] = useState(false);
+    // 틀린 칸이 흔들리는 횟수(제출·가입 실패마다 늘어난다), 위쪽 요약에 올라온 칸들, 서버가 돌려준 가입 실패 문구
+    const [shakeKey, setShakeKey] = useState(0);
+    const [summaryNames, setSummaryNames] = useState<(keyof JoinFormValues)[]>([]);
+    const [serverError, setServerError] = useState<string | null>(null);
 
+    // 처음 누를 때 검사하고, 그 뒤로는 고치는 즉시 다시 검사한다 (오류 문구가 접히고 체크가 생기며 요약 숫자가 줄어든다)
     const {
         register,
         handleSubmit,
         getValues,
         setValue,
-        watch,
-        formState: { errors, isValid, isSubmitting },
+        clearErrors,
+        reset,
+        control,
+        formState: { errors, isSubmitted, isSubmitting },
     } = useForm<JoinFormValues>({
-        mode: "onChange",
+        mode: "onSubmit",
+        reValidateMode: "onChange",
+        shouldFocusError: false,
         defaultValues: { user_business_status: "PREPARING", user_email: socialEmail, user_name: socialName },
     });
 
-    const agreeTerms = watch("agree_terms");
-    const agreePrivacy = watch("agree_privacy");
-    const agreeMarketing = watch("agree_marketing");
-    const businessStatus = watch("user_business_status");
-    const userSex = watch("user_sex");
+    // 페이지를 벗어나면 입력한 내용(비밀번호 포함)과 오류 표시를 모두 비운다.
+    // 이 프로젝트는 벗어난 페이지의 화면 상태를 메모리에 남겨 두기 때문에, 비우지 않으면 다시 들어왔을 때 그대로 보인다.
+    useEffect(() => {
+        return () => {
+            reset();
+            setEmailChecked(false);
+            setEmailCheckMessage("");
+            setShowPassword(false);
+            setShakeKey(0);
+            setSummaryNames([]);
+            setServerError(null);
+        };
+    }, [reset]);
+
+    const values = useWatch({ control });
+    const agreeTerms = values.agree_terms;
+    const agreePrivacy = values.agree_privacy;
+    const agreeMarketing = values.agree_marketing;
+    const businessStatus = values.user_business_status;
+    const userSex = values.user_sex;
     const isAllAgreed = agreeTerms && agreePrivacy && agreeMarketing;
     // 이메일 입력 오류 또는 중복 확인 실패 시 빨간 테두리
     const emailHasError = !!errors.user_email || (!!emailCheckMessage && !emailChecked);
@@ -114,6 +153,7 @@ export default function JoinSignUp() {
             if (datas.data === true) {
                 setEmailChecked(true);
                 setEmailCheckMessage("사용할 수 있는 이메일이에요.");
+                clearErrors("user_email"); // 제출 때 붙은 "중복 확인을 해주세요" 오류를 바로 걷는다
             } else {
                 setEmailChecked(false);
                 setEmailCheckMessage("이미 가입된 이메일이에요. 로그인해 주세요.");
@@ -133,7 +173,8 @@ export default function JoinSignUp() {
             router.push("/login");
         },
         onError: (err: Error) => {
-            alert(err.message);
+            setServerError(err.message);
+            setShakeKey((k) => k + 1);
         },
     });
 
@@ -149,16 +190,14 @@ export default function JoinSignUp() {
 
     // 전체 동의 체크박스
     const handleAllAgree = (checked: boolean) => {
-        setValue("agree_terms", checked, { shouldValidate: true });
-        setValue("agree_privacy", checked, { shouldValidate: true });
-        setValue("agree_marketing", checked, { shouldValidate: true });
+        setValue("agree_terms", checked, { shouldValidate: isSubmitted });
+        setValue("agree_privacy", checked, { shouldValidate: isSubmitted });
+        setValue("agree_marketing", checked, { shouldValidate: isSubmitted });
     };
 
     const onSubmit = (values: JoinFormValues) => {
-        if (!isSocial && !emailChecked) {
-            alert("이메일 중복 확인을 해주세요.");
-            return;
-        }
+        if (!isSocial && !emailChecked) return; // 이메일 칸의 검사에서 이미 걸러진다
+        setServerError(null);
         const payload: SignUpRequestDTO = {
             user_email: values.user_email,
             ...(isSocial
@@ -177,22 +216,46 @@ export default function JoinSignUp() {
         signUpMutation.mutate(payload);
     };
 
-    const isDisabled =
-        !isValid || !agreeTerms || !agreePrivacy || (!isSocial && !emailChecked) || isSubmitting || signUpMutation.isPending;
+    // 틀린 칸이 있으면 흔들고, 위쪽에 요약을 내린 뒤 첫 번째 틀린 칸으로 부드럽게 올라가 커서를 놓는다
+    const onInvalid = (errs: FieldErrors<JoinFormValues>) => {
+        const bad = SUMMARY_FIELDS.filter((f) => !(isSocial && f.passwordOnly) && errs[f.name]).map((f) => f.name);
+        setServerError(null);
+        setSummaryNames(bad);
+        setShakeKey((k) => k + 1);
+        if (bad.length > 0) window.setTimeout(() => goToField(`join-field-${bad[0]}`), 200);
+    };
 
-    // 에러 여부에 따라 테두리 색 변경 (빨강 / 기본 + 포커스 시 진한 남색)
-    const inputClass = (hasError: boolean) =>
-        `mt-2 h-[52px] w-full rounded-[10px] border px-4 text-[16px] outline-none ${
-            hasError ? "border-[#E5484D]" : "border-[#D5DCE6] focus:border-[#0B1B33]"
+    const isDisabled = isSubmitting || signUpMutation.isPending;
+
+    const summaryItems = summaryNames.map((name) => ({
+        name,
+        label: SUMMARY_FIELDS.find((f) => f.name === name)?.label ?? name,
+        invalid: !!errors[name],
+    }));
+
+    // 칸을 고쳐서 맞으면 초록 테두리·체크 (처음 누르기 전에는 표시하지 않는다)
+    const isGood = (name: keyof JoinFormValues) => isSubmitted && !errors[name] && !!values[name];
+    const shake = (name: keyof JoinFormValues) => shakeClass(shakeKey, !!errors[name]);
+
+    // 에러 여부에 따라 테두리 색 변경 (빨강 / 고침 초록 / 기본 + 포커스 시 진한 남색)
+    const inputClass = (name: keyof JoinFormValues) =>
+        `h-[52px] w-full rounded-[10px] border pl-4 pr-11 text-[16px] outline-none transition-colors ${
+            errors[name]
+                ? "border-[#E5484D]"
+                : isGood(name)
+                  ? "border-sub-700/60"
+                  : "border-[#D5DCE6] focus:border-[#0B1B33]"
         }`;
-    const errorClass = "mt-1 text-[12px] text-[#E5484D]";
 
     return (
         <div className="flex flex-col items-center px-4 pt-[150px] pb-[120px] min-h-screen bg-white">
             <div className="flex flex-col justify-center items-center w-full max-w-[700px]">
                 <h1 className="text-[40px] font-bold text-[#0B1B33]">회원가입</h1>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="mt-[64px] flex w-full flex-col">
+                <form onSubmit={handleSubmit(onSubmit, onInvalid)} noValidate className="mt-[64px] flex w-full flex-col">
+                    {/* 틀린 항목 요약: 가입하기를 누르면 내려오고, 고치면 줄이 그어지며 숫자가 줄어든다 */}
+                    <ErrorSummary items={summaryItems} onGo={(name) => goToField(`join-field-${name}`)} />
+
                     {/* 계정 정보 */}
                     <section>
                         <h2 className="flex items-baseline gap-2 text-[22px] font-bold text-[#0B1B33]">
@@ -200,113 +263,148 @@ export default function JoinSignUp() {
                         </h2>
 
                         {/* 이메일 + 중복 확인 */}
-                        <label className="mt-6 flex flex-col">
+                        <label id="join-field-user_email" className="mt-6 flex flex-col">
                             <span className="text-[15px] font-bold text-[#0B1B33]">이메일<span className="ml-0.5 text-[#E5484D]">*</span></span>
                             {/* 입력창 테두리 안 오른쪽에 중복 확인 버튼 */}
-                            <div
-                                className={`mt-2 flex h-[52px] items-center rounded-[10px] border pl-4 pr-[6px] ${
-                                    emailHasError ? "border-[#E5484D]" : "border-[#D5DCE6] focus-within:border-[#0B1B33]"
-                                } ${isSocial ? "bg-[#F3F6FA]" : ""}`}
-                            >
-                                <input
-                                    type="text"
-                                    placeholder="example@startfit.kr"
-                                    readOnly={isSocial}
-                                    className={`min-w-0 flex-1 bg-transparent text-[16px] outline-none ${
-                                        isSocial ? "cursor-not-allowed text-[#6B7A90]" : ""
-                                    }`}
-                                    {...register("user_email", {
-                                        required: "이메일을 입력해 주세요.",
-                                        pattern: { value: emailRegex, message: "이메일 양식에 맞게 입력해 주세요." },
-                                        onChange: () => {
-                                            setEmailChecked(false);
-                                            setEmailCheckMessage("");
-                                        },
-                                    })}
-                                />
-                                {isSocial ? (
-                                    <span className="ml-2 shrink-0 pr-2 text-[13px] text-[#6B7A90]">
-                                        {socialProvider} 인증됨
-                                    </span>
-                                ) : (
-                                    <button
-                                        type="button"
-                                        onClick={handleCheckEmail}
-                                        disabled={checkEmailMutation.isPending}
-                                        className="ml-2 h-[40px] shrink-0 rounded-[8px] bg-[#F3F6FA] px-4 text-[14px] font-semibold text-[#3D4A5C] hover:bg-[#E3E8EF] disabled:cursor-not-allowed cursor-pointer"
-                                    >
-                                        {checkEmailMutation.isPending ? "확인 중" : "중복 확인"}
-                                    </button>
-                                )}
+                            <div className={shake("user_email")}>
+                                <div
+                                    className={`mt-2 flex h-[52px] items-center rounded-[10px] border pl-4 pr-[6px] transition-colors ${
+                                        emailHasError
+                                            ? "border-[#E5484D]"
+                                            : emailChecked
+                                              ? "border-sub-700/60"
+                                              : "border-[#D5DCE6] focus-within:border-[#0B1B33]"
+                                    } ${isSocial ? "bg-[#F3F6FA]" : ""}`}
+                                >
+                                    <input
+                                        type="text"
+                                        placeholder="example@startfit.kr"
+                                        readOnly={isSocial}
+                                        aria-invalid={emailHasError}
+                                        className={`min-w-0 flex-1 bg-transparent text-[16px] outline-none ${
+                                            isSocial ? "cursor-not-allowed text-[#6B7A90]" : ""
+                                        }`}
+                                        {...register("user_email", {
+                                            required: "이메일을 입력해 주세요.",
+                                            pattern: { value: emailRegex, message: "이메일 양식에 맞게 입력해 주세요." },
+                                            validate: () => isSocial || emailChecked || "이메일 중복 확인을 해주세요.",
+                                            onChange: () => {
+                                                setEmailChecked(false);
+                                                setEmailCheckMessage("");
+                                            },
+                                        })}
+                                    />
+                                    {isSocial ? (
+                                        <span className="ml-2 shrink-0 pr-2 text-[13px] text-[#6B7A90]">
+                                            {socialProvider} 인증됨
+                                        </span>
+                                    ) : (
+                                        <>
+                                        {/* 중복 확인을 통과하면 체크 */}
+                                        <FieldCheck inline show={emailChecked && !errors.user_email} className="ml-2" />
+                                        <button
+                                            type="button"
+                                            onClick={handleCheckEmail}
+                                            disabled={checkEmailMutation.isPending}
+                                            className="ml-2 h-[40px] shrink-0 rounded-[8px] bg-[#F3F6FA] px-4 text-[14px] font-semibold text-[#3D4A5C] hover:bg-[#E3E8EF] disabled:cursor-not-allowed cursor-pointer"
+                                        >
+                                            {checkEmailMutation.isPending ? "확인 중" : "중복 확인"}
+                                        </button>
+                                        </>
+                                    )}
+                                </div>
                             </div>
-                            {errors.user_email && <p className={errorClass}>{errors.user_email.message}</p>}
-                            {!errors.user_email && emailCheckMessage && (
-                                <p className={emailChecked ? "mt-1 text-[12px] text-[#0E7C70]" : errorClass}>
-                                    {emailCheckMessage}
-                                </p>
-                            )}
+                            <FieldMessage
+                                message={errors.user_email?.message ?? (emailChecked ? null : emailCheckMessage || null)}
+                            />
+                            {/* 사용할 수 있는 이메일이라는 확인 문구 (오류가 아니라 초록색) */}
+                            <div
+                                className={`grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.3,1,0.4,1)] motion-reduce:transition-none ${
+                                    !errors.user_email && emailChecked && emailCheckMessage ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                                }`}
+                            >
+                                <div className="min-h-0 overflow-hidden">
+                                    <p className="pt-1 text-[12px] text-[#0E7C70]">{emailCheckMessage}</p>
+                                </div>
+                            </div>
                         </label>
 
                         {/* 비밀번호 / 비밀번호 확인 (소셜 가입에서는 숨김) */}
                         {!isSocial && (<>
-                        <label className="mt-6 flex flex-col">
+                        <label id="join-field-user_password" className="mt-6 flex flex-col">
                             <span className="text-[15px] font-bold text-[#0B1B33]">비밀번호<span className="ml-0.5 text-[#E5484D]">*</span></span>
-                            <div
-                                className={`mt-2 flex h-[52px] items-center rounded-[10px] border px-4 ${
-                                    errors.user_password ? "border-[#E5484D]" : "border-[#D5DCE6] focus-within:border-[#0B1B33]"
-                                }`}
-                            >
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    placeholder="영문 · 숫자 · 특수문자 8자 이상"
-                                    className="min-w-0 flex-1 text-[16px] outline-none"
-                                    {...register("user_password", {
-                                        required: "비밀번호를 입력해 주세요.",
-                                        pattern: {
-                                            value: passwordRegex,
-                                            message: "영문 · 숫자 · 특수문자를 섞어 8자 이상 입력해 주세요.",
-                                        },
-                                    })}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword((prev) => !prev)}
-                                    className="ml-2 shrink-0 text-[13px] text-[#6B7A90] cursor-pointer"
+                            <div className={`mt-2 ${shake("user_password")}`}>
+                                <div
+                                    className={`flex h-[52px] items-center rounded-[10px] border px-4 transition-colors ${
+                                        errors.user_password
+                                            ? "border-[#E5484D]"
+                                            : isGood("user_password")
+                                              ? "border-sub-700/60"
+                                              : "border-[#D5DCE6] focus-within:border-[#0B1B33]"
+                                    }`}
                                 >
-                                    {showPassword ? "숨김" : "표시"}
-                                </button>
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        placeholder="영문 · 숫자 · 특수문자 8자 이상"
+                                        aria-invalid={!!errors.user_password}
+                                        className="min-w-0 flex-1 text-[16px] outline-none"
+                                        {...register("user_password", {
+                                            required: "비밀번호를 입력해 주세요.",
+                                            pattern: {
+                                                value: passwordRegex,
+                                                message: "영문 · 숫자 · 특수문자를 섞어 8자 이상 입력해 주세요.",
+                                            },
+                                        })}
+                                    />
+                                    <FieldCheck inline show={isGood("user_password")} className="ml-2" />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword((prev) => !prev)}
+                                        className="ml-2 shrink-0 text-[13px] text-[#6B7A90] cursor-pointer"
+                                    >
+                                        {showPassword ? "숨김" : "표시"}
+                                    </button>
+                                </div>
                             </div>
-                            {errors.user_password && <p className={errorClass}>{errors.user_password.message}</p>}
+                            <FieldMessage message={errors.user_password?.message} />
                         </label>
 
                         {/* 비밀번호 확인 */}
-                        <label className="mt-6 flex flex-col">
+                        <label id="join-field-passwordConfirm" className="mt-6 flex flex-col">
                             <span className="text-[15px] font-bold text-[#0B1B33]">비밀번호 확인<span className="ml-0.5 text-[#E5484D]">*</span></span>
-                            <input
-                                type="password"
-                                placeholder="비밀번호를 한 번 더 입력해 주세요"
-                                className={inputClass(!!errors.passwordConfirm)}
-                                {...register("passwordConfirm", {
-                                    required: "비밀번호 확인을 입력해 주세요.",
-                                    validate: (value) => value === getValues("user_password") || "비밀번호가 일치하지 않습니다.",
-                                })}
-                            />
-                            {errors.passwordConfirm && <p className={errorClass}>{errors.passwordConfirm.message}</p>}
+                            <div className={`relative mt-2 ${shake("passwordConfirm")}`}>
+                                <input
+                                    type="password"
+                                    placeholder="비밀번호를 한 번 더 입력해 주세요"
+                                    aria-invalid={!!errors.passwordConfirm}
+                                    className={inputClass("passwordConfirm")}
+                                    {...register("passwordConfirm", {
+                                        required: "비밀번호 확인을 입력해 주세요.",
+                                        validate: (value) => value === getValues("user_password") || "비밀번호가 일치하지 않습니다.",
+                                    })}
+                                />
+                                <FieldCheck show={isGood("passwordConfirm")} />
+                            </div>
+                            <FieldMessage message={errors.passwordConfirm?.message} />
                         </label>
                         </>)}
 
                         {/* 닉네임 */}
-                        <label className="mt-6 flex flex-col">
+                        <label id="join-field-user_nickname" className="mt-6 flex flex-col">
                             <span className="text-[15px] font-bold text-[#0B1B33]">닉네임<span className="ml-0.5 text-[#E5484D]">*</span></span>
-                            <input
-                                type="text"
-                                placeholder="사용할 닉네임을 입력해 주세요"
-                                className={inputClass(!!errors.user_nickname)}
-                                {...register("user_nickname", {
-                                    required: "닉네임을 입력해 주세요.",
-                                })}
-                            />
-                            {errors.user_nickname && <p className={errorClass}>{errors.user_nickname.message}</p>}
+                            <div className={`relative mt-2 ${shake("user_nickname")}`}>
+                                <input
+                                    type="text"
+                                    placeholder="사용할 닉네임을 입력해 주세요"
+                                    aria-invalid={!!errors.user_nickname}
+                                    className={inputClass("user_nickname")}
+                                    {...register("user_nickname", {
+                                        required: "닉네임을 입력해 주세요.",
+                                    })}
+                                />
+                                <FieldCheck show={isGood("user_nickname")} />
+                            </div>
+                            <FieldMessage message={errors.user_nickname?.message} />
                         </label>
                     </section>
 
@@ -317,26 +415,33 @@ export default function JoinSignUp() {
                         </h2>
 
                         {/* 이름 */}
-                        <label className="mt-6 flex flex-col">
+                        <label id="join-field-user_name" className="mt-6 flex flex-col">
                             <span className="text-[15px] font-bold text-[#0B1B33]">이름<span className="ml-0.5 text-[#E5484D]">*</span></span>
-                            <input
-                                type="text"
-                                placeholder="실명을 입력해 주세요"
-                                readOnly={!!socialName}
-                                className={`${inputClass(!!errors.user_name)} ${
-                                    socialName ? "cursor-not-allowed bg-[#F3F6FA] text-[#6B7A90]" : ""
-                                }`}
-                                {...register("user_name", {
-                                    validate: (value) => value.trim().length > 0 || "이름을 입력해 주세요.",
-                                })}
-                            />
-                            {errors.user_name && <p className={errorClass}>{errors.user_name.message}</p>}
+                            <div className={`relative mt-2 ${shake("user_name")}`}>
+                                <input
+                                    type="text"
+                                    placeholder="실명을 입력해 주세요"
+                                    readOnly={!!socialName}
+                                    aria-invalid={!!errors.user_name}
+                                    className={`${inputClass("user_name")} ${
+                                        socialName ? "cursor-not-allowed bg-[#F3F6FA] text-[#6B7A90]" : ""
+                                    }`}
+                                    {...register("user_name", {
+                                        validate: (value) => value.trim().length > 0 || "이름을 입력해 주세요.",
+                                    })}
+                                />
+                                <FieldCheck show={isGood("user_name")} />
+                            </div>
+                            <FieldMessage message={errors.user_name?.message} />
                         </label>
 
                         {/* 성별 */}
-                        <div className="mt-6 flex flex-col">
-                            <span className="text-[15px] font-bold text-[#0B1B33]">성별<span className="ml-0.5 text-[#E5484D]">*</span></span>
-                            <div className="mt-2 flex gap-2">
+                        <div id="join-field-user_sex" className="mt-6 flex flex-col">
+                            <span className="flex items-center gap-2 text-[15px] font-bold text-[#0B1B33]">
+                                <span>성별<span className="ml-0.5 text-[#E5484D]">*</span></span>
+                                <FieldCheck inline show={isGood("user_sex")} />
+                            </span>
+                            <div className={`mt-2 flex gap-2 ${shake("user_sex")}`}>
                                 {SEX_OPTIONS.map((option) => {
                                     const isSelected = userSex === option.value;
                                     return (
@@ -345,7 +450,9 @@ export default function JoinSignUp() {
                                             className={`cursor-pointer rounded-full border px-4 py-2 text-[14px] transition-colors ${
                                                 isSelected
                                                     ? "border-[#0B1B33] bg-[#0B1B33] text-white"
-                                                    : "border-[#D5DCE6] bg-white text-[#3D4A5C] hover:bg-[#F3F6FA]"
+                                                    : errors.user_sex
+                                                      ? "border-[#E5484D] bg-white text-[#3D4A5C] hover:bg-[#F3F6FA]"
+                                                      : "border-[#D5DCE6] bg-white text-[#3D4A5C] hover:bg-[#F3F6FA]"
                                             }`}
                                         >
                                             <input
@@ -359,37 +466,46 @@ export default function JoinSignUp() {
                                     );
                                 })}
                             </div>
-                            {errors.user_sex && <p className={errorClass}>{errors.user_sex.message}</p>}
+                            <FieldMessage message={errors.user_sex?.message} />
                         </div>
 
                         {/* 생년월일 */}
-                        <label className="mt-6 flex flex-col">
+                        <label id="join-field-user_birth" className="mt-6 flex flex-col">
                             <span className="text-[15px] font-bold text-[#0B1B33]">생년월일<span className="ml-0.5 text-[#E5484D]">*</span></span>
-                            <input
-                                type="date"
-                                max={getToday()}
-                                className={inputClass(!!errors.user_birth)}
-                                {...register("user_birth", {
-                                    required: "생년월일을 입력해 주세요.",
-                                    validate: (value) => value <= getToday() || "오늘 이후 날짜는 선택할 수 없어요.",
-                                })}
-                            />
-                            {errors.user_birth && <p className={errorClass}>{errors.user_birth.message}</p>}
+                            <div className={`relative mt-2 ${shake("user_birth")}`}>
+                                <input
+                                    type="date"
+                                    max={getToday()}
+                                    aria-invalid={!!errors.user_birth}
+                                    className={inputClass("user_birth")}
+                                    {...register("user_birth", {
+                                        required: "생년월일을 입력해 주세요.",
+                                        validate: (value) => value <= getToday() || "오늘 이후 날짜는 선택할 수 없어요.",
+                                    })}
+                                />
+                                {/* 날짜 선택 아이콘이 오른쪽 끝에 있어서 그 왼쪽에 둔다 */}
+                                <FieldCheck show={isGood("user_birth")} className="right-11" />
+                            </div>
+                            <FieldMessage message={errors.user_birth?.message} />
                         </label>
 
                         {/* 휴대폰 번호 */}
-                        <label className="mt-6 flex flex-col">
+                        <label id="join-field-user_phone" className="mt-6 flex flex-col">
                             <span className="text-[15px] font-bold text-[#0B1B33]">휴대폰 번호<span className="ml-0.5 text-[#E5484D]">*</span></span>
-                            <input
-                                type="tel"
-                                placeholder="010-1234-5678"
-                                className={inputClass(!!errors.user_phone)}
-                                {...register("user_phone", {
-                                    required: "휴대폰 번호를 입력해 주세요.",
-                                    pattern: { value: phoneRegex, message: "휴대폰 번호 형식에 맞게 입력해 주세요." },
-                                })}
-                            />
-                            {errors.user_phone && <p className={errorClass}>{errors.user_phone.message}</p>}
+                            <div className={`relative mt-2 ${shake("user_phone")}`}>
+                                <input
+                                    type="tel"
+                                    placeholder="010-1234-5678"
+                                    aria-invalid={!!errors.user_phone}
+                                    className={inputClass("user_phone")}
+                                    {...register("user_phone", {
+                                        required: "휴대폰 번호를 입력해 주세요.",
+                                        pattern: { value: phoneRegex, message: "휴대폰 번호 형식에 맞게 입력해 주세요." },
+                                    })}
+                                />
+                                <FieldCheck show={isGood("user_phone")} />
+                            </div>
+                            <FieldMessage message={errors.user_phone?.message} />
                         </label>
                     </section>
 
@@ -441,32 +557,54 @@ export default function JoinSignUp() {
                         </label>
 
                         <div className="mt-4 flex flex-col gap-3 text-[14px] text-[#3D4A5C]">
-                            <div className="flex items-center justify-between">
-                                <label className="flex cursor-pointer items-center gap-2">
-                                    <input type="checkbox" className="size-4 cursor-pointer" {...register("agree_terms")} />
-                                    (필수) 서비스 이용약관
-                                </label>
-                                {/* 약관 내용은 아직 없음 , 보기 기능은 추후 연결????????? */}
-                                <button type="button" className="text-[13px] text-[#8A96A8] cursor-pointer">보기 ›</button>
+                            <div id="join-field-agree_terms">
+                                <div className={`flex items-center justify-between ${shake("agree_terms")}`}>
+                                    <label className="flex cursor-pointer items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            aria-invalid={!!errors.agree_terms}
+                                            className="size-4 cursor-pointer"
+                                            {...register("agree_terms", { required: "서비스 이용약관에 동의해 주세요." })}
+                                        />
+                                        (필수) 서비스 이용약관
+                                    </label>
+                                    {/* 약관 내용은 아직 없음 , 보기 기능은 추후 연결????????? */}
+                                    <span className="flex items-center gap-2">
+                                        <FieldCheck inline show={isGood("agree_terms")} />
+                                        <button type="button" className="text-[13px] text-[#8A96A8] cursor-pointer">보기 ›</button>
+                                    </span>
+                                </div>
+                                <FieldMessage message={errors.agree_terms?.message} />
                             </div>
-                            <div className="flex items-center justify-between">
-                                <label className="flex cursor-pointer items-center gap-2">
-                                    <input type="checkbox" className="size-4 cursor-pointer" {...register("agree_privacy")} />
-                                    (필수) 개인정보 수집 · 이용
-                                </label>
-                                <button type="button" className="text-[13px] text-[#8A96A8] cursor-pointer">보기 ›</button>
+                            <div id="join-field-agree_privacy">
+                                <div className={`flex items-center justify-between ${shake("agree_privacy")}`}>
+                                    <label className="flex cursor-pointer items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            aria-invalid={!!errors.agree_privacy}
+                                            className="size-4 cursor-pointer"
+                                            {...register("agree_privacy", { required: "개인정보 수집 · 이용에 동의해 주세요." })}
+                                        />
+                                        (필수) 개인정보 수집 · 이용
+                                    </label>
+                                    <span className="flex items-center gap-2">
+                                        <FieldCheck inline show={isGood("agree_privacy")} />
+                                        <button type="button" className="text-[13px] text-[#8A96A8] cursor-pointer">보기 ›</button>
+                                    </span>
+                                </div>
+                                <FieldMessage message={errors.agree_privacy?.message} />
                             </div>
                             <label className="flex cursor-pointer items-center gap-2">
                                 <input type="checkbox" className="size-4 cursor-pointer" {...register("agree_marketing")} />
                                 (선택) 지원사업 마감 알림 받기
                             </label>
                         </div>
-                        {!agreeTerms || !agreePrivacy ? (
-                            <p className="mt-3 text-[12px] text-[#E5484D]">필수 약관에 동의해야 가입할 수 있어요.</p>
-                        ) : null}
                     </section>
 
-                    {/* 하단 버튼 */}
+                    {/* 서버가 돌려준 가입 실패 (이미 가입된 정보 등) */}
+                    <FieldMessage message={serverError} className="mt-8 text-right text-[13px] font-bold" />
+
+                    {/* 하단 버튼 (항상 누를 수 있고, 틀린 칸이 있으면 흔들리며 알려 준다) */}
                     <div className="mt-12 flex justify-end">
                         <Link
                             href="/login"
