@@ -4,6 +4,7 @@ import HeroScoreCard from "./HeroScoreCard";
 import HeroStats from "./HeroStats";
 import HeroTitle from "./HeroTitle";
 import { HeroSpotProvider } from "./HeroSpotContext";
+import { Rise } from "../shared/Rise";
 
 // 첫 화면 내용의 양끝을 헤더(좌우 5% 여백, 최대 1440px)에 맞춘다
 // 배경은 헤더 뒤까지 채우고, 내용만 헤더 높이(72px)만큼 내려서 둔다
@@ -32,21 +33,25 @@ export default function AboutHero() {
             <div className={CONTAINER}>
             {/* 왼쪽 카피 */}
             <div className="absolute top-[173px] left-0 w-[560px]">
+                <Rise delay={50}>
                 <p className="flex items-center gap-[10px] h-[20px] font-(family-name:--font-jetbrains-mono) font-medium text-[14px] tracking-[0.12em] text-[#333333]">
                     <span className="w-[8px] h-[8px] rounded-full bg-[#333333]" />
                     BEFORE YOU SIGN · 계약 전 5분
                 </p>
+                </Rise>
 
                 <HeroTitle />
 
+                <Rise delay={550}>
                 <p className="mt-[28px] text-[18px] leading-[1.65] text-[#333333]">
                     주소 하나면 상권 · 폐업 위험 · 임대료 · 지원사업까지<br />
                     계약서에 도장 찍기 전에 확인해 드려요.
                 </p>
+                </Rise>
 
-                <div className="mt-[28px]">
+                <Rise delay={660} className="mt-[28px]">
                     <HeroSearch />
-                </div>
+                </Rise>
             </div>
 
             <HeroSpotProvider>

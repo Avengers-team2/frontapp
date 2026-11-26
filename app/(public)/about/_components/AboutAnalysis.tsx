@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import Reveal from "./shared/Reveal";
+import { Rise, RiseTitle } from "./shared/Rise";
 import { analysisPoints } from "../_data/aboutData";
 
 export default function AboutAnalysis() {
@@ -19,23 +20,22 @@ export default function AboutAnalysis() {
 
             {/* 왼쪽 글: 아래에서 차례로 올라옴 */}
             <div className="absolute top-[315px] left-[max(24px,calc(50%_-_650px))] w-[512px]">
-                <Reveal>
+                <div>
                     <h2 className="font-bold text-[42px] leading-[1.3] text-white">
-                        지도 위에서 읽는<br />
-                        상권의 가능성
+                        <RiseTitle lines={[[{ text: "지도 위에서 읽는" }], [{ text: "상권의 가능성" }]]} />
                     </h2>
-                </Reveal>
+                </div>
 
-                <Reveal delay={100}>
+                <Rise delay={350}>
                     <p className="mt-[18px] text-[17px] leading-[26px] text-[#a9c0d8]">
                         선택한 위치를 중심으로 주변 점포부터 경쟁 현황, 고객과 매출까지 한눈에 확인하세요.
                     </p>
-                </Reveal>
+                </Rise>
 
                 <ul className="flex flex-col gap-[14px] mt-[27px]">
                     {analysisPoints.map((point, i) => (
                         <li key={point}>
-                            <Reveal delay={200 + i * 100}>
+                            <Rise delay={450 + i * 100}>
                                 <span className="flex items-center gap-[12px] font-medium text-[17px] leading-[26px] text-[#e8eef6]">
                                     <span className="flex items-center justify-center w-[20px] h-[20px] rounded-full bg-[#2bb3a3]">
                                         <svg width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -44,12 +44,12 @@ export default function AboutAnalysis() {
                                     </span>
                                     {point}
                                 </span>
-                            </Reveal>
+                            </Rise>
                         </li>
                     ))}
                 </ul>
 
-                <Reveal delay={550}>
+                <Rise delay={700}>
                     <Link
                         href="/analysis"
                         className="flex items-center justify-center gap-[6px] w-[199px] h-[55px] mt-[56px] rounded-full bg-[#2bb3a3] border-[1px] border-white font-bold text-[15px] text-white"
@@ -60,7 +60,7 @@ export default function AboutAnalysis() {
                             <path d="M9.29 6.71001L11.59 9.00001H5V11H11.59L9.29 13.29L10.71 14.71L15.41 10L10.71 5.29001L9.29 6.71001Z" fill="white" />
                         </svg>
                     </Link>
-                </Reveal>
+                </Rise>
             </div>
         </section>
     );
