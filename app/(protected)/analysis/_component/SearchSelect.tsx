@@ -6,6 +6,7 @@ import useDebounce from "./useDebounce";
 type SearchSelectProps<T> = {
     placeholder: string;
     disabled?: boolean;
+    invalid?: boolean; // 채워야 하는데 비어 있으면 빨간 테두리
     search: (keyword: string) => Promise<T[]>;
     getKey: (item: T) => string;
     getLabel?: (item: T) => string;
@@ -17,7 +18,7 @@ type SearchSelectProps<T> = {
 };
 
 export default function SearchSelect<T>({
-    placeholder, disabled, search, getKey, getLabel, renderItem, onSelect, renderEmpty, onKeywordChange, defaultKeyword = "",
+    placeholder, disabled, invalid, search, getKey, getLabel, renderItem, onSelect, renderEmpty, onKeywordChange, defaultKeyword = "",
 }: SearchSelectProps<T>) {
     const [keyword, setKeyword] = useState(defaultKeyword);
 
@@ -54,7 +55,7 @@ export default function SearchSelect<T>({
             .catch((e) => {
                 if (cancelled) return;
                 setResults([]);
-                setError(e instanceof Error ? e.message : "검색 중 문제가 생겼어요.");
+                setError(e instanceof Error ? e.message : "검색 중 문제가 생겼습니다.");
             })
             .finally(() => !cancelled && setLoading(false));
         return () => {
@@ -104,7 +105,7 @@ export default function SearchSelect<T>({
         <div ref={wrapperRef} className="relative">
             <label
                 className={`flex h-[62px] items-center gap-3 rounded-xl border px-5 transition-colors ${
-                    disabled ? "border-line bg-surface" : "border-line bg-white focus-within:border-sub"
+                    disabled ? "border-line bg-surface" : invalid ? "border-danger bg-white" : "border-line bg-white focus-within:border-sub"
                 }`}
             >
                 <span aria-hidden className={`text-[20px] ${disabled ? "text-ink-200" : "text-ink-400"}`}>⌕</span>
@@ -113,6 +114,7 @@ export default function SearchSelect<T>({
                     aria-expanded={showList}
                     aria-autocomplete="list"
                     disabled={disabled}
+                    aria-invalid={invalid}
                     value={keyword}
                     placeholder={placeholder}
                     onChange={(e) => {
@@ -157,7 +159,7 @@ export default function SearchSelect<T>({
                         </ul>
                     ) : error ? (
                         <div className="mt-2 rounded-xl border border-danger/40 bg-danger-bg px-6 py-5">
-                            <p className="text-[17px] font-semibold text-danger-strong">검색 중 문제가 생겼어요</p>
+                            <p className="text-[17px] font-semibold text-danger-strong">검색 중 문제가 생겼습니다</p>
                             <p className="mt-1 text-[15px] text-ink-500">{error}</p>
                         </div>
                     ) : debouncedKeyword !== "" ? (

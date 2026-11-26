@@ -14,6 +14,8 @@ import type {
 import { formatKRW, formatQuarter, salesLabel, shortQuarter } from "../analysisResult.mapper";
 import { BAR_DELAY, BAR_WIDTH } from "../ScoreBar";
 import type { InsightsState } from "../useAnalysisInsights";
+import Card from "./Card";
+import { MetricBars } from "./charts";
 
 // 결과 화면 맨 아래 "추가 정보" 영역: 업종 순위, 매출 추세·예측, 다른 업종 추천, 상권 비교, 프랜차이즈 비중.
 // 추정·참고용 데이터라 단정하는 문구를 피하고, 금액은 "분기 매출 합계"로 쓴다. 값이 없는 영역은 통째로 숨긴다.
@@ -33,25 +35,13 @@ function formatValue(v: number | null, unit: string): string {
   return `${Math.round(v).toLocaleString()}${unit}`;
 }
 
-function Block({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) {
-  return (
-    <section className="space-y-3">
-      <div className="flex items-baseline justify-between gap-2">
-        <h4 className="text-sm font-bold text-ink-900">{title}</h4>
-        {sub && <span className="text-xs text-ink-400">{sub}</span>}
-      </div>
-      {children}
-    </section>
-  );
-}
-
 // 처음 불러오는 7초쯤 동안 각 영역 자리를 먼저 잡아 둔다
 function InsightsSkeleton() {
   return (
     <div role="status" className="space-y-6">
       <p className="flex items-center gap-2 text-xs text-ink-400">
         <span className="size-3.5 shrink-0 animate-spin rounded-full border-2 border-line border-t-sub" />
-        추가 정보를 불러오는 중이에요 (처음엔 몇 초 걸려요)
+        추가 정보를 불러오는 중입니다 (처음엔 몇 초 걸립니다)
       </p>
       {[0, 1, 2].map((i) => (
         <div key={i} className="space-y-2">
@@ -73,11 +63,11 @@ function IndustryRanking({ data }: { data: AreaIndustries }) {
   if (rows.length === 0) return null;
 
   return (
-    <Block
+    <Card
       title="이 상권에서 점포가 많은 업종"
       sub={mine ? `${data.industry_kind_count}개 업종 중 ${mine.rank}위` : `${data.industry_kind_count}개 업종`}
     >
-      {!mine && <p className="text-xs text-ink-500">선택한 업종은 이 상권에 점포 기록이 없어요.</p>}
+      {!mine && <p className="text-xs text-ink-500">선택한 업종은 이 상권에 점포 기록이 없습니다.</p>}
       <ul ref={ref} className="space-y-2">
         {rows.map((item, index) => {
           const isMine = item.industry_code === mine?.industry_code;
@@ -87,15 +77,15 @@ function IndustryRanking({ data }: { data: AreaIndustries }) {
               <div className="flex items-center gap-2 text-sm">
                 <span className="w-6 shrink-0 text-right text-xs font-bold text-ink-300">{item.rank}</span>
                 <span className="flex w-28 shrink-0 flex-col">
-                  <span className={`truncate ${isMine ? "font-bold text-sub-700" : "text-ink-700"}`}>
+                  <span className={`truncate ${isMine ? "font-bold text-point-blue" : "text-ink-700"}`}>
                     {item.industry_name ?? item.industry_code}
                   </span>
                   {!item.has_sales_data && <span className="text-[10px] text-ink-300">분석 데이터 없음</span>}
                 </span>
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-line">
+                <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-line-light">
                   <div
                     className={`h-full rounded-full transition-[width] ${FILL_MOTION} ${
-                      isMine ? "bg-sub-700" : item.has_sales_data ? "bg-sub-300" : "bg-sub-100"
+                      isMine ? "bg-main-dark" : item.has_sales_data ? "bg-point-blue" : "bg-point-blue/30"
                     } ${BAR_WIDTH[inView ? clampPercent((item.store_count / max) * 100) : 0]} ${pick(BAR_DELAY, index)}`}
                   />
                 </div>
@@ -105,7 +95,7 @@ function IndustryRanking({ data }: { data: AreaIndustries }) {
           );
         })}
       </ul>
-    </Block>
+    </Card>
   );
 }
 
@@ -148,7 +138,7 @@ function SalesTrendChart({ trend, forecast }: { trend: SalesTrendPoint[]; foreca
             strokeLinejoin="round"
             strokeDasharray={1}
             strokeDashoffset={inView ? 0 : 1}
-            className="stroke-sub-700 transition-[stroke-dashoffset] duration-1000 ease-out motion-reduce:transition-none"
+            className="stroke-point-blue transition-[stroke-dashoffset] duration-1000 ease-out motion-reduce:transition-none"
           />
         )}
         {predicted.length > 1 && (
@@ -170,7 +160,7 @@ function SalesTrendChart({ trend, forecast }: { trend: SalesTrendPoint[]; foreca
               cx={p.cx}
               cy={p.cy}
               r={p === selectedPoint ? 5 : 3}
-              className={`${p.kind === "actual" ? "fill-sub-700" : "fill-warning"} stroke-white transition-opacity duration-500 motion-reduce:transition-none ${
+              className={`${p.kind === "actual" ? "fill-point-blue" : "fill-warning"} stroke-white transition-opacity duration-500 motion-reduce:transition-none ${
                 inView ? "opacity-100" : "opacity-0"
               }`}
               strokeWidth="1.5"
@@ -202,7 +192,7 @@ function SalesTrendChart({ trend, forecast }: { trend: SalesTrendPoint[]; foreca
       <div className="flex items-center justify-between text-[11px] text-ink-400">
         <span className="flex items-center gap-3">
           <span className="flex items-center gap-1">
-            <i className="h-0.5 w-4 bg-sub-700" /> 실제
+            <i className="h-0.5 w-4 bg-point-blue" /> 실제
           </span>
           <span className="flex items-center gap-1">
             <i className="h-0.5 w-4 border-t-2 border-dashed border-warning" /> 예측(참고용)
@@ -220,8 +210,8 @@ function SalesTrendChart({ trend, forecast }: { trend: SalesTrendPoint[]; foreca
 function ForecastTable({ forecast }: { forecast: ForecastPoint[] }) {
   if (forecast.length === 0) return null;
   return (
-    <div className="overflow-hidden rounded-xl border border-line text-xs">
-      <div className="grid grid-cols-[1.2fr_1.3fr_0.8fr_0.9fr] gap-x-2 border-b border-line bg-surface px-3 py-2 font-medium text-ink-500">
+    <div className="overflow-hidden rounded-2xl border border-line-light text-xs">
+      <div className="grid grid-cols-[1.2fr_1.3fr_0.8fr_0.9fr] gap-x-2 border-b border-line-light bg-point-blue-50 px-3 py-2 font-medium text-ink-500">
         <span>시점</span>
         <span className="text-right">예측 분기 매출</span>
         <span className="text-right">증감률</span>
@@ -261,14 +251,14 @@ function Recommendations({
   onPick: (front: FrontIndustry, areaCode: string | null, areaName: string | null) => void;
 }) {
   return (
-    <Block title="다른 업종도 살펴보세요" sub="참고용">
+    <Card title="다른 업종도 살펴보세요" sub="참고용">
       <p className="text-xs leading-relaxed text-ink-500">
         {data.basis}
-        {data.my_industry_rank != null && ` 선택한 업종은 후보 ${data.candidate_count}곳 중 ${data.my_industry_rank}위예요.`}
+        {data.my_industry_rank != null && ` 선택한 업종은 후보 ${data.candidate_count}곳 중 ${data.my_industry_rank}위입니다.`}
       </p>
       {data.items.length === 0 ? (
         <p className="rounded-xl border border-dashed border-line px-4 py-5 text-center text-sm text-ink-300">
-          비교할 만한 다른 업종이 아직 없어요
+          비교할 만한 다른 업종이 아직 없습니다
         </p>
       ) : (
         <ul className="space-y-2">
@@ -280,7 +270,7 @@ function Recommendations({
               ["안정", item.stability_score],
             ].filter((s): s is [string, number] => s[1] != null);
             return (
-              <li key={item.industry_code} className="space-y-2 rounded-xl border border-line p-3 text-sm">
+              <li key={item.industry_code} className="space-y-2 rounded-2xl bg-point-blue-50 p-4 text-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="truncate font-bold text-ink-900">{item.industry_name ?? item.industry_code}</p>
@@ -290,7 +280,7 @@ function Recommendations({
                     </p>
                   </div>
                   {item.total_score != null && (
-                    <span className="shrink-0 rounded-full bg-sub-50 px-2.5 py-1 text-xs font-bold text-sub-700">
+                    <span className="shrink-0 rounded-full bg-point-blue px-2.5 py-1 text-xs font-bold text-white">
                       종합 {Math.round(item.total_score)}점
                     </span>
                   )}
@@ -304,7 +294,7 @@ function Recommendations({
                   <button
                     type="button"
                     onClick={() => onPick(item.front_industry!, areaCode, areaName)}
-                    className="cursor-pointer rounded-lg border border-line px-3 py-1.5 text-xs font-medium text-ink-900 hover:bg-surface"
+                    className="cursor-pointer rounded-lg border border-line bg-white px-3 py-1.5 text-xs font-medium text-ink-900 hover:bg-surface"
                   >
                     이 업종으로 다시 분석하기
                   </button>
@@ -314,7 +304,7 @@ function Recommendations({
           })}
         </ul>
       )}
-    </Block>
+    </Card>
   );
 }
 
@@ -326,37 +316,31 @@ function CompareBlock({ data }: { data: AreaCompare }) {
   const gu = data.gu ?? "구";
 
   return (
-    <Block title="다른 상권과 비교" sub="같은 업종 기준">
+    <Card title="다른 상권과 비교" sub="같은 업종 기준">
       {data.gu_rank && (
         <p className="text-xs text-ink-500">
-          {gu} {data.gu_rank.total}개 상권 중 분기 매출 합계 {data.gu_rank.sales_rank}위예요.
+          {gu} {data.gu_rank.total}개 상권 중 분기 매출 합계 {data.gu_rank.sales_rank}위입니다.
         </p>
       )}
       {rows.length > 0 && (
-        <div className="overflow-hidden rounded-xl border border-line text-xs">
-          <div className="grid grid-cols-[1fr_1fr_1fr_1fr] gap-x-2 border-b border-line bg-surface px-3 py-2 font-medium text-ink-500">
-            <span>항목</span>
-            <span className="text-right">내 상권</span>
-            <span className="text-right">{gu} 평균</span>
-            <span className="text-right">서울 평균</span>
-          </div>
+        <div className="divide-y divide-line-light">
           {rows.map((row) => (
-            <div
+            <MetricBars
               key={row.label}
-              className="grid grid-cols-[1fr_1fr_1fr_1fr] gap-x-2 border-b border-line px-3 py-2.5 last:border-b-0"
-            >
-              <span className="text-ink-700">{salesLabel(row.label)}</span>
-              <span className="text-right font-bold text-ink-900">{formatValue(row.mine, row.unit)}</span>
-              <span className="text-right text-ink-500">{formatValue(row.gu_average, row.unit)}</span>
-              <span className="text-right text-ink-500">{formatValue(row.seoul_average, row.unit)}</span>
-            </div>
+              label={salesLabel(row.label)}
+              series={[
+                { name: "내 상권", value: row.mine, text: formatValue(row.mine, row.unit), color: "bg-point-blue" },
+                { name: `${gu} 평균`, value: row.gu_average, text: formatValue(row.gu_average, row.unit), color: "bg-point-mint" },
+                { name: "서울 평균", value: row.seoul_average, text: formatValue(row.seoul_average, row.unit), color: "bg-ink-300/60" },
+              ]}
+            />
           ))}
         </div>
       )}
       {hasTop && (
         <div className="space-y-2">
           <p className="text-xs font-medium text-ink-500">{gu}에서 분기 매출 합계가 높은 상권</p>
-          <ol className="divide-y divide-line rounded-xl border border-line text-xs">
+          <ol className="divide-y divide-line-light overflow-hidden rounded-2xl border border-line-light text-xs">
             {data.gu_top_areas.map((area, i) => (
               <li key={area.area_code} className={`flex items-center gap-2 px-3 py-2.5 ${area.is_mine ? "bg-sub-50" : ""}`}>
                 <span className="w-4 shrink-0 font-bold text-ink-300">{i + 1}</span>
@@ -372,7 +356,7 @@ function CompareBlock({ data }: { data: AreaCompare }) {
           </ol>
         </div>
       )}
-    </Block>
+    </Card>
   );
 }
 
@@ -381,21 +365,21 @@ function FranchiseBlock({ data }: { data: FranchiseShare }) {
   const { ref, inView } = useInView<HTMLDivElement>(0.3);
   if (data.ratio == null) return null;
   const bars = [
-    { label: "이 상권", value: data.ratio, color: "bg-sub-700" },
-    ...(data.seoul_average_ratio != null ? [{ label: "서울 평균", value: data.seoul_average_ratio, color: "bg-sub-300" }] : []),
+    { label: "이 상권", value: data.ratio, color: "bg-point-blue" },
+    ...(data.seoul_average_ratio != null ? [{ label: "서울 평균", value: data.seoul_average_ratio, color: "bg-ink-300/60" }] : []),
   ];
 
   return (
-    <Block title="프랜차이즈 비중" sub="이름 등으로 추정한 값">
+    <Card title="프랜차이즈 비중" sub="이름 등으로 추정한 값">
       <p className="text-sm text-ink-800">
-        점포 {data.store_count}곳 중 프랜차이즈로 보이는 점포는 {data.franchise_store_count}곳이에요. ({percent(data.ratio)}
+        점포 {data.store_count}곳 중 프랜차이즈로 보이는 점포는 {data.franchise_store_count}곳입니다. ({percent(data.ratio)}
         {data.seoul_average_ratio != null && ` · 서울 평균 ${percent(data.seoul_average_ratio)}`})
       </p>
       <div ref={ref} className="space-y-2">
         {bars.map((bar, index) => (
           <div key={bar.label} className="flex items-center gap-3 text-xs">
             <span className="w-14 shrink-0 text-ink-700">{bar.label}</span>
-            <div className="h-2 flex-1 overflow-hidden rounded-full bg-line">
+            <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-line-light">
               <div
                 className={`h-full rounded-full transition-[width] ${FILL_MOTION} ${bar.color} ${
                   BAR_WIDTH[inView ? clampPercent(bar.value * 100) : 0]
@@ -406,7 +390,7 @@ function FranchiseBlock({ data }: { data: FranchiseShare }) {
           </div>
         ))}
       </div>
-    </Block>
+    </Card>
   );
 }
 
@@ -437,7 +421,7 @@ export default function InsightsSection({ insights }: { insights: InsightsState 
   if (insights.isLoading) {
     return (
       <section className="space-y-4">
-        <h3 className="text-base font-bold text-ink-900">추가 정보</h3>
+        <h3 className="px-1 text-lg font-bold text-main-dark">추가 정보</h3>
         <InsightsSkeleton />
       </section>
     );
@@ -457,19 +441,19 @@ export default function InsightsSection({ insights }: { insights: InsightsState 
   if (!blocks.some(Boolean)) return null;
 
   return (
-    <section className="space-y-8">
-      <div className="space-y-1">
-        <h3 className="text-base font-bold text-ink-900">추가 정보</h3>
-        <p className="text-xs text-ink-400">{formatQuarter(d.base_quarter)} 데이터 기준 · 참고용이에요</p>
+    <section className="space-y-4">
+      <div className="space-y-1 px-1 pt-3">
+        <h3 className="px-1 text-lg font-bold text-main-dark">추가 정보</h3>
+        <p className="text-xs text-ink-400">{formatQuarter(d.base_quarter)} 데이터 기준 · 참고용입니다</p>
       </div>
 
       {d.area_industries && <IndustryRanking data={d.area_industries} />}
 
       {trend && (
-        <Block title="분기 매출 추세" sub="예측은 참고용">
+        <Card title="분기 매출 추세" sub="예측은 참고용">
           <SalesTrendChart trend={trend} forecast={d.forecast} />
           {d.forecast && <ForecastTable forecast={d.forecast} />}
-        </Block>
+        </Card>
       )}
 
       {d.recommended_industries && (

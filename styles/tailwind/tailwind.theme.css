@@ -15,6 +15,12 @@
     --color-sub-100: #BFEDE5;
     --color-sub-50: #EAF8F6;
 
+    /* 분석 결과 그래프 포인트 (밝은 파랑 · 민트) */
+    --color-point-blue: #2F6BEA;
+    --color-point-blue-light: #5B8DF5;
+    --color-point-blue-50: #F0F5FE;
+    --color-point-mint: #3DD1AC;
+
     /* 다크 화면 포인트 */
     --color-mint: #5EF0DC;
     --color-mint-light: #7FE9DA;

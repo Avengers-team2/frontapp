@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import ScoreSummary from "../ScoreSummary";
 import { useInView } from "@/app/(protected)/report-job/_components/Reveal";
 import type { ChartItem, PreStartupResultView } from "@/types/analysis-result";
-import { BarList, ColumnChart, CompareTable, OpenCloseChart } from "./charts";
+import { BarList, ColumnChart, CompareTable, OpenCloseChart, SplitBar } from "./charts";
+import Card from "./Card";
+import { AgeSummary, FootHourSummary, OpenCloseSummary, SalesHourSummary, WeekdaySummary } from "./Summaries";
 import InfoPanel from "./InfoPanel";
 import InsightsSection from "./InsightsSection";
 import StoreCompetitionCard from "./StoreCompetitionCard";
@@ -15,24 +17,13 @@ interface PreStartupResultProps {
   insights?: InsightsState; // 추가 정보 (따로 불러와서 이 영역만 스켈레톤을 보여준다)
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="space-y-3">
-      <h3 className="text-base font-bold text-ink-900">{title}</h3>
-      {children}
-    </section>
-  );
-}
-
 // 서버가 준 문장 목록 (위험 요인, 개선 방향)
-function SentenceList({ items, marker }: { items: string[]; marker: string }) {
+function SentenceList({ items, row, marker }: { items: string[]; row: string; marker: string }) {
   return (
     <ul className="space-y-2 text-sm leading-relaxed text-ink-800">
       {items.map((text, i) => (
-        <li key={i} className="flex gap-2">
-          <span aria-hidden="true" className={`mt-0.5 shrink-0 ${marker}`}>
-            •
-          </span>
+        <li key={i} className={`flex gap-2.5 rounded-2xl px-4 py-3 ${row}`}>
+          <span aria-hidden="true" className={`mt-2 size-1.5 shrink-0 rounded-full ${marker}`} />
           <span>{text}</span>
         </li>
       ))}
@@ -41,7 +32,7 @@ function SentenceList({ items, marker }: { items: string[]; marker: string }) {
 }
 
 function SubTitle({ children }: { children: React.ReactNode }) {
-  return <p className="mb-2 text-xs font-medium text-ink-500">{children}</p>;
+  return <p className="mb-3 text-sm font-bold text-main-dark">{children}</p>;
 }
 
 // 주행 거리계 숫자: 자리마다 0~9가 두 번 쌓인 띠(20칸)를 굴려 제 숫자에서 멈춘다.
@@ -145,6 +136,7 @@ function OdometerValue({ value, go, replay }: { value: string; go: boolean; repl
 function StatCell({ stat, inView }: { stat: { label: string; value: string; note?: string }; inView: boolean }) {
   const [replay, setReplay] = useState(0);
   const lastRoll = useRef(0);
+  const tint = stat.label === "폐업 확률";
 
   // 포인터를 올리면 한 바퀴 더 굴린다 (굴러가는 중에는 무시)
   const handleEnter = () => {
@@ -154,31 +146,24 @@ function StatCell({ stat, inView }: { stat: { label: string; value: string; note
   };
 
   return (
-    <div className="space-y-1 bg-white p-4" onPointerEnter={handleEnter}>
+    <div className={`space-y-1 rounded-2xl p-3.5 ${tint ? "bg-sub-50" : "bg-point-blue-50"}`} onPointerEnter={handleEnter}>
       <p>{stat.label}</p>
-      <p className="text-lg font-bold text-ink-900">
+      <p className="text-xl font-bold text-main-dark">
         <OdometerValue value={stat.value} go={inView} replay={replay} />
       </p>
-      {stat.note && <p className="text-sub-700">{stat.note}</p>}
+      {stat.note && <p className={`font-bold ${tint ? "text-sub-700" : "text-point-blue"}`}>{stat.note}</p>}
     </div>
   );
 }
 
-// 통계 칸들 (3열). 칸 사이는 얇은 선으로 나눈다. 화면에 들어오면 숫자가 굴러간다.
+// 통계 칸들 (3열). 화면에 들어오면 숫자가 굴러간다.
 function StatGrid({ stats }: { stats: { label: string; value: string; note?: string }[] }) {
   const { ref, inView } = useInView<HTMLDivElement>(0.4);
 
   return (
-    <div
-      ref={ref}
-      className="grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-line bg-line text-xs text-ink-500"
-    >
+    <div ref={ref} className="grid grid-cols-3 gap-2.5 text-xs text-ink-500">
       {stats.map((stat) => (
         <StatCell key={stat.label} stat={stat} inView={inView} />
-      ))}
-      {/* 3열이 안 채워지면 빈 칸을 흰색으로 채운다 */}
-      {Array.from({ length: (3 - (stats.length % 3)) % 3 }).map((_, i) => (
-        <div key={`empty-${i}`} className="bg-white" />
       ))}
     </div>
   );
@@ -193,11 +178,14 @@ export default function PreStartupResult({ result, stores, insights }: PreStartu
   const hasFoot = !!footTraffic && (has(footTraffic.byAge) || has(footTraffic.byHour) || has(footTraffic.byWeekday));
 
   return (
-    <div className="space-y-8">
-      <header className="space-y-2 text-sm text-ink-600">
-        <h2 className="text-2xl font-bold text-ink-900">{result.title}</h2>
-        {result.conditionSummary && <p>{result.conditionSummary}</p>}
-        <p className="font-bold text-ink-800">{result.caveat}</p>
+    <div className="space-y-4">
+      <header className="space-y-2">
+        <p className="flex items-center gap-2 text-xs font-bold text-sub-600">
+          <i aria-hidden className="size-2 rounded-full bg-point-mint ring-4 ring-point-mint/20" />
+          <span className="ml-0.5">상권 분석 리포트</span>
+        </p>
+        <h2 className="text-[28px] font-bold leading-tight tracking-tight text-main-dark">{result.title}</h2>
+        <p className="text-xs leading-relaxed text-ink-300">{result.caveat}</p>
       </header>
 
       {result.notice && (
@@ -216,13 +204,13 @@ export default function PreStartupResult({ result, stores, insights }: PreStartu
         headline={result.headline}
         description={result.description}
         scoreItems={result.scoreItems}
+        rankPercent={result.rankPercent}
+        footnote={
+          result.kind === "normal"
+            ? "점수는 같은 업종 안에서의 상대 순위를 바탕으로 합니다. 정확한 성공 가능성을 뜻하지는 않습니다."
+            : undefined
+        }
       />
-
-      {result.kind === "normal" && (
-        <p className="-mt-4 text-[11px] leading-relaxed text-ink-400">
-          점수는 같은 업종 안에서의 상대 순위를 바탕으로 해요. 정확한 성공 가능성을 뜻하지는 않아요.
-        </p>
-      )}
 
       {result.kind === "noData" && (
         <InfoPanel
@@ -232,110 +220,111 @@ export default function PreStartupResult({ result, stores, insights }: PreStartu
         />
       )}
 
-      {result.rankLabel && (
-        <div className="rounded-xl border border-line p-4 text-sm">
-          <p className="text-sub-700">{result.rankLabel}</p>
-        </div>
-      )}
-
       {/* 지금 이 상권의 같은 업종 점포 현황 (점수가 없는 noData 에서도 보여준다) */}
       {stores && (stores.isLoading || stores.errorMessage || stores.data) && (
-        <Section title="지금 점포 현황">
+        <Card title="지금 점포 현황">
           <StoreCompetitionCard stores={stores} />
-        </Section>
+        </Card>
       )}
 
       {evidence.stats.length > 0 && (
-        <Section title={evidence.title}>
+        <Card title={evidence.title}>
           <StatGrid stats={evidence.stats} />
-        </Section>
+        </Card>
       )}
 
       {result.competition && (
-        <Section title="경쟁 현황">
+        <Card title="경쟁 현황">
           <StatGrid stats={result.competition} />
-        </Section>
+        </Card>
       )}
 
       {hasSales && (
-        <Section title="매출 분석">
+        <Card title="매출 분석">
           {has(result.salesByWeekday) && (
             <div>
               <SubTitle>요일별 매출 비중</SubTitle>
               <BarList items={result.salesByWeekday!} />
+              <WeekdaySummary items={result.salesByWeekday!} subject="매출" />
             </div>
           )}
           {has(result.salesByHour) && (
             <div className="pt-2">
               <SubTitle>시간대별 매출 비중</SubTitle>
               <ColumnChart items={result.salesByHour!} />
+              <SalesHourSummary items={result.salesByHour!} foot={footTraffic?.byHour} />
             </div>
           )}
-        </Section>
+        </Card>
       )}
 
       {hasCustomer && (
-        <Section title="손님 구성">
+        <Card title="손님 구성">
           {has(result.customerByAge) && (
             <div>
               <SubTitle>연령대별 손님 비중</SubTitle>
               <BarList items={result.customerByAge!} />
+              <AgeSummary items={result.customerByAge!} subject="손님" />
             </div>
           )}
           {has(result.customerByGender) && (
             <div className="pt-2">
               <SubTitle>성별 손님 비중</SubTitle>
-              <BarList items={result.customerByGender!} />
+              <SplitBar items={result.customerByGender!} />
             </div>
           )}
-        </Section>
+        </Card>
       )}
 
       {hasFoot && (
-        <Section title="유동인구">
+        <Card title="유동인구">
           {has(footTraffic.byAge) && (
             <div>
               <SubTitle>연령대별</SubTitle>
-              <BarList items={footTraffic.byAge!} />
+              <BarList items={footTraffic.byAge!} tone="foot" />
+              <AgeSummary items={footTraffic.byAge!} subject="유동인구" />
             </div>
           )}
           {has(footTraffic.byHour) && (
             <div className="pt-2">
               <SubTitle>시간대별</SubTitle>
-              <ColumnChart items={footTraffic.byHour!} />
+              <ColumnChart items={footTraffic.byHour!} tone="foot" />
+              <FootHourSummary items={footTraffic.byHour!} />
             </div>
           )}
           {has(footTraffic.byWeekday) && (
             <div className="pt-2">
               <SubTitle>요일별</SubTitle>
-              <BarList items={footTraffic.byWeekday!} />
+              <BarList items={footTraffic.byWeekday!} tone="foot" />
+              <WeekdaySummary items={footTraffic.byWeekday!} subject="유동인구" />
             </div>
           )}
-        </Section>
+        </Card>
       )}
 
       {result.openCloseTrend && (
-        <Section title="개업 · 폐업 추이 (최근 4분기)">
+        <Card title="개업 · 폐업 추이 (최근 4분기)">
           <OpenCloseChart points={result.openCloseTrend} />
-        </Section>
+          <OpenCloseSummary points={result.openCloseTrend} />
+        </Card>
       )}
 
       {result.compareAverage && (
-        <Section title="같은 구 · 업종 평균과 비교">
+        <Card title="같은 구 · 업종 평균과 비교">
           <CompareTable rows={result.compareAverage} />
-        </Section>
+        </Card>
       )}
 
       {result.risks.length > 0 && (
-        <Section title="위험 요인">
-          <SentenceList items={result.risks} marker="text-danger-strong" />
-        </Section>
+        <Card title="위험 요인">
+          <SentenceList items={result.risks} row="bg-danger-bg/50" marker="bg-danger-strong" />
+        </Card>
       )}
 
       {result.improvements.length > 0 && (
-        <Section title="개선 방향">
-          <SentenceList items={result.improvements} marker="text-sub-700" />
-        </Section>
+        <Card title="개선 방향">
+          <SentenceList items={result.improvements} row="bg-sub-50" marker="bg-sub-700" />
+        </Card>
       )}
 
       {/* 추가 정보: 점수 화면을 먼저 그리고 따로 불러온다 (업종 순위, 매출 추세, 다른 업종 추천, 상권 비교, 프랜차이즈 비중) */}

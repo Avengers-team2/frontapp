@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Loader2 } from "lucide-react";
+import { Check } from "lucide-react";
 import type { AnalysisStep } from "@/types/analysis-result";
 
 interface AnalysisPendingProps {
@@ -19,14 +19,18 @@ export default function AnalysisPending({ steps, onCancel }: AnalysisPendingProp
         className="w-full max-w-lg rounded-3xl bg-white p-8 shadow-xl"
       >
         <div className="flex items-center gap-4">
-          <div className="flex size-12 items-center justify-center rounded-2xl bg-sub-50 text-sub-700">
-            <Loader2 className="size-6 animate-spin" aria-hidden="true" />
+          {/* 기획서 AI 검토 팝업(ReviewProgressModal)의 스피너와 같은 모양 */}
+          <div className="flex size-19.25 shrink-0 items-center justify-center rounded-[20px] bg-sub-50 text-sub-700">
+            <svg className="size-9 animate-spin" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+              <circle cx="18" cy="18" r="14" stroke="currentColor" strokeOpacity="0.15" strokeWidth="3.5" />
+              <path d="M32 18a14 14 0 0 0-14-14" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" />
+            </svg>
           </div>
           <div>
             <h2 id="analysis-pending-title" className="text-xl font-bold text-ink-900">
-              분석 중이에요
+              분석 중입니다
             </h2>
-            <p className="text-sm text-ink-500">완료되면 결과 화면으로 넘어가요.</p>
+            <p className="text-sm text-ink-500">완료되면 결과 화면으로 넘어갑니다.</p>
           </div>
         </div>
 
