@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import PostForm from "../../_component/PostForm";
 import Loading from "@/components/common/Loading";
+import LoginGuard from "@/components/common/LoginGuard";
 
 interface Params {
     params: Promise<{id: string}>
@@ -10,7 +11,9 @@ interface Params {
 export default function page({params}: Params) {
     return (
         <Suspense fallback={<Loading />}>
-            <PostForm mode="edit" params={params} />
+            <LoginGuard>
+                <PostForm mode="edit" params={params} />
+            </LoginGuard>
         </Suspense>
     );
 }
