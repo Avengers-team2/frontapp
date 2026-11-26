@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Reveal from "./shared/Reveal";
 import BreathingGlow from "./shared/BreathingGlow";
+import { Rise, RiseTitle } from "./shared/Rise";
 
 export default function AboutCTA() {
     return (
@@ -12,14 +13,16 @@ export default function AboutCTA() {
                     <BreathingGlow className="top-[170px] left-[18%] w-[360px] h-[260px] bg-[#2d5fae]/45 blur-[100px]" delay={750} />
 
                     <div className="relative flex flex-col items-center pt-[105px]">
-                        <Reveal delay={150}>
-                            <h2 className="text-center font-bold text-[60px] leading-[1.3]">
-                                <span className="text-[#e8eef6]">당신의 사업 파트너</span><br />
-                                <span className="font-(family-name:--font-outfit) text-[#5ef0dc]">StartFit</span>
-                            </h2>
-                        </Reveal>
+                        <h2 className="text-center font-bold text-[60px] leading-[1.3]">
+                            <RiseTitle
+                                lines={[
+                                    [{ text: "당신의 사업 파트너", className: "text-[#e8eef6]" }],
+                                    [{ text: "StartFit", className: "font-(family-name:--font-outfit) text-[#5ef0dc]" }],
+                                ]}
+                            />
+                        </h2>
 
-                        <Reveal delay={300}>
+                        <Rise delay={550}>
                             <div className="flex items-center gap-[16px] mt-[42px]">
                                 {/* 주 버튼 */}
                                 <Link
@@ -42,13 +45,13 @@ export default function AboutCTA() {
                                     <span className="transition-transform duration-300 group-hover:translate-x-[3px]">→</span>
                                 </Link>
                             </div>
-                        </Reveal>
+                        </Rise>
 
-                        <Reveal delay={450}>
+                        <Rise delay={660}>
                             <p className="mt-[36px] text-[16px] leading-[24px] text-[#8da0b8]">
                                 웹 브라우저에서 바로 시작 · 별도 앱 설치 불필요
                             </p>
-                        </Reveal>
+                        </Rise>
                     </div>
                 </div>
             </Reveal>

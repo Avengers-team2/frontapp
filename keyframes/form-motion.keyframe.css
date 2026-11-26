@@ -53,6 +53,13 @@
   }
 }
 
+/* 업로드 칸 점선 테두리가 행진하듯 흐른다 (점선 8 + 간격 7 의 두 칸만큼) */
+@keyframes dash-march {
+  to {
+    stroke-dashoffset: -30;
+  }
+}
+
 /* 선택한 줄이 왼쪽에서 미끄러져 채워진다 */
 @keyframes form-slide-in {
   from {

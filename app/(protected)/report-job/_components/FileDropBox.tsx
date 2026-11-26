@@ -1,7 +1,9 @@
+// Lucian UX/UI Prompt #032 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#032
 "use client"
 
 import { useRef, useState } from "react";
 import { ACCEPT } from "../_lib/reportJob";
+import "@/keyframes/form-motion.keyframe.css";
 
 type Props = {
     error: boolean;
@@ -45,11 +47,13 @@ export default function FileDropBox({ error, canUpload, onBlocked, onFile }: Pro
         e.target.value = ""; // 같은 파일 다시 선택 가능하게
     };
 
-    const tone = error
-        ? "bg-[rgba(251,227,228,0.5)] border-[#e5484d]"
+    const tone = error ? "bg-[rgba(251,227,228,0.5)]" : dragging ? "bg-[#eaf8f6]" : "bg-[rgba(244,244,244,0.87)]";
+    // 점선 테두리: 마우스를 올리거나 파일을 끌고 오면 색이 살아나며 흐른다
+    const dash = error
+        ? "stroke-[#e5484d] group-hover:animate-[dash-march_.9s_linear_infinite]"
         : dragging
-            ? "bg-[#eaf8f6] border-[#2bb3a3]"
-            : "bg-[rgba(244,244,244,0.87)] border-[#999]";
+            ? "stroke-[#2bb3a3] animate-[dash-march_.9s_linear_infinite]"
+            : "stroke-[#999] group-hover:stroke-[#2bb3a3] group-hover:animate-[dash-march_.9s_linear_infinite]";
 
     return (
         <div
@@ -59,8 +63,19 @@ export default function FileDropBox({ error, canUpload, onBlocked, onFile }: Pro
             }}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`flex flex-col items-center h-[357px] rounded-[16px] border-[1.2px] border-dashed transition-colors duration-300 ${tone}`}
+            className={`group relative flex flex-col items-center h-[357px] rounded-[16px] transition-colors duration-300 ${tone}`}
         >
+            <svg aria-hidden className="pointer-events-none absolute left-px top-px h-[calc(100%-2px)] w-[calc(100%-2px)] overflow-visible">
+                <rect
+                    width="100%"
+                    height="100%"
+                    rx="15"
+                    fill="none"
+                    strokeWidth="1.6"
+                    strokeDasharray="8 7"
+                    className={`transition-[stroke] duration-300 motion-reduce:animate-none ${dash}`}
+                />
+            </svg>
             {error ? (
                 <p className="mt-[78px] text-center text-[30px] font-bold leading-[1.4] text-[#e5484d]">
                     오류가 발생했습니다
