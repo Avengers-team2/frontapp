@@ -18,7 +18,7 @@ const variantStyles = {
     },
     white: {
         header: "bg-white/40 border-white/60 shadow-[0_4px_16px_rgba(0,0,0,0.08)]",
-        nav: "text-[#3D4A5C]",
+        nav: "text-black",
         logo: logoDark,
         auth: "white" as const,
     },

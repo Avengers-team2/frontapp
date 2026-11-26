@@ -1,5 +1,5 @@
 // 결과 화면의 공통 구획. 박스 없이 위쪽 구분선으로만 항목을 나눈다.
-export const DIVIDED = "border-t border-line pt-6 pb-2";
+export const DIVIDED = "border-t border-line pt-6 pb-2 print:break-inside-avoid";
 
 export default function Card({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) {
   return (

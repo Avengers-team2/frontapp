@@ -3,6 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 
 // 요소가 화면에 들어왔는지 감지 (한 번 들어오면 계속 true)
+// 이 이벤트를 보내면 화면에 들어오지 않은 것도 모두 보이게 한다 (결과를 인쇄할 때)
+export const REVEAL_ALL_EVENT = "reveal-all";
+
 export function useInView<T extends HTMLElement>(threshold = 0.25) {
     const ref = useRef<T>(null);
     const [inView, setInView] = useState(false);
@@ -20,7 +23,15 @@ export function useInView<T extends HTMLElement>(threshold = 0.25) {
             { threshold }
         );
         io.observe(el);
-        return () => io.disconnect();
+        const showAll = () => {
+            setInView(true);
+            io.disconnect();
+        };
+        window.addEventListener(REVEAL_ALL_EVENT, showAll);
+        return () => {
+            window.removeEventListener(REVEAL_ALL_EVENT, showAll);
+            io.disconnect();
+        };
     }, [threshold]);
 
     return { ref, inView };

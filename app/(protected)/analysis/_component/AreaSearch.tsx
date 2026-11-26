@@ -9,17 +9,19 @@ type AreaSearchProps = {
     areaName: string;
     selected: boolean;
     invalid?: boolean;
+    openRequest?: { text: string } | null;
     onSelect: (area: AreaSearchItem) => void;
     onClear: () => void;
 };
 
-export default function AreaSearch({ areaName, selected, invalid, onSelect, onClear }: AreaSearchProps) {
+export default function AreaSearch({ areaName, selected, invalid, openRequest, onSelect, onClear }: AreaSearchProps) {
     return (
         <div>
             <SearchSelect<AreaSearchItem>
                 placeholder="주소를 검색해 주세요."
                 invalid={invalid}
                 defaultKeyword={areaName}
+                openRequest={openRequest}
                 search={searchAreas}
                 getKey={(a) => a.code}
                 getLabel={(a) => a.name}

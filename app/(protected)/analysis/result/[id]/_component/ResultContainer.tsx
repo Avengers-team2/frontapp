@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AnalysisPending from "./AnalysisPending";
+import DownloadButton from "./DownloadButton";
 import { useAnalysisInsights } from "./useAnalysisInsights";
 import { useAreaStores } from "./useAreaStores";
 import MapContainer from "./MapContainer";
@@ -31,21 +32,23 @@ export default function ResultContainer({ id }: { id: string }) {
   }, []);
 
   return (
-    <div className="fixed inset-x-0 bottom-0 top-0 z-20 overflow-hidden bg-bg">
+    <div className="fixed inset-x-0 bottom-0 top-0 z-20 overflow-hidden bg-bg print:static print:overflow-visible print:bg-white">
       {/* 지도 컴포넌트 */}
-      <div className={`absolute inset-0 ${isPending ? "pointer-events-none blur-sm" : ""}`}>
+      <div className={`absolute inset-0 print:hidden ${isPending ? "pointer-events-none blur-sm" : ""}`}>
         <MapContainer stores={stores} />
       </div>
 
       {/* 분석창 영역 */}
-      <div className={`absolute bottom-4 right-4 top-25 flex w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-3xl bg-white shadow-xl lg:w-[480px] ${
+      <div
+        data-print-area
+        className={`absolute bottom-4 right-4 top-25 flex w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-3xl bg-white shadow-xl lg:w-[480px] print:static print:mx-auto print:block print:w-[480px] print:overflow-visible print:rounded-none print:shadow-none print:[print-color-adjust:exact] ${
           isPending ? "pointer-events-none blur-sm" : ""
         }`}
       >
         <div
           // 기본스크롤 설정
           data-lenis-prevent
-          className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-6"
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-6 print:overflow-visible print:p-0"
         >
           {result ? (
             <PreStartupResult result={result} stores={stores} insights={insights} />
@@ -71,6 +74,15 @@ export default function ResultContainer({ id }: { id: string }) {
             </div>
           )}
         </div>
+        {/* 스크롤과 상관없이 항상 보이는 아래 칸 */}
+        {result && (
+          <div className="flex shrink-0 border-t border-line px-6 py-3 print:hidden">
+            <DownloadButton
+              fileName={`${result.title} 상권분석`}
+              disabled={!!stores.isLoading || !!insights.isLoading}
+            />
+          </div>
+        )}
       </div>
 
       {isPending && (

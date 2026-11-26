@@ -18,7 +18,7 @@ export default function SituationCard({ tag, tagColor, title, points, image, act
         >
             {/* 태그: 글자색 + 같은 색 12% 배경 */}
             <span
-                className="inline-flex items-center h-[28px] px-[12px] rounded-full font-bold text-[12px] leading-[18px]"
+                className="inline-flex items-center h-[30px] px-[13px] rounded-full font-bold text-[14px] leading-[21px]"
                 style={{ color: tagColor, backgroundColor: `${tagColor}1f` }}
             >
                 {tag}
@@ -28,7 +28,7 @@ export default function SituationCard({ tag, tagColor, title, points, image, act
 
             <ul className="flex flex-col gap-[10px] mt-[16px]">
                 {points.map((point) => (
-                    <li key={point} className="flex items-center gap-[8px] text-[14px] leading-[21px] text-[#4a5a70]">
+                    <li key={point} className="flex items-center gap-[8px] text-[17px] leading-[26px] text-[#4a5a70]">
                         <span className="w-[6px] h-[6px] shrink-0" style={{ backgroundColor: tagColor }} />
                         {point}
                     </li>

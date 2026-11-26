@@ -5,11 +5,11 @@ import { supportCards } from "../../_data/aboutData";
 
 // 카드가 흘러가는 자리: 오른쪽 바깥 → 오른쪽 → 가운데 → 왼쪽 → 왼쪽 바깥
 const POS = {
-    outLeft: { transform: "translate(-560px, 110px) scale(0.72) rotate(-12deg)", opacity: 0, zIndex: 10 },
-    left: { transform: "translate(-330px, 40px) scale(0.86) rotate(-6deg)", opacity: 0.7, zIndex: 20 },
+    outLeft: { transform: "translate(-690px, 134px) scale(0.72) rotate(-12deg)", opacity: 0, zIndex: 10 },
+    left: { transform: "translate(-405px, 48px) scale(0.86) rotate(-6deg)", opacity: 0.7, zIndex: 20 },
     center: { transform: "translate(0px, 0px) scale(1) rotate(0deg)", opacity: 1, zIndex: 30 },
-    right: { transform: "translate(330px, 40px) scale(0.86) rotate(6deg)", opacity: 0.7, zIndex: 20 },
-    outRight: { transform: "translate(560px, 110px) scale(0.72) rotate(12deg)", opacity: 0, zIndex: 10 },
+    right: { transform: "translate(405px, 48px) scale(0.86) rotate(6deg)", opacity: 0.7, zIndex: 20 },
+    outRight: { transform: "translate(690px, 134px) scale(0.72) rotate(12deg)", opacity: 0, zIndex: 10 },
 };
 
 // 3장을 두 벌로 이어 붙여서, 한 카드가 나가는 동안 같은 카드가 반대편에서 들어올 수 있게 함
@@ -54,7 +54,7 @@ export default function SupportCarousel() {
     };
 
     return (
-        <div className="relative w-[1000px] h-[260px] mx-auto">
+        <div className="relative w-[1220px] h-[320px] mx-auto">
             {cards.map((card, i) => {
                 const pos = getPos(i);
                 const isCenter = pos === POS.center;
@@ -63,29 +63,29 @@ export default function SupportCarousel() {
                     <article
                         key={`${card.title}-${i}`}
                         style={pos}
-                        className={`absolute left-1/2 top-0 ml-[-155px] w-[310px] h-[174px] p-[25px] rounded-[22px] bg-[rgba(20,34,58,0.92)] border shadow-[0_30px_60px_rgba(0,0,0,0.45)] transition-[transform,opacity,border-color] duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform motion-reduce:transition-none ${
+                        className={`absolute left-1/2 top-0 ml-[-190px] w-[380px] h-[216px] p-[30px] rounded-[26px] bg-[rgba(20,34,58,0.92)] border shadow-[0_30px_60px_rgba(0,0,0,0.45)] transition-[transform,opacity,border-color] duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform motion-reduce:transition-none ${
                             isCenter ? "border-[#5ef0dc]/40" : "border-white/16"
                         }`}
                     >
                         {/* 상태 배지 */}
                         <span
-                            className="inline-flex items-center h-[30px] px-[13px] rounded-full text-[13px] font-bold"
+                            className="inline-flex items-center h-[36px] px-[16px] rounded-full text-[16px] font-bold"
                             style={{ backgroundColor: card.badgeBg, color: card.badgeColor }}
                         >
                             {card.status}
                         </span>
 
                         {/* 사업명 */}
-                        <h3 className="mt-[16px] text-[20px] font-bold leading-[1.4] text-white">
+                        <h3 className="mt-[20px] text-[24px] font-bold leading-[1.4] text-white">
                             {card.title}
                         </h3>
 
                         {/* 조건 태그 */}
-                        <ul className="flex gap-[8px] mt-[16px]">
+                        <ul className="flex gap-[10px] mt-[20px]">
                             {card.tags.map((tag) => (
                                 <li
                                     key={tag}
-                                    className="h-[30px] px-[11px] flex items-center rounded-[8px] border border-[#ff8a6b]/60 text-[13px] font-medium text-[#ffa58c]"
+                                    className="h-[36px] px-[13px] flex items-center rounded-[10px] border border-[#ff8a6b]/60 text-[16px] font-medium text-[#ffa58c]"
                                 >
                                     {tag}
                                 </li>
