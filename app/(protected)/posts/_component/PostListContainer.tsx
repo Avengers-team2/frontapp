@@ -60,7 +60,7 @@ export default function PostListContainer() {
     }
 
     return (
-        <main className="mx-auto w-full max-w-372 px-6 pb-50 pt-43">
+        <main className="mx-auto w-[90%] max-w-[1440px] pb-50 pt-43">
             {/* 제목 영역 */}
             <section className="border-b border-ink-900 pb-7.5">
                 <p className="text-lg leading-[1.6] text-ink-400">홈 › 게시판</p>

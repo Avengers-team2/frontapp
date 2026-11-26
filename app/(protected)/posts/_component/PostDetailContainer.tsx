@@ -119,7 +119,7 @@ export default function PostDetailContainer({params}: PostDetailContainerProps) 
     const pillClass = "whitespace-pre rounded-full border border-line bg-white px-5 py-3 text-[15px] font-semibold text-ink-700 shadow-[0px_4px_14px_0px_rgba(11,27,51,0.05)]";
 
     return (
-        <main className="mx-auto w-full max-w-372 px-6 pb-50 pt-43">
+        <main className="mx-auto w-[90%] max-w-[1440px] pb-50 pt-43">
             <section className="border-b border-ink-900 pb-6.5">
                 <p className="text-lg leading-[1.6] text-ink-400">홈 › 게시판 › {PostCategoryLabel[post.post_category]}</p>
             </section>
