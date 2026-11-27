@@ -5,6 +5,7 @@ import { useInView } from "./Reveal";
 
 type Props = {
     score: number;
+    grade?: string; // 종합 등급 (우수 / 보통 / 미흡 / 매우 미흡)
 };
 
 const RING = 330;   // 링 지름
@@ -48,7 +49,7 @@ function Star({ size, color }: { size: number; color: string }) {
     );
 }
 
-export default function ScoreGauge({ score }: Props) {
+export default function ScoreGauge({ score, grade }: Props) {
     const { ref, inView } = useInView<HTMLDivElement>(0.35);
     const [value, setValue] = useState(0);
     const [done, setDone] = useState(false); // 다 차오르면 반짝임 시작
@@ -151,9 +152,9 @@ export default function ScoreGauge({ score }: Props) {
                     style={{
                         background:
                             "conic-gradient(from 0deg, #5ef0dc 0%, #2bb3a3 20%, #1d5466 33%, #13284a 40%, #1d6f6a 50%, #2bb3a3 60%, #4fd8c4 72%, #5ef0dc 100%)",
-                        WebkitMask: `conic-gradient(#000 ${value}%, transparent 0), ${RING_MASK}`,
+                        WebkitMaskImage: `conic-gradient(#000 ${value}%, transparent 0), ${RING_MASK}`,
                         WebkitMaskComposite: "source-in",
-                        mask: `conic-gradient(#000 ${value}%, transparent 0), ${RING_MASK}`,
+                        maskImage: `conic-gradient(#000 ${value}%, transparent 0), ${RING_MASK}`,
                         maskComposite: "intersect",
                     }}
                 />
@@ -213,7 +214,9 @@ export default function ScoreGauge({ score }: Props) {
                     >
                         {Math.round(value)}
                     </p>
-                    <p className="relative mt-[16px] text-[15px] font-medium text-white/80">종합 점수 · 100점 기준</p>
+                    <p className="relative mt-[16px] text-[15px] font-medium text-white/80">
+                        {grade ? `종합 등급 ${grade} · 100점 기준` : "종합 점수 · 100점 기준"}
+                    </p>
                 </div>
             </div>
         </div>

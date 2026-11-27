@@ -77,7 +77,7 @@ export default function ReportExport({ jobId, failed = false }: Props) {
 
                         {/* 종합 점수 게이지 (화면에 들어오면 스스로 떠오름) */}
                         <div className="mt-[94px]">
-                            <ScoreGauge score={data.total} />
+                            <ScoreGauge score={data.total} grade={data.totalGrade} />
                         </div>
 
                         {/* 보완할 항목 안내 */}

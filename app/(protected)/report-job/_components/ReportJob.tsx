@@ -54,6 +54,18 @@ export default function ReportJob({ resumeJobId }: Props) {
     const [polling, setPolling] = useState(false);
     const [status, setStatus] = useState<ReportJobStatus>("PENDING");
 
+    // 검토가 끝나 다른 화면으로 넘어갈 때 이 페이지 상태를 처음으로 되돌림
+    // (next.config의 cacheComponents 때문에 다시 들어오면 이전 상태가 그대로 살아나서
+    //  "AI 검토 중" 모달이 다시 뜨는 것을 막기 위함)
+    const resetPage = () => {
+        setModal(null);
+        setPolling(false);
+        setJob(null);
+        setPendingFile(null);
+        setUploadError(false);
+        setStatus("PENDING");
+    };
+
     // 로그인이 풀린 경우(401)는 로그인 모달로
     const isAuthError = (e: unknown) => {
         if (e instanceof ApiError && e.status === 401) {
@@ -68,13 +80,22 @@ export default function ReportJob({ resumeJobId }: Props) {
         if (resumeJobId === null) return;
         getReportJob(resumeJobId)
             .then((resumed) => {
+                // 이미 끝난 요청이면 진행 모달을 띄우지 않고 결과 화면으로
+                if (resumed.status === "COMPLETED") {
+                    router.replace(`/report-job/result?job=${resumed.id}`);
+                    return;
+                }
+                if (resumed.status === "FAILED") {
+                    router.replace(`/report-job/result?job=${resumed.id}&status=failed`);
+                    return;
+                }
                 setJob(resumed);
                 setStatus(resumed.status);
                 setModal("progress");
                 setPolling(true);
             })
             .catch((e) => alert(errorText(e, "검토 정보를 불러오지 못했어요.")));
-    }, [resumeJobId]);
+    }, [resumeJobId, router]);
 
     // 파일 선택 / 드롭 → 바로 업로드
     const handleFile = async (next: File) => {
@@ -167,10 +188,12 @@ export default function ReportJob({ resumeJobId }: Props) {
 
                 if (latest.status === "COMPLETED") {
                     clearInterval(timer);
+                    resetPage();
                     router.push(`/report-job/result?job=${id}`);
                 }
                 if (latest.status === "FAILED") {
                     clearInterval(timer);
+                    resetPage();
                     router.push(`/report-job/result?job=${id}&status=failed`);
                 }
             } catch {
@@ -252,7 +275,10 @@ export default function ReportJob({ resumeJobId }: Props) {
                 <ReviewProgressModal
                     fileName={job.fileName}
                     status={status}
-                    onLater={() => router.push("/user")}
+                    onLater={() => {
+                        resetPage();
+                        router.push("/user");
+                    }}
                 />
             )}
             {modal === "login" && <LoginRequiredModal onClose={() => setModal(null)} />}

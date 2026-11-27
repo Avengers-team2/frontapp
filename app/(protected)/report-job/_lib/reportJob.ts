@@ -126,3 +126,26 @@ export async function deleteReportJob(id: number): Promise<void> {
 export async function retryReportJob(id: number): Promise<ReportJob> {
     return toJob(await request(`/jobs/${id}/retry`, { method: "POST" }));
 }
+
+// 6. 검토 보고서 PDF 다운로드 링크 (COMPLETED만, S3 임시 주소 · 1시간 유효)
+export type ReportExportDownload = {
+    downloadUrl: string;
+    fileName: string;
+    expiresIn: number;
+};
+
+export async function getReportExportUrl(id: number): Promise<ReportExportDownload> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const d: any = await request(`/jobs/${id}/export`);
+    return {
+        downloadUrl: d.downloadUrl ?? d.download_url,
+        fileName: d.fileName ?? d.file_name,
+        expiresIn: d.expiresIn ?? d.expires_in,
+    };
+}
+
+// 7. 검토 결과 조회 (COMPLETED만) — 화면용 변환은 reportExport.ts의 getReportResult에서
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function getReportResultData(id: number): Promise<any> {
+    return request(`/jobs/${id}/result`);
+}
