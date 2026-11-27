@@ -7,6 +7,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperType } from "swiper";
 
 
+import { RiseLine, playRise } from "@/components/common/SlideRise";
 import 'swiper/css';
 import 'swiper/css/effect-fade';
 
@@ -53,6 +54,14 @@ const pauseInactiveVideos = (swiper: SwiperType) => {
     });
 };
 
+// 지금 슬라이드의 글은 올라오고, 방금 지나간 슬라이드의 글은 위로 빠진다
+const riseSlides = (swiper: SwiperType) => {
+    swiper.slides.forEach((slide, i) => {
+        if (i === swiper.activeIndex) playRise(slide, "in");
+        else if (i === swiper.previousIndex) playRise(slide, "out");
+    });
+};
+
 export default function Slide() {
     const router = useRouter();
     const swiperRef = useRef<SwiperType | null>(null);
@@ -79,8 +88,12 @@ export default function Slide() {
                     onInit={(swiper) => {
                         pauseInactiveVideos(swiper);
                         playActiveVideo(swiper);
+                        riseSlides(swiper);
                     }}
-                    onSlideChangeTransitionStart={(swiper) => playActiveVideo(swiper)}
+                    onSlideChangeTransitionStart={(swiper) => {
+                        playActiveVideo(swiper);
+                        riseSlides(swiper);
+                    }}
                     onSlideChangeTransitionEnd={(swiper) => pauseInactiveVideos(swiper)}
                     autoplay={{
                         delay: 5000,
@@ -104,22 +117,33 @@ export default function Slide() {
 
                             <div className="absolute inset-0 z-10 flex items-center justify-center px-[5%]">
                                 <div className="w-full max-w-[1440px] flex flex-col gap-5">
-                                    <p className="text-[12px] text-[#7FE9DA]">{slide.badge}</p>
+                                    <RiseLine>
+                                        <p className="text-[12px] text-[#7FE9DA]">{slide.badge}</p>
+                                    </RiseLine>
                                     <div className="text-[#fff] text-[72px] font-extrabold  leading-[1.2]">
-                                        <div>{slide.title1}</div>
-                                        <div className="text-[#5EF0DC]">{slide.title2}</div>
+                                        <RiseLine>{slide.title1}</RiseLine>
+                                        <RiseLine className="text-[#5EF0DC]">{slide.title2}</RiseLine>
                                     </div>
-                                    <p className="text-[#C9D3E1] font-regular">{slide.sub}</p>
+                                    <RiseLine>
+                                        <p className="text-[#C9D3E1] font-regular">{slide.sub}</p>
+                                    </RiseLine>
 
-                                    <form
-                                        onSubmit={handleCheck}
-                                        className="flex items-stretch border-1 border-white/14 rounded-[14px] bg-[#0A1424]/55 px-2 py-2 h-[64px] w-[560px]">
-                                        <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} aria-label="분석할 주소" className="text-[#8FA3BC] w-full px-2 py-1 outline-none" placeholder="분석할 주소를 입력하세요"/>
-                                        <button
-                                            type="submit"
-                                            className="flex justify-center items-center bg-[#ffc875] rounded-[12px] font-bold w-[140px] h-[full] text-[16px] text-[#1a1206] cursor-pointer transition-colors duration-300 hover:bg-[#ffb547] active:scale-[0.97] ml-4"
-                                        >체크시작</button>
-                                    </form>
+                                    <RiseLine>
+                                        <form
+                                            onSubmit={handleCheck}
+                                            // 입력칸이나 버튼을 쓰는 동안은 슬라이드를 멈춘다
+                                            onFocus={() => swiperRef.current?.autoplay.stop()}
+                                            onBlur={(e) => {
+                                                if (!e.currentTarget.contains(e.relatedTarget)) swiperRef.current?.autoplay.start();
+                                            }}
+                                            className="flex items-stretch border-1 border-white/14 rounded-[14px] bg-[#0A1424]/55 px-2 py-2 h-[64px] w-[560px]">
+                                            <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} aria-label="분석할 주소" className="text-[#8FA3BC] w-full px-2 py-1 outline-none" placeholder="분석할 주소를 입력하세요"/>
+                                            <button
+                                                type="submit"
+                                                className="flex justify-center items-center bg-[#ffc875] rounded-[12px] font-bold w-[140px] h-[full] text-[16px] text-[#1a1206] cursor-pointer transition-colors duration-300 hover:bg-[#ffb547] active:scale-[0.97] ml-4"
+                                            >체크시작</button>
+                                        </form>
+                                    </RiseLine>
                                 </div>
                             </div>
                         </SwiperSlide>

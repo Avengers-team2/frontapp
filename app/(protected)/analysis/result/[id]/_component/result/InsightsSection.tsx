@@ -55,7 +55,7 @@ function InsightsSkeleton() {
 
 // ① 이 상권에서 점포가 많은 업종 (가로 막대, 선택 업종은 강조)
 function IndustryRanking({ data }: { data: AreaIndustries }) {
-  const { ref, inView } = useInView<HTMLUListElement>(0.2);
+  const { ref, inView } = useInView<HTMLUListElement>(0.6);
   const mine = data.my_industry;
   const inTop = !!mine && data.top.some((i) => i.industry_code === mine.industry_code);
   const rows = mine && !inTop ? [...data.top, mine] : data.top;
@@ -103,7 +103,7 @@ function IndustryRanking({ data }: { data: AreaIndustries }) {
 const CHART = { w: 320, h: 150, left: 10, right: 10, top: 22, bottom: 26 };
 
 function SalesTrendChart({ trend, forecast }: { trend: SalesTrendPoint[]; forecast: ForecastPoint[] | null }) {
-  const { ref, inView } = useInView<HTMLDivElement>(0.3);
+  const { ref, inView } = useInView<HTMLDivElement>(0.7);
   if (trend.length < 2) return null;
 
   const values = trend.map((p) => p.sales);
@@ -362,7 +362,7 @@ function CompareBlock({ data }: { data: AreaCompare }) {
 
 // ⑤ 프랜차이즈 비중: 이 상권 vs 서울 평균 (가로 막대)
 function FranchiseBlock({ data }: { data: FranchiseShare }) {
-  const { ref, inView } = useInView<HTMLDivElement>(0.3);
+  const { ref, inView } = useInView<HTMLDivElement>(0.7);
   if (data.ratio == null) return null;
   const bars = [
     { label: "이 상권", value: data.ratio, color: "bg-point-blue" },

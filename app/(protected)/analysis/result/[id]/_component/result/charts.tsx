@@ -47,7 +47,7 @@ type Tone = keyof typeof TONE;
 
 // 가로 막대 목록 (요일별 매출, 연령대별 손님 등). 가장 큰 항목을 진하게 강조한다.
 export function BarList({ items, tone = "sales" }: { items: ChartItem[]; tone?: Tone }) {
-  const { ref, inView } = useInView<HTMLUListElement>(0.3);
+  const { ref, inView } = useInView<HTMLUListElement>(0.7);
   const max = Math.max(...items.map((i) => i.value), 1);
   const top = items.reduce((a, b) => (b.value > a.value ? b : a), items[0]);
   const color = TONE[tone];
@@ -73,7 +73,7 @@ export function BarList({ items, tone = "sales" }: { items: ChartItem[]; tone?: 
 
 // 두 항목의 비중을 한 줄로 이어 붙인 막대 (성별). 항목이 둘이 아니면 가로 막대 목록으로 보여준다
 export function SplitBar({ items }: { items: ChartItem[] }) {
-  const { ref, inView } = useInView<HTMLDivElement>(0.3);
+  const { ref, inView } = useInView<HTMLDivElement>(0.7);
   if (items.length !== 2) return <BarList items={items} />;
   const first = clampPercent(items[0].value);
 
@@ -97,7 +97,7 @@ export function SplitBar({ items }: { items: ChartItem[] }) {
 
 // 세로 막대 (시간대별 매출·유동인구처럼 칸이 많을 때)
 export function ColumnChart({ items, tone = "sales" }: { items: ChartItem[]; tone?: Tone }) {
-  const { ref, inView } = useInView<HTMLDivElement>(0.3);
+  const { ref, inView } = useInView<HTMLDivElement>(0.7);
   const max = Math.max(...items.map((i) => i.value), 1);
   const top = items.reduce((a, b) => (b.value > a.value ? b : a), items[0]);
   const color = TONE[tone];
@@ -126,7 +126,7 @@ export function ColumnChart({ items, tone = "sales" }: { items: ChartItem[]; ton
 
 // 분기별 개업·폐업 점포 수
 export function OpenCloseChart({ points }: { points: TrendPoint[] }) {
-  const { ref, inView } = useInView<HTMLDivElement>(0.3);
+  const { ref, inView } = useInView<HTMLDivElement>(0.7);
   const max = Math.max(...points.flatMap((p) => [p.open, p.close]), 1);
 
   return (
@@ -174,7 +174,7 @@ export interface MetricSeries {
 
 // 항목 하나를 여러 대상(이 상권, 평균 등)의 가로 막대로 비교한다. 가장 큰 값이 막대 끝까지 간다
 export function MetricBars({ label, note, warn, series }: { label: string; note?: string; warn?: boolean; series: MetricSeries[] }) {
-  const { ref, inView } = useInView<HTMLDivElement>(0.3);
+  const { ref, inView } = useInView<HTMLDivElement>(0.7);
   const max = Math.max(...series.map((s) => s.value ?? 0), 0);
 
   return (

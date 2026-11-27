@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FIT } from "../_lib/fit";
 import {
@@ -21,7 +21,6 @@ import ReviewProgressModal from "./modals/ReviewProgressModal";
 import LoginRequiredModal from "./modals/LoginRequiredModals";
 import PremiumModal from "./modals/PremiumModal";
 import LiquidSubmitButton from "@/app/(protected)/analysis/_component/LiquidSubmitButton";
-import { shakeClass } from "@/components/form/FormMotion";
 
 type ModalType = null | "progress" | "login" | "premium";
 
@@ -128,19 +127,11 @@ export default function ReportJob({ resumeJobId }: Props) {
         setUploadError(false);
     };
 
-    // 파일 없이 누르면 업로드 칸으로 올라가 흔들어 알려준다
-    const dropRef = useRef<HTMLDivElement>(null);
-    const [shakeKey, setShakeKey] = useState(0);
     const [sent, setSent] = useState(false); // 버튼에 "분석 요청 완료"를 잠깐 보여준다
 
     // 분석 시작하기
     const handleStart = async () => {
-        if (uploading || starting || sent) return;
-        if (!job || uploadError) {
-            setShakeKey((k) => k + 1);
-            dropRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-            return;
-        }
+        if (!job || uploading || uploadError || starting || sent) return;
         if (job.status !== "PENDING") return;
         if (!isLoggedIn) return setModal("login");
         if (!isPremium) return setModal("premium");
@@ -199,6 +190,7 @@ export default function ReportJob({ resumeJobId }: Props) {
             ? { name: pendingFile.name, size: pendingFile.size, pageCount: null }
             : null;
     const fileState = uploadError ? "error" : uploading ? "uploading" : "done";
+    const noFile = !job || uploadError; // 파일을 올리기 전에는 시작 버튼을 회색으로 막는다
 
     return (
         // pt: 헤더 높이 (소개 페이지에서 맞춘 숫자와 동일하게)
@@ -216,7 +208,7 @@ export default function ReportJob({ resumeJobId }: Props) {
                         </p>
                     </div>
 
-                    <div ref={dropRef} className={`mt-[129px] ${shakeClass(shakeKey, !job || uploadError)}`}>
+                    <div className="mt-[129px]">
                         <FileDropBox
                             error={uploadError}
                             canUpload={isLoggedIn}
@@ -239,7 +231,7 @@ export default function ReportJob({ resumeJobId }: Props) {
 
                     {/* 상권분석 입력 화면의 유리 버튼과 같은 디자인·모션. 화면에 붙어 따라오지 않고 제자리에 둔다 */}
                     <form
-                        className={`mt-[30px] ${UNFIT}`}
+                        className={`mt-[30px] transition-[filter,opacity] duration-300 ${noFile ? "opacity-60 grayscale" : ""} ${UNFIT}`}
                         onSubmit={(e) => {
                             e.preventDefault();
                             handleStart();
@@ -247,7 +239,7 @@ export default function ReportJob({ resumeJobId }: Props) {
                     >
                         <LiquidSubmitButton
                             state={sent ? "ok" : starting ? "load" : "idle"}
-                            disabled={uploading || starting || sent}
+                            disabled={noFile || uploading || starting || sent}
                             label="분석 시작하기 →"
                             doneLabel="분석 요청 완료"
                             expanded
