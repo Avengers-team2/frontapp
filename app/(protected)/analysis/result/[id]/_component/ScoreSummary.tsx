@@ -38,7 +38,7 @@ export default function ScoreSummary({
   rankPercent,
   footnote,
 }: ScoreSummaryProps) {
-  const { ref, inView } = useInView<HTMLDivElement>(0.3);
+  const { ref, inView } = useInView<HTMLDivElement>(0.6);
   const [activeId, setActiveId] = useState<ScoreItem["id"] | null>(null);
   const { ref: heroRef, inView: heroInView } = useInView<HTMLDivElement>(0.3);
 

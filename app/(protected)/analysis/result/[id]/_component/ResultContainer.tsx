@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AnalysisPending from "./AnalysisPending";
 import DownloadButton from "./DownloadButton";
+import SaveButton from "./SaveButton";
 import { useAnalysisInsights } from "./useAnalysisInsights";
 import { useAreaStores } from "./useAreaStores";
 import MapContainer from "./MapContainer";
@@ -32,7 +33,7 @@ export default function ResultContainer({ id }: { id: string }) {
   }, []);
 
   return (
-    <div className="fixed inset-x-0 bottom-0 top-0 z-20 overflow-hidden bg-bg print:static print:overflow-visible print:bg-white">
+    <div className="fixed inset-x-0 bottom-0 top-0 z-20 overflow-hidden bg-bg font-noto print:static print:overflow-visible print:bg-white">
       {/* 지도 컴포넌트 */}
       <div className={`absolute inset-0 print:hidden ${isPending ? "pointer-events-none blur-sm" : ""}`}>
         <MapContainer stores={stores} />
@@ -76,7 +77,8 @@ export default function ResultContainer({ id }: { id: string }) {
         </div>
         {/* 스크롤과 상관없이 항상 보이는 아래 칸 */}
         {result && (
-          <div className="flex shrink-0 border-t border-line px-6 py-3 print:hidden">
+          <div className="flex shrink-0 items-center justify-end gap-3 border-t border-line px-6 py-3 print:hidden">
+            <SaveButton inputId={id} />
             <DownloadButton
               fileName={`${result.title} 상권분석`}
               disabled={!!stores.isLoading || !!insights.isLoading}
