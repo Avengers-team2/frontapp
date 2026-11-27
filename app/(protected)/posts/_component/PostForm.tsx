@@ -211,7 +211,17 @@ export default function PostForm({mode, params}: PostFormProps) {
     }
 
     const selectedCategory = useWatch({ control, name: "post_category" });
-    const contentLength = useWatch({ control, name: "post_content" })?.length ?? 0;
+    const contentValue = useWatch({ control, name: "post_content" });
+    const hasImages = imageUrls.length > 0 || isUploading; // 사진이 있으면 글 칸은 글 길이만큼만 (사진이 글 바로 아래 오게)
+    const contentLength = contentValue?.length ?? 0;
+
+    // 내용이 바뀔 때마다(입력·서식 버튼·수정 모드 불러오기) textarea 높이를 글 길이에 맞추기
+    useEffect(() => {
+        const ta = textareaRef.current;
+        if (!ta) return;
+        ta.style.height = "auto";
+        ta.style.height = `${ta.scrollHeight}px`;
+    }, [contentValue, hasImages]);
 
     if (isEdit && isLoading) return <Loading />
 
@@ -269,7 +279,7 @@ export default function PostForm({mode, params}: PostFormProps) {
                 {/* 내용 (서식 버튼이 있어서 label 대신 div) */}
                 <div>
                     <p className={labelClass}>내용 {required}</p>
-                    <div className="mt-2.75 flex h-106.5 flex-col overflow-hidden rounded-xl border border-[#CFE9E4] bg-white focus-within:border-sub">
+                    <div className="mt-2.75 flex min-h-106.5 flex-col overflow-hidden rounded-xl border border-[#CFE9E4] bg-white focus-within:border-sub">
                         <PostEditorToolbar
                             onBold={() => wrapSelection("**", "굵은 글씨")}
                             onItalic={() => wrapSelection("*", "기울인 글씨")}
@@ -287,39 +297,39 @@ export default function PostForm({mode, params}: PostFormProps) {
                                 contentFieldRef(el);
                                 textareaRef.current = el;
                             }}
-                            className="block w-full flex-1 resize-none overflow-y-auto p-5 text-[17px] leading-[1.75] text-ink-500 placeholder:text-[#9AA4B2] focus:outline-none"
+                            rows={1}
+                            className={`block w-full resize-none overflow-hidden p-5 text-[17px] leading-[1.75] text-ink-500 placeholder:text-[#9AA4B2] focus:outline-none ${hasImages ? "" : "min-h-60 flex-1"}`}
                         />
+                        {/* 첨부 사진 미리보기 (최대 10장) */}
+                        {hasImages && (
+                            <div className="shrink-0 px-5 pb-3">
+                                <p className="text-sm text-ink-400">
+                                    사진 {imageUrls.length} / {MAX_IMAGES}장
+                                    {isUploading && ` · ${uploadingCount}장 올리는 중...`}
+                                </p>
+                                <div className="mt-2 flex flex-col gap-3">
+                                    {imageUrls.map((url, index) => (
+                                        <div key={`${url}-${index}`} className="group relative w-fit max-w-full">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img src={url} alt={`첨부 사진 ${index + 1}`} className="block h-auto max-w-full rounded-xl border border-line" />
+                                            <button
+                                                type="button"
+                                                onClick={() => handleImageRemove(index)}
+                                                title="사진 빼기"
+                                                className="absolute right-1.5 top-1.5 flex size-6 items-center justify-center rounded-full bg-ink-900/70 text-white opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+                                            >
+                                                <X className="size-3.5" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                         <p className="pb-3.5 pr-4.5 text-right text-base text-ink-300">
                             {contentLength.toLocaleString()} / {MAX_CONTENT.toLocaleString()}자
                         </p>
                     </div>
                     {errors?.post_content && <p className={errorClass}>내용을 입력해 주세요.</p>}
-
-                    {/* 첨부 사진 미리보기 (최대 10장) */}
-                    {(imageUrls.length > 0 || isUploading) && (
-                        <div className="mt-3">
-                            <p className="text-sm text-ink-400">
-                                사진 {imageUrls.length} / {MAX_IMAGES}장
-                                {isUploading && ` · ${uploadingCount}장 올리는 중...`}
-                            </p>
-                            <div className="mt-2 flex flex-wrap gap-2.5">
-                                {imageUrls.map((url, index) => (
-                                    <div key={`${url}-${index}`} className="relative">
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img src={url} alt={`첨부 사진 ${index + 1}`} className="size-28 rounded-xl border border-line object-cover" />
-                                        <button
-                                            type="button"
-                                            onClick={() => handleImageRemove(index)}
-                                            title="사진 빼기"
-                                            className="absolute right-1.5 top-1.5 flex size-6 items-center justify-center rounded-full bg-ink-900/70 text-white"
-                                        >
-                                            <X className="size-3.5" />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
                 </div>
 
                 {/* 분석 결과 첨부 (선택) — 프론트 화면만 */}
