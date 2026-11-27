@@ -4,7 +4,7 @@ import type { ReportJobStatus } from "../../_lib/reportJob";
 type Props = {
     fileName: string;
     status: ReportJobStatus;
-    onLater: () => void;
+    onCancel: () => void;
 };
 
 // 백엔드 상태 → 지금 진행 중인 단계 번호
@@ -17,7 +17,7 @@ const CURRENT: Record<ReportJobStatus, number> = {
     FAILED: 0,
 };
 
-export default function ReviewProgressModal({ fileName, status, onLater }: Props) {
+export default function ReviewProgressModal({ fileName, status, onCancel }: Props) {
     const current = CURRENT[status];
 
     const steps = [
@@ -129,10 +129,10 @@ export default function ReviewProgressModal({ fileName, status, onLater }: Props
                 {/* 나중에 확인 */}
                 <button
                     type="button"
-                    onClick={onLater}
-                    className="mt-[34px] w-[324px] h-[67px] rounded-[12px] border border-[#e3e8ef] bg-white shadow-[0_4px_14px_rgba(11,27,51,0.05)] text-[19px] font-semibold text-[#3a4456] cursor-pointer transition-colors hover:bg-[#f7f9fc]"
+                    onClick={onCancel}
+                    className="mt-[34px] w-[324px] h-[67px] rounded-[12px] border border-[#e3e8ef] bg-white shadow-[0_4px_14px_rgba(11,27,51,0.05)] text-[19px] font-semibold text-[#3a4456] cursor-pointer transition-colors hover:bg-[#f7f9fb]"
                 >
-                    ← 나중에 확인하기 · 마이페이지로
+                    ← 분석 취소 · 다시 업로드하기
                 </button>
             </div>
         </ModalShell>

@@ -5,6 +5,7 @@ import HeroStats from "./HeroStats";
 import HeroTitle from "./HeroTitle";
 import { HeroSpotProvider } from "./HeroSpotContext";
 import { Rise } from "../shared/Rise";
+import HeroVideo from "./HeroVideo";
 
 // 첫 화면 내용의 양끝을 헤더(좌우 5% 여백, 최대 1440px)에 맞춘다
 // 배경은 헤더 뒤까지 채우고, 내용만 헤더 높이(72px)만큼 내려서 둔다
@@ -14,17 +15,7 @@ export default function AboutHero() {
     return (
         <section className="relative w-full h-[973px] overflow-hidden bg-[#070d1a]">
             {/* 배경 이미지 */}
-            <video
-                className="absolute inset-0 w-full h-full object-cover"
-                src="/assets/videos/about/about01.mp4"
-                poster="/assets/images/about/hero-street.jpg"
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="auto"
-                aria-hidden="true"
-            />
+            <HeroVideo />
             {/* 왼쪽 흰색 + 아래쪽 살짝 어두운 그라데이션 */}
             <div
                 className="absolute inset-0"

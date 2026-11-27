@@ -150,6 +150,21 @@ export default function ReportJob({ resumeJobId }: Props) {
 
     const [sent, setSent] = useState(false); // 버튼에 "분석 요청 완료"를 잠깐 보여준다
 
+    // 분석 취소 → 업로드 화면 처음 상태로
+    const handleCancel = () => {
+    if (!confirm("분석을 취소하고 다시 업로드할까요?")) return;
+
+    setPolling(false);   // 상태 확인 멈춤
+    setModal(null);      // 진행 모달 닫기
+    setJob(null);        // 올린 파일 비우기
+    setPendingFile(null);
+    setUploadError(false);
+    setStatus("PENDING");
+
+    // 다시 검토하기로 들어온 경우 주소의 ?resume=번호 지우기
+    if (resumeJobId !== null) router.replace("/report-job");
+};
+
     // 분석 시작하기
     const handleStart = async () => {
         if (!job || uploading || uploadError || starting || sent) return;
@@ -275,10 +290,7 @@ export default function ReportJob({ resumeJobId }: Props) {
                 <ReviewProgressModal
                     fileName={job.fileName}
                     status={status}
-                    onLater={() => {
-                        resetPage();
-                        router.push("/user");
-                    }}
+                    onCancel={handleCancel}
                 />
             )}
             {modal === "login" && <LoginRequiredModal onClose={() => setModal(null)} />}
