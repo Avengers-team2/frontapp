@@ -120,7 +120,7 @@ export default function WithdrawModal({onClose}: WithdrawModalProps) {
                         type="button"
                         onClick={handleWithdrawClick}
                         disabled={!canWithdraw}
-                        className="flex h-13 items-center rounded-full bg-danger px-7.5 text-xl font-bold text-white shadow-[0px_6px_16px_0px_rgba(229,72,77,0.25)] disabled:opacity-40"
+                        className="flex h-13 items-center rounded-full border border-danger bg-white px-7.5 text-xl font-bold text-danger shadow-[0px_6px_16px_0px_rgba(229,72,77,0.25)] transition-colors enabled:hover:bg-danger enabled:hover:text-white disabled:opacity-40"
                     >
                         탈퇴하기
                     </button>
