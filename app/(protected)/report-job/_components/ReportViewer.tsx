@@ -54,7 +54,9 @@ export default function ReportViewer({ data, tab }: Props) {
                         {tab === "report" ? data.pdf.fileName : data.fileName}
                     </p>
                     <p className="text-[18px] leading-[1.5] text-[#6b6b6b]">
-                        {tab === "report" ? `PDF · ${data.pdf.pages}쪽 · ${data.pdf.size}` : "원본 기획서"}
+                        {tab === "report"
+                            ? ["PDF", data.pdf.pages ? `${data.pdf.pages}쪽` : null, data.pdf.size || null].filter(Boolean).join(" · ")
+                            : "원본 기획서"}
                     </p>
                 </div>
                 {tab === "report" && (
@@ -98,7 +100,9 @@ export default function ReportViewer({ data, tab }: Props) {
                                     className="flex items-center justify-between h-[48px] border-t-[1.2px] border-[#e3e3e3] text-[18px] leading-[1.5]"
                                 >
                                     <span className="text-[#2b2b2b]">{item.name}</span>
-                                    <span className="font-semibold text-[#111]">{item.score} / 100</span>
+                                    <span className="font-semibold text-[#111]">
+                                        {item.grade} · {item.score} / 100
+                                    </span>
                                 </li>
                             ))}
                         </ul>

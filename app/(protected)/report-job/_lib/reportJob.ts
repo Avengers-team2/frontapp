@@ -143,3 +143,9 @@ export async function getReportExportUrl(id: number): Promise<ReportExportDownlo
         expiresIn: d.expiresIn ?? d.expires_in,
     };
 }
+
+// 7. 검토 결과 조회 (COMPLETED만) — 화면용 변환은 reportExport.ts의 getReportResult에서
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function getReportResultData(id: number): Promise<any> {
+    return request(`/jobs/${id}/result`);
+}

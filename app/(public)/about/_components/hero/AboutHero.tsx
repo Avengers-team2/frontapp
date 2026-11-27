@@ -14,12 +14,16 @@ export default function AboutHero() {
     return (
         <section className="relative w-full h-[973px] overflow-hidden bg-[#070d1a]">
             {/* 배경 이미지 */}
-            <Image
-                src="/assets/images/about/hero-street.jpg"
-                alt=""
-                fill
-                priority
-                className="object-cover"
+            <video
+                className="absolute inset-0 w-full h-full object-cover"
+                src="/assets/videos/about/about01.mp4"
+                poster="/assets/images/about/hero-street.jpg"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="auto"
+                aria-hidden="true"
             />
             {/* 왼쪽 흰색 + 아래쪽 살짝 어두운 그라데이션 */}
             <div

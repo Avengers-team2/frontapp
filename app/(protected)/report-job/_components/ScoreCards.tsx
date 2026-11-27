@@ -57,10 +57,17 @@ export default function ScoreCards({ items }: Props) {
                 >
                     <MiniGauge score={item.score} active={inView} delay={i * STAGGER + 400} />
                     <div>
-                        <p className="font-(family-name:--font-outfit) text-[36px] font-semibold leading-none text-[#111]">
-                            {item.score}
+                        <p className="flex items-baseline gap-[8px]">
+                            <span className="font-(family-name:--font-outfit) text-[36px] font-semibold leading-none text-[#111]">
+                                {item.score}
+                            </span>
+                            <span className={`text-[15px] font-bold ${isWeak(item.score) ? "text-[#b9770e]" : "text-[#0b7468]"}`}>
+                                {item.grade}
+                            </span>
                         </p>
-                        <p className="mt-[10px] text-[15px] font-medium text-[#5b6577] whitespace-nowrap">{item.name}</p>
+                        <p className="mt-[10px] text-[15px] font-medium text-[#5b6577] whitespace-nowrap" title={item.name}>
+                            {item.shortName}
+                        </p>
                     </div>
                 </li>
             ))}
