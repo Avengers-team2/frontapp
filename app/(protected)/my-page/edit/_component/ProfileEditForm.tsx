@@ -7,6 +7,8 @@ import { BUSINESS_STATUS_OPTIONS } from "../../_component/mockData";
 import { updateProfileApi, updateProfileImageApi } from "../_lib/profile.api";
 import { helperClass, inputClass, labelClass, secondaryButtonClass, sectionTitleClass } from "./fieldStyle";
 
+const DEFAULT_PROFILE = "/users/default.jpg"; // 백엔드 users.user_profile 기본값과 같음
+
 interface ProfileEditFormProps {
     onSaved: () => void;
 }
@@ -75,6 +77,23 @@ export default function ProfileEditForm({onSaved}: ProfileEditFormProps) {
         onError: (error) => window.alert(error.message),
     });
 
+    // 기본 이미지로 되돌리기 (PUT /users/{user_id}에 user_profile만 보냄) → 성공하면 로그인 정보의 사진 주소도 바꿈 (바로 저장됨)
+    const resetPhotoMutation = useMutation({
+        mutationFn: () => updateProfileApi(user!.user_id, { user_profile: DEFAULT_PROFILE }),
+        onSuccess: (res) => {
+            setUser({ ...user!, user_profile: res.data?.user_profile ?? DEFAULT_PROFILE });
+        },
+        onError: () => window.alert("기본 이미지로 바꾸지 못했어요. 잠시 후 다시 시도해 주세요."),
+    });
+
+    const handlePhotoReset = () => {
+        if (!user) {
+            window.alert("로그인 정보가 없어요. 다시 로그인해 주세요.");
+            return;
+        }
+        resetPhotoMutation.mutate();
+    }
+
     const handlePhotoClick = () => {
         if (!user) {
             window.alert("로그인 정보가 없어요. 다시 로그인해 주세요.");
@@ -113,6 +132,11 @@ export default function ProfileEditForm({onSaved}: ProfileEditFormProps) {
                 <button type="button" onClick={handlePhotoClick} disabled={photoMutation.isPending} className={`${secondaryButtonClass} disabled:opacity-60`}>
                     {photoMutation.isPending ? "올리는 중" : "사진 변경"}
                 </button>
+                {profileImage && (
+                    <button type="button" onClick={handlePhotoReset} disabled={resetPhotoMutation.isPending || photoMutation.isPending} className={`${secondaryButtonClass} disabled:opacity-60`}>
+                        {resetPhotoMutation.isPending ? "바꾸는 중" : "기본 이미지로"}
+                    </button>
+                )}
                 <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
             </div>
 

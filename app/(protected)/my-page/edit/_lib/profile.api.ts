@@ -9,6 +9,7 @@ export interface ProfileUpdateRequest {
     user_interest_region?: string | null;
     user_interest_industry?: string | null;
     user_password?: string;
+    user_profile?: string; // 프로필 사진 주소 (기본 이미지로 되돌릴 때 "/users/default.jpg")
 }
 
 // 회원정보 수정 — 로그인한 본인만 가능

@@ -82,12 +82,6 @@ export default function MyPageProfile() {
                         </Link>
                     </div>
                 ))}
-                <Link
-                    href="/my-page/edit"
-                    className="ml-4 flex h-13 items-center rounded-full border border-line bg-white px-6 text-[19px] font-semibold text-ink-700 shadow-[0px_4px_14px_0px_rgba(11,27,51,0.05)]"
-                >
-                    정보 수정
-                </Link>
             </div>
         </section>
     );
