@@ -6,6 +6,9 @@ import { SubmitEvent, useEffect, useRef, useState } from "react";
 import { BUSINESS_STATUS_OPTIONS } from "../../_component/mockData";
 import { updateProfileApi, updateProfileImageApi } from "../_lib/profile.api";
 import { helperClass, inputClass, labelClass, secondaryButtonClass, sectionTitleClass } from "./fieldStyle";
+import ProfilePhotoModal from "./ProfilePhotoModal";
+
+const DEFAULT_PROFILE = "/users/default.jpg"; // 백엔드 users.user_profile 기본값과 같음
 
 interface ProfileEditFormProps {
     onSaved: () => void;
@@ -75,12 +78,37 @@ export default function ProfileEditForm({onSaved}: ProfileEditFormProps) {
         onError: (error) => window.alert(error.message),
     });
 
+    // 기본 이미지로 되돌리기 (PUT /users/{user_id}에 user_profile만 보냄) → 성공하면 로그인 정보의 사진 주소도 바꿈 (바로 저장됨)
+    const resetPhotoMutation = useMutation({
+        mutationFn: () => updateProfileApi(user!.user_id, { user_profile: DEFAULT_PROFILE }),
+        onSuccess: (res) => {
+            setUser({ ...user!, user_profile: res.data?.user_profile ?? DEFAULT_PROFILE });
+        },
+        onError: () => window.alert("기본 이미지로 바꾸지 못했어요. 잠시 후 다시 시도해 주세요."),
+    });
+
+    // 프로필 사진 변경 팝업
+    const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
+
+    // 사진 변경 버튼 → 팝업 열기
     const handlePhotoClick = () => {
         if (!user) {
             window.alert("로그인 정보가 없어요. 다시 로그인해 주세요.");
             return;
         }
+        setIsPhotoModalOpen(true);
+    }
+
+    // 팝업 "사진 업로드" → 팝업 닫고 파일 선택창 열기
+    const handlePhotoUpload = () => {
+        setIsPhotoModalOpen(false);
         fileInputRef.current?.click();
+    }
+
+    // 팝업 "현재 사진 삭제" → 팝업 닫고 기본 이미지로
+    const handlePhotoReset = () => {
+        setIsPhotoModalOpen(false);
+        resetPhotoMutation.mutate();
     }
 
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -110,10 +138,17 @@ export default function ProfileEditForm({onSaved}: ProfileEditFormProps) {
                         nickname.slice(0, 1) || "?"
                     )}
                 </div>
-                <button type="button" onClick={handlePhotoClick} disabled={photoMutation.isPending} className={`${secondaryButtonClass} disabled:opacity-60`}>
-                    {photoMutation.isPending ? "올리는 중" : "사진 변경"}
+                <button type="button" onClick={handlePhotoClick} disabled={photoMutation.isPending || resetPhotoMutation.isPending} className={`${secondaryButtonClass} disabled:opacity-60`}>
+                    {photoMutation.isPending ? "올리는 중" : resetPhotoMutation.isPending ? "바꾸는 중" : "사진 변경"}
                 </button>
                 <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
+                {isPhotoModalOpen && (
+                    <ProfilePhotoModal
+                        onUpload={handlePhotoUpload}
+                        onDelete={handlePhotoReset}
+                        onClose={() => setIsPhotoModalOpen(false)}
+                    />
+                )}
             </div>
 
             <label className="mt-13.5 block">
